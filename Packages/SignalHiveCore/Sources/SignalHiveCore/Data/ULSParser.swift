@@ -96,10 +96,10 @@ public enum ULSParser {
     static func parseLocation(_ r: ULSRawRecord) -> ULSLocation? {
         guard let uid = Int64(r.field(1)) else { return nil }
         let lat = Self.coordinate(
-            degrees: r.field(20), minutes: r.field(21), seconds: r.field(22), direction: r.field(23)
+            degrees: r.field(19), minutes: r.field(20), seconds: r.field(21), direction: r.field(22)
         )
         let lon = Self.coordinate(
-            degrees: r.field(24), minutes: r.field(25), seconds: r.field(26), direction: r.field(27)
+            degrees: r.field(23), minutes: r.field(24), seconds: r.field(25), direction: r.field(26)
         )
         return ULSLocation(
             uid: uid,
@@ -219,8 +219,22 @@ public enum ULSService: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// FCC archive basename (without `.zip`). `rawValue` is a stable identity used in
+    /// persisted state and UI; it is NOT the FCC filename for most services.
+    public var archiveName: String {
+        switch self {
+        case .lmPriv: return "l_LMpriv"
+        case .lmComm: return "l_LMcomm"
+        case .gmrs: return "l_gmrs"
+        case .aircraft: return "l_aircr"
+        case .amateur: return "l_amat"
+        case .marine: return "l_coast"
+        case .ship: return "l_ship"
+        }
+    }
+
     public var completeZipURL: URL {
-        URL(string: "https://data.fcc.gov/download/pub/uls/complete/l_\(rawValue).zip")!
+        URL(string: "https://data.fcc.gov/download/pub/uls/complete/\(archiveName).zip")!
     }
 
     public var approximateSizeMB: Int {

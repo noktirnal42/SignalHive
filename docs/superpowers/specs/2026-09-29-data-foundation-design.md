@@ -54,13 +54,13 @@ fallback. A new executable target `signalhive-packbuilder` wraps it.
 - Keeps active licenses only (`license_status = 'A'`).
 - Writes one read-only SQLite file per state. Schema version 1:
   - `meta(key, value)` — `schemaVersion`, `stateCode`, `fccSnapshotDate`, `builtAt`.
-  - `counties(fips PRIMARY KEY, name, stateCode)` — Census list for that state.
-  - `licenses(uid PRIMARY KEY, callSign, licenseeName, entityType, serviceCode, grantDate, expiredDate, city, zip, primaryCountyFips)`.
-  - `sites(uid, locationNumber, city, countyFips, stateCode, lat, lon, PRIMARY KEY(uid, locationNumber))`.
-  - `frequencies(uid, locationNumber, frequencyHz, upperBandHz, classStationCode, powerW, modeHint, bandwidthHz, UNIQUE(uid, locationNumber, frequencyHz, classStationCode))`.
+  - `counties(countyId PRIMARY KEY, name, stateCode, licenseCount)` — `countyId` is `"<ST>:<NORMALIZED NAME>"` in v1; it becomes the Census FIPS code once the Census county list is added (that needs a download the user has not yet approved).
+  - `licenses(uid PRIMARY KEY, callSign, licenseeName, entityType, serviceCode, grantDate, expiredDate, city, zip)`.
+  - `sites(uid, locationNumber, city, countyId, stateCode, latitude, longitude, PRIMARY KEY(uid, locationNumber))` — coordinates are NULL when the FCC row has none (never 0, 0)..
+  - `frequencies(uid, locationNumber, frequencyHz, upperBandHz, classStationCode, powerW, modeHints, bandwidthHz, UNIQUE(uid, locationNumber, frequencyHz, classStationCode))` — `modeHints` is a comma-separated set because one frequency can carry several emissions..
   - `licenses_fts` — FTS5 over `callSign`, `licenseeName`.
-  - Indexes on `sites(countyFips)`, `sites(lat, lon)`, `frequencies(frequencyHz)`.
-- Mode inference (v1.1 of this track): parse each emission designator from `EM.dat` (necessary bandwidth plus modulation/information characters) into `bandwidthHz` and `modeHint` in {`analogFM`, `am`, `digitalP25`, `digitalOther`, `unknown`}. The exact rule table is part of the implementation plan and is unit-tested against designators taken from real rows.
+  - Indexes on `sites(countyId)`, `sites(lat, lon)`, `frequencies(frequencyHz)`.
+- Mode inference (v1.1 of this track): parse each emission designator from `EM.dat` (necessary bandwidth plus modulation/information characters) into `bandwidthHz` and `modeHints` drawn from {`analogFM`, `am`, `ssb`, `digitalP25`, `digitalOther`, `unknown`}. The exact rule table is part of the implementation plan and is unit-tested against designators taken from real rows.
 - Agency grouping (v1.1): derive `agencies(id, name, category)` and `licenses.agencyId` from normalized licensee names and service codes (categories such as Law, Fire, EMS, Public Works, Schools, Utilities, Business). Heuristic; misclassification is expected and must be correctable by the user (Track later).
 - Output per state: `SH-<STATE>-<yyyymmdd>.sqlite.lzfse` (LZFSE via Apple's `Compression` framework, available on macOS and iOS) plus `manifest.json`: for each pack the state, filename, compressed and expanded byte sizes, SHA-256, FCC snapshot date; and the top-level `schemaVersion`.
 
@@ -68,7 +68,7 @@ fallback. A new executable target `signalhive-packbuilder` wraps it.
 
 - Canonical counties come from the Census Bureau county gazetteer (public domain).
 - FCC county strings are matched to canonical names after normalization: case, punctuation, `ST.`/`SAINT`, `CITY`/independent cities (VA, MD, MO, NV), Louisiana parishes, Alaska boroughs and census areas, Puerto Rico municipios.
-- Unmatched FCC county strings fall back to a point-in-county lookup from the site's lat/lon (the FCC Area API is used at build time only, with a cached result file, never at app runtime). Records still unmatched are kept with `countyFips = NULL` and surfaced in the builder report.
+- Unmatched FCC county strings fall back to a point-in-county lookup from the site's lat/lon (the FCC Area API is used at build time only, with a cached result file, never at app runtime). Records still unmatched are kept with `countyId = NULL` and surfaced in the builder report.
 - GMRS: county derived from the licensee ZIP via the Census ZIP-to-county relationship file, replacing the `county = city` placeholder.
 - Builder report lists match rates and the top unmatched strings so normalization gaps are visible, not silent.
 

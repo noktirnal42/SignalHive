@@ -100,7 +100,7 @@ public actor ULSImporter {
 
     private func download(service: ULSService) async throws -> URL {
         let tempDir = FileManager.default.temporaryDirectory
-        let dest = tempDir.appendingPathComponent("l_\(service.rawValue).zip")
+        let dest = tempDir.appendingPathComponent("\(service.archiveName).zip")
         if FileManager.default.fileExists(atPath: dest.path) {
             return dest
         }
@@ -136,7 +136,7 @@ public actor ULSImporter {
 
     private func extract(archiveURL: URL, service: ULSService) throws -> [URL] {
         let extractDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("uls_\(service.rawValue)", isDirectory: true)
+            .appendingPathComponent("uls_\(service.archiveName)", isDirectory: true)
         try? FileManager.default.removeItem(at: extractDir)
         try FileManager.default.createDirectory(at: extractDir, withIntermediateDirectories: true)
 
