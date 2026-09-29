@@ -1,0 +1,10 @@
+{
+  "modelPackageName": "AutoClassify_v2.mlpackage",
+  "inputFeatureName": "iq_input",
+  "outputFeatureName": "class_probs",
+  "benchmarkArtifactName": "AutoClassify_v2_benchmark.json",
+  "evaluationArtifactName": "accuracy_by_snr.json",
+  "minimumClassCount": 24,
+  "modelVersion": "2.0",
+  "dataset": "RadioML 2018.01a"
+}

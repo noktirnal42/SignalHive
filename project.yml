@@ -1,0 +1,102 @@
+name: SignalHive
+options:
+  bundleIdPrefix: com.noktirnal42
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "15.0"
+    iOS: "18.0"
+packages:
+  SignalHiveCore:
+    path: Packages/SignalHiveCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  SignalHive:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Shared
+      - path: App/macOS
+    dependencies:
+      - package: SignalHiveCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.noktirnal42.SignalHive
+        PRODUCT_NAME: SignalHive
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: true
+        ENABLE_HARDENED_RUNTIME: true
+    entitlements:
+      path: App/macOS/SignalHive.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.device.usb: true
+        com.apple.security.network.client: true
+        com.apple.security.files.user-selected.read-write: true
+  SignalHiveMenuBar:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Shared
+      - path: App/MenuBar
+    dependencies:
+      - package: SignalHiveCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.noktirnal42.SignalHive.MenuBar
+        PRODUCT_NAME: SignalHive MenuBar
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        CODE_SIGN_STYLE: Automatic
+        INFOPLIST_FILE: App/MenuBar/Info.plist
+        ENABLE_HARDENED_RUNTIME: true
+    entitlements:
+      path: App/MenuBar/SignalHiveMenuBar.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.files.user-selected.read-only: true
+  SignalHive-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: App/Shared
+      - path: App/iOS
+    dependencies:
+      - package: SignalHiveCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.noktirnal42.SignalHive
+        PRODUCT_NAME: SignalHive
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: false
+        INFOPLIST_FILE: App/iOS/Info.plist
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+        INFOPLIST_KEY_UIApplicationSupportsMultipleScenes: true
+        TARGETED_DEVICE_FAMILY: "1,2"
+    entitlements:
+      path: App/iOS/SignalHive-iOS.entitlements
+      properties:
+        com.apple.developer.networking.wifi-info: true
+schemes:
+  SignalHive:
+    build:
+      targets:
+        SignalHive: all
+    run:
+      config: Debug
+  SignalHiveMenuBar:
+    build:
+      targets:
+        SignalHiveMenuBar: all
+    run:
+      config: Debug
+  SignalHive-iOS:
+    build:
+      targets:
+        SignalHive-iOS: all
+    run:
+      config: Debug
