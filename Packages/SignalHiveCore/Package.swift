@@ -9,6 +9,7 @@ let package = Package(
     ],
     products: [
         .library(name: "SignalHiveCore", targets: ["SignalHiveCore"]),
+        .executable(name: "signalhive-packbuilder", targets: ["signalhive-packbuilder"]),
     ],
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift", from: "7.0.0"),
@@ -32,6 +33,12 @@ let package = Package(
             resources: [
                 .process("DSP/Models"),
             ],
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
+        .executableTarget(
+            name: "signalhive-packbuilder",
+            dependencies: ["SignalHiveCore"],
+            path: "Sources/signalhive-packbuilder",
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(
