@@ -1,6 +1,6 @@
 # SignalHive — Project Status and Handoff
 
-Last updated: 2026-09-29. This is a living document: update the "Verified status" table whenever something is
+Last updated: 2026-09-30. This is a living document: update the "Verified status" table whenever something is
 tested, and add to "Bugs found and fixed" whenever a root cause is found.
 
 ## 1. What SignalHive is
@@ -35,6 +35,8 @@ Codex sessions):
 | `2f6ecad`–`2305494` | Claude Code | Investigation, FCC data foundation: streaming pack builder, per-state packs, `PackStore`, `FrequencyStore`, `BrowseDataSource`, user database, local FCC build, specs and plans in `docs/superpowers/` |
 | `8ed76ca` | Codex (GPT) | Checkpointed as-found: visual design system, app icon, Workshop screen, AI Lab screen, AI core module, reworked Browse/Scanner/Trunked, `script/build_and_run.sh`, `-mockData` flag. Its usage ran out before it wrote any notes. |
 | `5437fc6` | Claude Code | Fixed the launch crash (see section 5) |
+| `af98fc7` in SwiftRTLSDR | Codex (GPT) | Clarified native USB open failures in the upstream driver package and added tests. SignalHive's embedded driver copy matches this stable upstream patch. |
+| SwiftRTLSDR PR #1 | Claude cloud session | Draft section 6 work: retune shortcuts, overload guard/AGC, scan loop, EEPROM serial provisioning, rtl_tcp server, and CLI/docs. Do not consume in SignalHive until the PR is merged and tested. |
 
 The Codex session (for reference): `~/.codex/sessions/2026/09/29/rollout-2026-09-29T17-17-28-01a0efac-*.jsonl`,
 thread "Fix and finish SignalHive".
@@ -50,7 +52,7 @@ Packages/SignalHiveCore/      All logic, UI-free
   Data/ULS, Data/Packs        FCC ULS -> per-state SQLite packs (builder, store, manifest, county/emission parsing)
   Data/Browse                 BrowseDataSource protocol, real (pack) and mock implementations
   Data/User                   UserData.sqlite (codeplugs), migration from the legacy database
-  HAL/                        SDR devices: RTL-SDR (dlopen librtlsdr), HackRF, Lime, SDRplay, Airspy, Pluto, network, test
+  HAL/                        SDR devices: native Swift RTL-SDR, HackRF, Lime, SDRplay, Airspy, Pluto, network, test
   DSP/                        FFT, demodulators, decoders, classifier, description engine
   AI/                         AI workbench model: features, providers, MLX candidates, local-machine profile
   Cloning/                    Baofeng, Uniden protocol, CHIRP CSV
@@ -66,15 +68,15 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 
 | Area | Status | Evidence |
 |---|---|---|
-| Package tests | Pass: 68 tests, 16 suites | `swift test` |
+| Package tests | Pass: SignalHiveCore 139 tests / 30 suites; SwiftRTLSDR 46 tests / 6 suites | `swift test` in both packages |
 | macOS, menu-bar and iOS targets build | Pass | `xcodebuild` for all three schemes |
 | App launches without crashing | **Pass** after fix: 0 of 20 launches crashed (was 4 of 8) | `script/launch_stability_test.sh` |
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
-| RTL-SDR detected over USB | **Unsigned build: yes** (2 sources). **Signed, sandboxed build: NO** (1 source, the Test Signal). Root cause, proven by the app's own `diagnostics.txt`: `dlopen(/opt/homebrew/lib/librtlsdr.dylib): file system sandbox blocked open()`. This is why the owner's radio features do not work in their builds. The Scanner and Workshop now show this reason. Fix = native Swift driver over IOUSBHost (originalization plan, step 1) | `rtl_probe`; ad-hoc signed build launched and Workshop read |
+| RTL-SDR detected over USB | **Native Swift path integrated.** SignalHive now depends on `Packages/SwiftRTLSDR` and uses `NativeRTLSDRDevice` over Apple's IOUSBHost API; no `dlopen(librtlsdr)` is used for RTL-SDR. Main macOS app has the USB entitlement; menu-bar target now has it too. | SignalHiveCore hardware tests exercised the attached dongle; SwiftRTLSDR tests passed |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
 | Scanner display: spectrum, waterfall, tuning, volume | **Fixed and verified on the real dongle (S1)**: full centre-shifted spectrum, fed high-resolution waterfall (2048x400 pixel buffer, inferno palette, 25 rows/s, selectable 125 Hz - 1 kHz detail), auto-scaling, typed/stepped/click-to-tune frequency snapped to the step grid, volume + mute. Tests: FFT tones, waterfall buffer, palette, throttle, frequency entry, volume | Running app with the RTL-SDR; 102 tests |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
-| Scanner audio from the RTL-SDR (end to end) | **Not yet verified by ear/over the air**: the dongle showed no FM stations with `rtl_power` (probably no antenna attached), and the Scanner UI does not yet set `channelOffsetHz` (clicking retunes the whole band) | `rtl_power`, code read |
+| Scanner audio from the RTL-SDR (end to end) | **Still needs ear/over-the-air QA**: native USB streaming and DSP tests pass, but reception quality, antenna-dependent signals, and user-facing scan-list workflows still need field verification. | hardware/unit tests; no listening QA yet |
 | Decoders (ADS-B, UAT, ACARS, AIS, Morse, ...) | Code exists in core with unit tests; **no UI to use them yet** (Workshop lists them as capabilities) | |
 | Trunked (OpenMHz browser) | Not verified; needs network | |
 | AI Lab (Foundation Models / PCC probes, MLX catalog) | Builds; catalog/compat logic unit-tested; runtime probes not verified; MLX inference and downloader are not implemented | GPT's own note |
@@ -126,7 +128,11 @@ is the next task after the channelizer; results go into a table below.
   setting: `packBaseURL`). Local build of the large public-safety file (LMpriv, ~423 MB) has not been timed.
 - FCC ULS has no talkgroups, CTCSS/DCS tones or alpha tags. Trunked-system data needs its own approach
   (self-discovery by decoding control channels; optional OpenMHz was approved as an opt-in source).
-- `SDRDeviceManager.scan()` runs six providers; only RTL-SDR has been exercised on real hardware.
+- `SDRDeviceManager.scan()` runs six providers; RTL-SDR has been exercised on real hardware through the native Swift
+  driver. Other source types still need hardware/provider QA.
+- SwiftRTLSDR PR #1 is still draft/in progress. Once it merges, update `Packages/SwiftRTLSDR`, rerun both package
+  test suites, then wire stable scanner/server/AGC features into SignalHive. Claude's follow-on dump1090 and dump978
+  work should be handled the same way: upstream first, then embedded-copy sync and SignalHive integration.
 - No test target exists for the app layer (views/model); only the package is unit-tested.
 - Agency grouping and Census county names (planned in the data plan, Task 10) are not built.
 
@@ -136,7 +142,8 @@ Scanner sub-project (owner priority): see `docs/superpowers/specs/2026-09-29-sca
 S1 correct spectrum/waterfall/tuning (**done**), S2 channelizer + scan engine + identification + saved channels
 (core, tested), S3 scanner UI, S4 trunking/decoder hand-off.
 
-1. Verify and fix **Scanner with the local RTL-SDR** (tune, spectrum, waterfall, AM/NFM/WFM demod audio).
+1. Verify and fix **Scanner with the local RTL-SDR** over the air (antenna, tune, spectrum, waterfall,
+   AM/NFM/WFM demod audio, scan lists).
 2. A **Decoder Hub** that puts the existing decoders behind a UI (ADS-B map first, then Morse, ACARS, AIS, ...).
 3. Browse layout and detail polish; window sizing; mode/power display.
 4. Replace external adapters with original Swift decoders (paging first).

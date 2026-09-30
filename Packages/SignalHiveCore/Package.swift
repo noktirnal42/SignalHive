@@ -14,6 +14,8 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift", from: "7.0.0"),
         .package(url: "https://github.com/weichsel/ZIPFoundation", from: "0.9.19"),
+        // The native RTL-SDR driver (also published on its own: github.com/noktirnal42/SwiftRTLSDR).
+        .package(path: "../SwiftRTLSDR"),
     ],
     targets: [
         .target(
@@ -28,6 +30,7 @@ let package = Package(
                 "CMbelib",
                 .product(name: "GRDB", package: "GRDB.swift"),
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),
+                .product(name: "RTLSDRKit", package: "SwiftRTLSDR", condition: .when(platforms: [.macOS])),
             ],
             path: "Sources/SignalHiveCore",
             resources: [

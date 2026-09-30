@@ -19,10 +19,7 @@ public final class SDRDeviceManager: ObservableObject {
     private init() {
         self.scanProviders = Self.defaultScanProviders()
 
-        // TestSignalDevice is always available without USB initialization.
-        // USB device scanning (RTL-SDR, HackRF) is deferred to user-triggered scan()
-        // because libusb starts a hotplug background thread on first call that can
-        // cause heap corruption on macOS if no device is connected.
+        // TestSignalDevice is always available without touching USB. Hardware scanning is user-triggered.
         availableDevices = [TestSignalDevice()]
 
         // Restore saved network devices without initializing USB stack
@@ -31,9 +28,7 @@ public final class SDRDeviceManager: ObservableObject {
 
     // MARK: - Scanning
 
-    /// Scan for all connected SDR hardware (RTL-SDR, HackRF) and network sources.
-    /// Call only on explicit user request — libusb initialization starts background
-    /// threads that can interfere with the malloc heap if no device is connected.
+    /// Scan for all connected SDR hardware and network sources. Called on explicit user request.
     public func scan() async {
         isScanning = true
         defer { isScanning = false }
@@ -55,7 +50,7 @@ public final class SDRDeviceManager: ObservableObject {
 
     static func defaultScanProviders() -> [ScanProvider] {
         [
-            { await RTLSDRDevice.enumerateDevices() },
+            { await NativeRTLSDRDevice.enumerateDevices() },
             { await HackRFDevice.enumerateDevices() },
             { await LimeSDRDevice.enumerateDevices() },
             { await SDRPlayDevice.enumerateDevices() },

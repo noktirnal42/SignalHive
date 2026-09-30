@@ -19,6 +19,8 @@ final class AppModel: ObservableObject {
     var lastError: String?
     var databaseError: String?
     var databaseReady = false
+    /// Result of the RTL-SDR self-test (`-testRTLSDR YES` on the command line), shown in diagnostics.txt.
+    @ObservationIgnored private var selfTestLines: [String] = []
 
     // "Build from FCC on this Mac"
     var importActive = false
@@ -98,6 +100,20 @@ final class AppModel: ObservableObject {
         await refreshManifest()
         await refreshStates()
         writeDiagnostics()
+        if UserDefaults.standard.bool(forKey: "testRTLSDR") { await runRTLSDRSelfTest() }
+    }
+
+    /// Opens the first RTL-SDR, streams for a second, and records the outcome in diagnostics.txt. Started by the
+    /// `-testRTLSDR YES` launch argument, so the sandboxed app can be checked without clicking through the UI.
+    func runRTLSDRSelfTest() async {
+        guard let device = await NativeRTLSDRDevice.enumerateDevices().first else {
+            selfTestLines = ["RTL-SDR self-test: FAILED - no dongle found."]
+            writeDiagnostics()
+            return
+        }
+        let report = await RTLSDRSelfTest.run(device)
+        selfTestLines = ["RTL-SDR self-test: \(report.passed ? "PASSED" : "FAILED")"] + report.lines
+        writeDiagnostics()
     }
 
     /// A plain-text snapshot of what the app can see, saved next to its data (`diagnostics.txt`) so problems
@@ -111,9 +127,10 @@ final class AppModel: ObservableObject {
             "Installed FCC packs: \(installedCount)",
             "Pack server: \(manifestNote ?? "reachable")",
             "",
-            "RTL-SDR library: \(RTLSDRLibrary.status.isAvailable ? "available" : "NOT available")",
-            RTLSDRLibrary.status.summary,
+            "RTL-SDR (native driver): \(RTLSDRAvailability.current.isAvailable ? "dongle found" : "no dongle")",
+            RTLSDRAvailability.current.summary,
         ]
+        if !selfTestLines.isEmpty { lines.append(""); lines += selfTestLines }
         if let error = lastError { lines.append("Last error: \(error)") }
         try? lines.joined(separator: "\n").write(to: Self.supportDirectory.appendingPathComponent("diagnostics.txt"),
                                                 atomically: true, encoding: .utf8)

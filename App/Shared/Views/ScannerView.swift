@@ -316,9 +316,9 @@ struct ScannerView: View {
                 .padding(.horizontal)
             }
 
-            if !RTLSDRLibrary.status.isAvailable {
+            if !RTLSDRAvailability.current.isAvailable {
                 Label {
-                    Text(RTLSDRLibrary.status.summary)
+                    Text(RTLSDRAvailability.current.summary)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
