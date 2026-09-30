@@ -63,7 +63,7 @@ struct AirMapView: View {
             }
         }
         .onAppear { placeCameraOnce() }
-        .onChange(of: model.source) { _, _ in fitToTraffic() }
+        .onChange(of: model.activeSources) { _, _ in fitToTraffic() }
     }
 
     private var mapArea: some View {
@@ -332,7 +332,7 @@ private struct AirStatusPill: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            if model.source == .demo { HiveStatusBadge("DEMO", tint: HiveInk.amber) }
+            if model.isDemo { HiveStatusBadge("DEMO", tint: HiveInk.amber) }
             Circle()
                 .fill(model.isRunning ? HiveInk.mint : Color.gray)
                 .frame(width: 8, height: 8)
@@ -342,7 +342,7 @@ private struct AirStatusPill: View {
             Text("\(model.picture.aircraft.count) aircraft")
                 .font(.system(.caption, design: .monospaced))
                 .foregroundStyle(.secondary)
-            if model.isRunning && model.source != .demo {
+            if model.isRunning && !model.isDemo {
                 Text(String(format: "%.0f msg/s", model.messageRate))
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.secondary)
@@ -427,7 +427,7 @@ private struct AirEmptyState: View {
                 .foregroundStyle(HiveInk.cyan)
             Text("No aircraft yet")
                 .font(.system(.title3, design: .rounded).weight(.semibold))
-            Text("Listen for real traffic with an RTL-SDR on 1090 MHz, or start the demo sky to see the map, icons, altitude colors, trails and radar working.")
+            Text("Listen for real traffic with an RTL-SDR (1090 MHz for airliners, 978 MHz for US general aviation and weather radar), or start the demo sky to see the map, icons, altitude colors, trails and radar working.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -445,6 +445,12 @@ private struct AirEmptyState: View {
                     Task { await model.start(.adsb1090) }
                 } label: {
                     Label("Listen on 1090 MHz", systemImage: "antenna.radiowaves.left.and.right")
+                }
+                .buttonStyle(.bordered)
+                Button {
+                    Task { await model.start(.uat978) }
+                } label: {
+                    Label("978 MHz + weather", systemImage: "cloud.sun.rain")
                 }
                 .buttonStyle(.bordered)
                 #endif
@@ -483,43 +489,21 @@ private struct AirSidebar: View {
 
 private struct SourcePanel: View {
     @Bindable var model: AviationModel
-    @State private var choice = AviationModel.Source.demo
     @State private var positionText = ""
     @State private var positionError = false
 
     var body: some View {
-        HiveInstrumentPanel("Source", status: model.isRunning ? "running" : "idle") {
-            VStack(alignment: .leading, spacing: 10) {
-                Picker("Source", selection: $choice) {
-                    ForEach(AviationModel.Source.allCases) { source in Text(source.rawValue).tag(source) }
+        HiveInstrumentPanel("Sources", status: model.isRunning ? "running" : "idle") {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(AviationModel.Source.allCases) { source in
+                    sourceRow(source)
                 }
-                .labelsHidden()
                 HStack {
-                    Button {
-                        Task { await model.start(choice) }
-                    } label: {
-                        Label(model.isRunning ? "Restart" : "Start", systemImage: "play.fill")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(HiveInk.cyan)
-                    if model.isRunning {
-                        Button {
-                            Task { await model.stop() }
-                        } label: {
-                            Label("Stop", systemImage: "stop.fill")
-                        }
-                        .buttonStyle(.bordered)
-                    }
                     Spacer()
-                    Button("Clear") { model.clear() }
+                    Button("Clear everything") { model.clear() }
                         .buttonStyle(.borderless)
+                        .font(.caption)
                         .disabled(model.picture.aircraft.isEmpty && model.picture.messages.messages.isEmpty)
-                }
-                Text(model.status)
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.7))
-                if let error = model.lastError {
-                    Text(error).font(.caption).foregroundStyle(.red)
                 }
                 Divider()
                 VStack(alignment: .leading, spacing: 4) {
@@ -538,7 +522,7 @@ private struct SourcePanel: View {
                     } else if let location = model.receiverLocation {
                         Text(AviationFormat.coordinate(location)).font(.caption2).foregroundStyle(.white.opacity(0.6))
                     } else {
-                        Text("Unset: ranges are hidden, and a first position needs an even and an odd report.")
+                        Text("Unset: ranges are hidden, and a first 1090 MHz position needs an even and an odd report.")
                             .font(.caption2).foregroundStyle(.white.opacity(0.5))
                     }
                 }
@@ -547,6 +531,49 @@ private struct SourcePanel: View {
         .onAppear {
             if let location = model.receiverLocation, positionText.isEmpty {
                 positionText = String(format: "%.4f, %.4f", location.latitude, location.longitude)
+            }
+        }
+    }
+
+    private func sourceRow(_ source: AviationModel.Source) -> some View {
+        let active = model.activeSources.contains(source)
+        #if os(macOS)
+        let available = true
+        #else
+        let available = !source.isLive
+        #endif
+        let text = active ? (model.statuses[source] ?? "") : source.detail
+        return VStack(alignment: .leading, spacing: 3) {
+            HStack {
+                Circle()
+                    .fill(active ? HiveInk.mint : Color.gray.opacity(0.5))
+                    .frame(width: 8, height: 8)
+                Text(source.rawValue)
+                    .font(.system(.callout, design: .rounded).weight(.semibold))
+                    .foregroundStyle(.white)
+                Spacer()
+                Button(active ? "Stop" : "Start") {
+                    Task {
+                        if active { await model.stop(source) } else { await model.start(source) }
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .tint(active ? Color.red : HiveInk.cyan)
+                .disabled(!available)
+            }
+            Text(text)
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.6))
+                .fixedSize(horizontal: false, vertical: true)
+            if let device = model.deviceNames[source] {
+                Text(device).font(.caption2).foregroundStyle(HiveInk.cyan.opacity(0.8))
+            }
+            if let error = model.errors[source] {
+                Text(error).font(.caption2).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
+            }
+            if !available {
+                Text("Live reception needs the Mac app.").font(.caption2).foregroundStyle(.white.opacity(0.4))
             }
         }
     }

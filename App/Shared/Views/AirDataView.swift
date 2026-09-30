@@ -376,16 +376,16 @@ private struct AirReceiverPanel: View {
         let picture = model.picture
         HiveInstrumentPanel("Receiver", status: model.isRunning ? "on" : "off") {
             VStack(alignment: .leading, spacing: 8) {
-                row("Source", model.source?.rawValue ?? "None")
+                row("Sources", model.activeSources.isEmpty ? "None" : AviationModel.Source.allCases.filter { model.activeSources.contains($0) }.map(\.rawValue).joined(separator: ", "))
                 row("Status", model.status)
                 row("Aircraft", "\(picture.aircraft.count) (peak \(picture.stats.peakAircraft))")
                 row("Messages", AviationFormat.grouped(picture.stats.messages)
-                    + (model.isRunning && model.source != .demo ? String(format: "  %.0f/s", model.messageRate) : ""))
+                    + (model.isRunning && !model.isDemo ? String(format: "  %.0f/s", model.messageRate) : ""))
                 row("Positions", AviationFormat.grouped(picture.stats.positions))
                 row("Farthest", picture.receiver == nil ? "set the antenna position" : AviationFormat.distance(picture.stats.farthestNM))
                 row("Text reports", "\(picture.stats.textReports)")
-                if model.source == .adsb1090 {
-                    row("Frames", AviationFormat.grouped(model.health.frames))
+                ForEach(AviationModel.Source.allCases.filter { $0.isLive && model.activeSources.contains($0) }) { source in
+                    row(source == .adsb1090 ? "1090 frames" : "978 frames", AviationFormat.grouped(model.healths[source]?.frames ?? 0))
                 }
                 Divider()
                 Text("WEATHER RADAR")
