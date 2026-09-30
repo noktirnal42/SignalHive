@@ -110,6 +110,11 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 
 ## 6. Known issues and gaps (not yet fixed)
 
+**Owner report (2026-09-29, after using the build):** Workshop features, radio features and AI Lab features that do
+not work; the Scanner is not yet a real scanner (no scan lists, sweep, hold/skip/lockout, identification, saved
+channels); trunking does not work. A full feature audit (every screen driven in the running app, plus code review)
+is the next task after the channelizer; results go into a table below.
+
 - Browse shows five columns at the default 900x450 window (app sidebar, states, counties, licenses, detail):
   too cramped. It needs a larger default window and a leaner layout.
 - Power shows "0 W" for mobile-class frequencies; zero should be hidden.
