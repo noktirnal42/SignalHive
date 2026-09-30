@@ -17,31 +17,41 @@ private func close(_ a: RGB8, _ b: RGB8, tolerance: Int = 1) -> Bool {
 struct TrackHistoryTests {
     @Test func theFirstSampleIsKeptAndCrowdingSamplesAreNot() {
         var history = TrackHistory()
-        #expect(history.append(sample(0)))
-        #expect(!history.append(sample(1, lat: 40.01)))          // closer in time than the 2 s spacing
-        #expect(!history.append(sample(3)))                      // same place and height, only 3 s later
-        #expect(history.append(sample(4, lat: 40.001)))          // 0.06 NM moved
+        let result1 = history.append(sample(0))
+        #expect(result1)
+        let result2 = history.append(sample(1, lat: 40.01))
+        #expect(!result2)          // closer in time than the 2 s spacing
+        let result3 = history.append(sample(3))
+        #expect(!result3)                      // same place and height, only 3 s later
+        let result4 = history.append(sample(4, lat: 40.001))
+        #expect(result4)          // 0.06 NM moved
         #expect(history.samples.count == 2)
     }
 
     @Test func aClimbOrTheHeartbeatKeepsASample() {
         var history = TrackHistory()
         history.append(sample(0))
-        #expect(history.append(sample(5, alt: 10_150)))          // 150 ft up
-        #expect(!history.append(sample(10, alt: 10_150)))        // nothing new
-        #expect(history.append(sample(26, alt: 10_150)))         // 21 s since the last kept one
+        let result5 = history.append(sample(5, alt: 10_150))
+        #expect(result5)          // 150 ft up
+        let result6 = history.append(sample(10, alt: 10_150))
+        #expect(!result6)        // nothing new
+        let result7 = history.append(sample(26, alt: 10_150))
+        #expect(result7)         // 21 s since the last kept one
     }
 
     @Test func gainingOrLosingTheAltitudeFixCountsAsAChange() {
         var history = TrackHistory()
         history.append(sample(0, alt: nil))
-        #expect(history.append(sample(5, alt: 5_000)))
+        let result8 = history.append(sample(5, alt: 5_000))
+        #expect(result8)
     }
 
     @Test func impossiblePositionsAreRejected() {
         var history = TrackHistory()
-        #expect(!history.append(sample(0, lat: 95)))
-        #expect(!history.append(sample(0, lon: .nan)))
+        let result9 = history.append(sample(0, lat: 95))
+        #expect(!result9)
+        let result10 = history.append(sample(0, lon: .nan))
+        #expect(!result10)
         #expect(history.samples.isEmpty)
     }
 

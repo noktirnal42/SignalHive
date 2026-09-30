@@ -89,9 +89,12 @@ struct AviationMessagesTests {
     @Test func repeatedBroadcastsAreOneRowThatCountsThem() {
         var feed = AviationMessageFeed()
         let text = "METAR KSFO 300756Z 28008KT 10SM FEW015 15/12 A3002"
-        #expect(feed.add(AviationMessage.fisbReport(text, at: now)))
-        #expect(!feed.add(AviationMessage.fisbReport(text, at: now.addingTimeInterval(600))))
-        #expect(!feed.add(AviationMessage.fisbReport(text, at: now.addingTimeInterval(1_200))))
+        let result1 = feed.add(AviationMessage.fisbReport(text, at: now))
+        #expect(result1)
+        let result2 = feed.add(AviationMessage.fisbReport(text, at: now.addingTimeInterval(600)))
+        #expect(!result2)
+        let result3 = feed.add(AviationMessage.fisbReport(text, at: now.addingTimeInterval(1_200)))
+        #expect(!result3)
         #expect(feed.messages.count == 1)
         #expect(feed.messages[0].count == 3)
         #expect(feed.messages[0].firstSeen == now)
