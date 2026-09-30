@@ -62,7 +62,7 @@ public enum CHIRPCSVExporter {
         case .p25: mode = "P25"
         case .dstar: mode = "DSTAR"
         }
-        let power = channel.powerWatts >= 5 ? "50W" : "5W"
+        let power = String(format: "%.1fW", Double(channel.powerWatts))
         let comment = escape(channel.notes.isEmpty ? channel.sourceCallSign : channel.notes)
 
         return [
@@ -78,57 +78,10 @@ public enum CHIRPCSVExporter {
         return s
     }
 
-    /// Parse a CHIRP CSV file back into channels (import path).
+    /// Parse a CHIRP CSV file back into channels (import path). Rows that cannot be read are skipped; use
+    /// `CHIRPCSVImporter.parse` to learn which.
     public static func parse(csv: String) -> [CodeplugChannel] {
-        var channels: [CodeplugChannel] = []
-        let lines = csv.components(separatedBy: .newlines).filter { !$0.isEmpty }
-        guard lines.count > 1 else { return [] }
-
-        for line in lines.dropFirst() {
-            let fields = splitCSV(line)
-            guard fields.count >= 4 else { continue }
-            guard let mhz = Double(fields[2]) else { continue }
-
-            var offsetHz: Double = 0
-            if let offset = Double(fields[4]) {
-                switch fields[3] {
-                case "+": offsetHz = offset * 1_000_000
-                case "-": offsetHz = -offset * 1_000_000
-                default: offsetHz = 0
-                }
-            }
-
-            var ctcss: Double = 0
-            var dtcs: Int = 0
-            let toneKind = fields[5]
-            if toneKind == "DTCS" {
-                dtcs = Int(fields[8]) ?? 0
-            } else if toneKind == "Tone" || toneKind == "TSQL" {
-                ctcss = Double(fields[7]) ?? 0
-            }
-
-            let mode: ChannelMode
-            switch fields[12] {
-            case "FM": mode = .fm
-            case "NFM": mode = .nfm
-            case "AM": mode = .am
-            case "DMR": mode = .dmr
-            case "P25": mode = .p25
-            case "DSTAR": mode = .dstar
-            default: mode = .nfm
-            }
-
-            channels.append(CodeplugChannel(
-                name: fields.count > 1 ? fields[1] : "",
-                frequencyHz: mhz * 1_000_000,
-                offsetHz: offsetHz,
-                mode: mode,
-                ctcssToneHz: ctcss,
-                dtcsCode: dtcs,
-                notes: fields.count > 15 ? fields[15] : ""
-            ))
-        }
-        return channels
+        CHIRPCSVImporter.parse(csv).channels
     }
 
     static func splitCSV(_ line: String) -> [String] {

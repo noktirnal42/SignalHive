@@ -22,10 +22,9 @@ struct WorkshopView: View {
                     hero
                     statusStrip
                     actionGrid
-                    capabilitySection("RF Workflows", items: rfCapabilities)
-                    capabilitySection("Protocol Decoders", items: decoderCapabilities)
-                    capabilitySection("Hardware & Field Integrations", items: hardwareCapabilities)
-                    capabilitySection("Planned Lab Areas", items: plannedCapabilities)
+                    ForEach(WorkshopSection.allCases, id: \.self) { section in
+                        capabilitySection(section.title, items: WorkshopCatalog.items(in: section, for: environment))
+                    }
                 }
                 .padding(24)
                 .frame(maxWidth: 1180, alignment: .leading)
@@ -72,7 +71,7 @@ struct WorkshopView: View {
             metric("Data Packs", value: "\(installedPackCount)", icon: "externaldrive.fill", tint: HiveInk.amber)
             metric("Sources", value: "\(manager.availableDevices.count)", icon: "antenna.radiowaves.left.and.right", tint: HiveInk.cyan)
             metric("Demods", value: "\(DemodMode.allCases.count)", icon: "waveform", tint: HiveInk.mint)
-            metric("Decoders", value: "8", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
+            metric("Decoders", value: "\(WorkshopCatalog.workingDecoders(for: environment))", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
         }
     }
 
@@ -100,6 +99,8 @@ struct WorkshopView: View {
             action("Trunked", icon: "antenna.radiowaves.left.and.right", panel: .trunked)
             action("Scanner", icon: "waveform.path.ecg", panel: .scanner)
             action("Codeplug", icon: "memorychip", panel: .codeplug)
+            action("Air Map", icon: "airplane", panel: .airMap)
+            action("Air Data", icon: "doc.text.magnifyingglass", panel: .airData)
         }
     }
 
@@ -115,7 +116,7 @@ struct WorkshopView: View {
         .tint(HiveInk.cyan)
     }
 
-    private func capabilitySection(_ title: String, items: [Capability]) -> some View {
+    private func capabilitySection(_ title: String, items: [WorkshopItem]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.system(.headline, design: .rounded).weight(.semibold))
@@ -128,28 +129,40 @@ struct WorkshopView: View {
         }
     }
 
-    private func capabilityTile(_ item: Capability) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private func capabilityTile(_ item: WorkshopItem) -> some View {
+        let color = Self.color(for: item.status)
+        let content = VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: item.icon)
-                    .foregroundStyle(item.status.color)
+                Image(systemName: item.symbol)
+                    .foregroundStyle(color)
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
                         .font(.system(.callout, design: .rounded).weight(.semibold))
                         .foregroundStyle(.white.opacity(0.94))
                         .lineLimit(2)
-                    Text(item.status.title)
+                    Text(item.status.label)
                         .font(.caption)
-                        .foregroundStyle(item.status.color)
+                        .foregroundStyle(color)
                 }
                 Spacer(minLength: 0)
+                if item.destination != nil {
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.35))
+                }
             }
             Text(item.detail)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.56))
                 .fixedSize(horizontal: false, vertical: true)
-            HiveSpectrumRibbon(samples: item.samples, tint: item.status.color)
+            if let setup = item.setup {
+                Label(setup, systemImage: "wrench.and.screwdriver")
+                    .font(.caption)
+                    .foregroundStyle(HiveInk.amber)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            HiveSpectrumRibbon(samples: Self.samples(for: item.id), tint: color)
                 .frame(height: 28)
         }
         .padding(12)
@@ -157,122 +170,78 @@ struct WorkshopView: View {
         .background(HiveInk.panel.opacity(0.78), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
-                .stroke(item.status.color.opacity(0.22), lineWidth: 1)
+                .stroke(color.opacity(0.22), lineWidth: 1)
+        }
+
+        return Group {
+            if let destination = item.destination {
+                Button { openPanel(Self.panel(for: destination)) } label: { content }
+                    .buttonStyle(.plain)
+            } else {
+                content
+            }
         }
     }
 
-    private var rfCapabilities: [Capability] {
-        [
-            Capability("FCC license packs", "Installed packs browse counties, licensees, frequencies, modes, power, and sites.", "externaldrive.fill", .live),
-            Capability("Live SDR spectrum", "Direct USB RTL-SDR on this Mac is the primary path; rtl_tcp, OpenWebRX, HackRF, LimeSDR, SDRplay, Airspy, PlutoSDR, and test sources remain supported source types.", "waveform.path.ecg", .live),
-            Capability("AM/NFM/WFM/SSB/CW demodulation", "Shared DSP pipeline exposes \(DemodMode.allCases.map(\.rawValue).joined(separator: ", ")).", "slider.horizontal.3", .live),
-            Capability("Radio programming", "Codeplug builder and CHIRP CSV export use frequencies selected from Browse, Search, and Scanner.", "memorychip", .live),
-            Capability("Public safety trunking", "OpenMHz system and talkgroup browser with codeplug handoff.", "antenna.radiowaves.left.and.right", .live),
-            Capability("Signal finder", "Scanner spectrum peak finder can add active peaks to the codeplug.", "sparkle.magnifyingglass", .live)
-        ]
-    }
-
-    private var decoderCapabilities: [Capability] {
-        [
-            Capability("ADS-B 1090", "Mode S / ADS-B decoder types are in the DSP package.", "airplane", .live),
-            Capability("UAT 978 weather", "UAT decoder and weather overlay models are present for dump978-style workflows.", "cloud.sun.rain", .live),
-            Capability("ACARS", "VHF aviation text decoder is implemented in core DSP.", "teletype", .live),
-            Capability("AIS", "Maritime AIS decoder uses the shared AFSK demodulator.", "ferry", .live),
-            Capability("Morse / CW", "Morse decoder is implemented for CW lab work.", "dot.circle", .live),
-            Capability("P25 / DMR / NXDN metadata", "Temporary dsdccx adapter; target is a Swift-native metadata and voice path.", "person.wave.2", externalToolStatus("dsdccx")),
-            Capability("POCSAG / FLEX paging", "Temporary multimon-ng adapter; target is a Swift-native paging demodulator.", "message.badge.waveform", externalToolStatus("multimon-ng")),
-            Capability("FT8 / FT4 / WSPR metadata", "Weak-signal parser is implemented; live decode needs a Swift-native audio bridge.", "sparkles", .external)
-        ]
-    }
-
-    private var hardwareCapabilities: [Capability] {
-        [
-            Capability("RTL-SDR USB",
-                       RTLSDRAvailability.current.isAvailable
-                           ? "\(RTLSDRAvailability.current.summary) Native Swift driver; choose it in Scanner."
-                           : RTLSDRAvailability.current.summary,
-                       "usb", RTLSDRAvailability.current.isAvailable ? .live : .external),
-            Capability("Network SDR / Raspberry Pi", "Optional remote sources for later Pi field boxes; direct USB RTL-SDR on this Mac remains the default path.", "network", .live),
-            Capability("Uniden scanners", "Serial protocol helpers for scanner programming mode exist in core.", "radio", .external),
-            Capability("GPS", "Location models are used in sites; live GPS ingest still needs device binding.", "location", .planned),
-            Capability("ESP32 / Arduino / Raspberry Pi", "Swift serial, TCP, BLE, and MQTT adapters are planned.", "cpu", .planned),
-            Capability("Wi-Fi / Bluetooth / IoT", "Swift packet and BLE modules need platform entitlements and adapter work.", "wifi", .planned)
-        ]
-    }
-
-    private var plannedCapabilities: [Capability] {
-        [
-            Capability("NOAA APT weather satellite images", "Needs orbital pass planner, audio capture chain, and APT image renderer.", "satellite", .planned),
-            Capability("Meteor / LRPT satellite images", "Needs QPSK demod, deframer, and image product renderer.", "globe.americas", .planned),
-            Capability("Satellite radio / TV", "Needs DVB-S/S2 capable hardware path and transport-stream tools.", "tv", .planned),
-            Capability("ATSC / ISDB / DVB-T TV", "Needs tuner support beyond standard RTL-SDR IQ capture.", "display", .planned),
-            Capability("DMR/P25 trunk following", "Needs control-channel decode, talkgroup following, and audio recorder integration.", "point.3.connected.trianglepath.dotted", .planned),
-            Capability("Swift decoder migration", "Replace temporary adapters with original Swift demodulators and parsers where feasible.", "swift", .planned),
-            Capability("Radio control profiles", "Needs per-radio CAT/CI-V/serial profile UI and safety limits.", "dial.low", .planned)
-        ]
-    }
-
-    private func externalToolStatus(_ executable: String) -> CapabilityStatus {
+    /// What this machine has, from what the app can see.
+    private var environment: WorkshopEnvironment {
+        var dongles = 0
+        if case let .found(list) = RTLSDRAvailability.current.state { dongles = list.count }
+        var tools: Set<String> = []
         #if os(macOS)
-        let locator = DecoderToolExecutableLocator.live
-        if locator.resolveExecutableURL(
-            basenames: [executable],
-            candidatePaths: ["/opt/homebrew/bin/\(executable)", "/usr/local/bin/\(executable)"]
-        ) != nil {
-            return .live
+        for tool in ["dsdccx", "multimon-ng"] where DecoderToolExecutableLocator.live.resolveExecutableURL(
+            basenames: [tool], candidatePaths: ["/opt/homebrew/bin/\(tool)", "/usr/local/bin/\(tool)"]) != nil {
+            tools.insert(tool)
         }
         #endif
-        return .external
+        return WorkshopEnvironment(
+            installedPacks: installedPackCount,
+            rtlsdrDongles: dongles,
+            rtlsdrSummary: RTLSDRAvailability.current.summary,
+            hackRFPresent: manager.availableDevices.contains { $0 is HackRFDevice },
+            networkSources: manager.availableDevices.filter { $0 is NetworkSDRDevice || $0 is OpenWebRXDevice }.count,
+            tools: tools,
+            codeplugChannels: model.codeplug.channels.count,
+            aiModelsInstalled: model.models.installedCount,
+            demodModes: DemodMode.allCases.filter { $0 != .raw }.map(\.rawValue),
+            usesDemoData: AppConfiguration.usesMockData)
     }
 
-    private var heroSamples: [Double] {
-        [0.16, 0.20, 0.18, 0.24, 0.42, 0.23, 0.19, 0.31, 0.82, 0.27, 0.21, 0.34, 0.53, 0.29, 0.24, 0.91, 0.46, 0.28, 0.22, 0.38, 0.74, 0.33, 0.26, 0.20]
+    private static func panel(for destination: WorkshopDestination) -> ContentView.Panel {
+        switch destination {
+        case .browse: return .browse
+        case .search: return .search
+        case .scanner: return .scanner
+        case .trunked: return .trunked
+        case .codeplug: return .codeplug
+        case .aiLab: return .aiLab
+        case .airMap: return .airMap
+        case .airData: return .airData
+        }
     }
-}
 
-private struct Capability: Identifiable {
-    /// Stable across re-renders. These arrays are rebuilt on every `body` evaluation, so a per-instance
-    /// `UUID()` gave every tile a brand-new identity each time the device scan published, which crashed
-    /// SwiftUI's lazy layout at launch (about half of launches).
-    var id: String { title }
-    var title: String
-    var detail: String
-    var icon: String
-    var status: CapabilityStatus
-    var samples: [Double]
+    private static func color(for status: WorkshopStatus) -> Color {
+        switch status {
+        case .ready: return .green
+        case .needsSetup: return .orange
+        case .notConnected: return .yellow.opacity(0.8)
+        case .planned: return .secondary
+        }
+    }
 
-    init(_ title: String, _ detail: String, _ icon: String, _ status: CapabilityStatus) {
-        self.title = title
-        self.detail = detail
-        self.icon = icon
-        self.status = status
-        let seed = Double(abs(title.hashValue % 17)) / 30.0
-        self.samples = [
+    /// The little ribbon on each tile: decoration, but the same every launch (`hashValue` is different every run).
+    private static func samples(for id: String) -> [Double] {
+        var hash: UInt32 = 2_166_136_261
+        for byte in id.utf8 { hash = (hash ^ UInt32(byte)) &* 16_777_619 }
+        let seed = Double(hash % 17) / 30.0
+        return [
             0.12 + seed, 0.18, 0.22 + seed / 2, 0.15, 0.34,
             0.20, 0.68 - seed / 2, 0.24, 0.17, 0.42 + seed,
             0.23, 0.19, 0.78 - seed / 3, 0.28, 0.16
         ].map { min(0.95, max(0.08, $0)) }
     }
-}
 
-private enum CapabilityStatus {
-    case live
-    case external
-    case planned
-
-    var title: String {
-        switch self {
-        case .live: return "Available"
-        case .external: return "External adapter"
-        case .planned: return "Planned"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .live: return .green
-        case .external: return .orange
-        case .planned: return .secondary
-        }
+    private var heroSamples: [Double] {
+        [0.16, 0.20, 0.18, 0.24, 0.42, 0.23, 0.19, 0.31, 0.82, 0.27, 0.21, 0.34, 0.53, 0.29, 0.24, 0.91, 0.46, 0.28, 0.22, 0.38, 0.74, 0.33, 0.26, 0.20]
     }
 }

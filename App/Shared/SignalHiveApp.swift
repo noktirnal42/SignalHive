@@ -3,11 +3,13 @@ import SwiftUI
 @main
 struct SignalHiveApp: App {
     @State private var model = AppModel()
+    @State private var aviation = AviationModel()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(model)
+                .environment(aviation)
         }
         #if os(macOS)
         .windowStyle(.automatic)

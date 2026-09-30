@@ -12,6 +12,7 @@ struct BrowseView: View {
     @State private var loadingLicenses = false
     @State private var loadError: String?
     @State private var didSelectDefaultState = false
+    @State private var showGetData = false
 
     var body: some View {
         browseLayout
@@ -29,6 +30,26 @@ struct BrowseView: View {
                 licenses = []
             }
             .task { selectDefaultStateIfNeeded() }
+            .toolbar {
+                ToolbarItem {
+                    Button {
+                        showGetData = true
+                    } label: {
+                        Label(model.dataJobRunning ? "Getting data…" : "Get Data", systemImage: "arrow.down.circle")
+                    }
+                    .help("Download or build FCC data for one or more states")
+                }
+            }
+            .sheet(isPresented: $showGetData) {
+                GetDataSheet(preselected: preselection)
+            }
+    }
+
+    /// The state being looked at, when it still needs data.
+    private var preselection: Set<String> {
+        guard let code = selectedStateCode else { return [] }
+        if case .installed = model.status(for: code) { return [] }
+        return [code]
     }
 
     @ViewBuilder
@@ -201,7 +222,12 @@ struct BrowseView: View {
             } label: {
                 Label("Build from FCC on this Mac", systemImage: "hammer")
             }
-            .disabled(model.importActive)
+            .disabled(model.importActive || model.dataJobRunning)
+            Button {
+                showGetData = true
+            } label: {
+                Label("Get several states at once…", systemImage: "square.stack.3d.down.right")
+            }
         }
     }
 
