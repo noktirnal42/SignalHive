@@ -36,7 +36,8 @@ Codex sessions):
 | `8ed76ca` | Codex (GPT) | Checkpointed as-found: visual design system, app icon, Workshop screen, AI Lab screen, AI core module, reworked Browse/Scanner/Trunked, `script/build_and_run.sh`, `-mockData` flag. Its usage ran out before it wrote any notes. |
 | `5437fc6` | Claude Code | Fixed the launch crash (see section 5) |
 | `af98fc7` in SwiftRTLSDR | Codex (GPT) | Clarified native USB open failures in the upstream driver package and added tests. SignalHive's embedded driver copy matches this stable upstream patch. |
-| SwiftRTLSDR PR #1 | Claude cloud session | Draft section 6 work: retune shortcuts, overload guard/AGC, scan loop, EEPROM serial provisioning, rtl_tcp server, and CLI/docs. Do not consume in SignalHive until the PR is merged and tested. |
+| SwiftRTLSDR PR #1 | Claude cloud session | Merged section 6 work: retune shortcuts, overload guard/AGC, scan loop, EEPROM serial provisioning, rtl_tcp server, and CLI/docs. SignalHive embedded copy was synced and SwiftRTLSDR tests pass locally. |
+| current | Codex (GPT) | Synced SwiftRTLSDR PR #1 into `Packages/SwiftRTLSDR`; added `RTLSDRScan` dependency, noise-floor-aware finder bridge, scan models/activity log, Scanner UI rail with live hits, hold/skip/lockout/save, starter scan bank, decoder quick-tune queue, and a research-backed radio workshop feature map. |
 
 The Codex session (for reference): `~/.codex/sessions/2026/09/29/rollout-2026-09-29T17-17-28-01a0efac-*.jsonl`,
 thread "Fix and finish SignalHive".
@@ -68,13 +69,14 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 
 | Area | Status | Evidence |
 |---|---|---|
-| Package tests | Pass: SignalHiveCore 139 tests / 30 suites; SwiftRTLSDR 46 tests / 6 suites | `swift test` in both packages |
+| Package tests | Pass: SignalHiveCore 140 non-hardware tests / 31 suites; SwiftRTLSDR 99 kit tests + 31 scan tests + 14 server tests | `swift test --skip RTLSDRHardwareTests` in SignalHiveCore while the running app held the dongle; `swift test` in SwiftRTLSDR |
 | macOS, menu-bar and iOS targets build | Pass | `xcodebuild` for all three schemes |
 | App launches without crashing | **Pass** after fix: 0 of 20 launches crashed (was 4 of 8) | `script/launch_stability_test.sh` |
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
 | RTL-SDR detected over USB | **Native Swift path integrated.** SignalHive now depends on `Packages/SwiftRTLSDR` and uses `NativeRTLSDRDevice` over Apple's IOUSBHost API; no `dlopen(librtlsdr)` is used for RTL-SDR. The local macOS app is intentionally unsandboxed because IOUSBHost whole-device open is blocked in the App Sandbox on the tested RTL2832U/R820T dongle. | SignalHiveCore hardware tests exercised the attached dongle; sandboxed self-test failed before unsandboxing with `IOKit 0xe00002e2` / `0xe00002c9` |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
 | Scanner display: spectrum, waterfall, tuning, volume | **Fixed and verified on the real dongle (S1)**: full centre-shifted spectrum, fed high-resolution waterfall (2048x400 pixel buffer, inferno palette, 25 rows/s, selectable 125 Hz - 1 kHz detail), auto-scaling, typed/stepped/click-to-tune frequency snapped to the step grid, volume + mute. Tests: FFT tones, waterfall buffer, palette, throttle, frequency entry, volume | Running app with the RTL-SDR; 102 tests |
+| Scanner activity workflow | **Partial S3 built**: live passband activity detection now uses `RTLSDRScan.PeakDetector` with a local noise floor; UI shows activity hits, tune, hold/release, skip, lockout/unlock, save-to-codeplug, starter scan bank, decoder quick-tune presets, and a repaired source rail. True multi-hop scan-list sweeping and FCC identification are still next. | `swift test --skip RTLSDRHardwareTests`; macOS app build |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
 | Scanner audio from the RTL-SDR (end to end) | **Still needs ear/over-the-air QA**: native USB streaming and DSP tests pass, but reception quality, antenna-dependent signals, and user-facing scan-list workflows still need field verification. | hardware/unit tests; no listening QA yet |
 | Decoders (ADS-B, UAT, ACARS, AIS, Morse, ...) | Code exists in core with unit tests; **no UI to use them yet** (Workshop lists them as capabilities) | |
@@ -130,9 +132,10 @@ is the next task after the channelizer; results go into a table below.
   (self-discovery by decoding control channels; optional OpenMHz was approved as an opt-in source).
 - `SDRDeviceManager.scan()` runs six providers; RTL-SDR has been exercised on real hardware through the native Swift
   driver. Other source types still need hardware/provider QA.
-- SwiftRTLSDR PR #1 is still draft/in progress. Once it merges, update `Packages/SwiftRTLSDR`, rerun both package
-  test suites, then wire stable scanner/server/AGC features into SignalHive. Claude's follow-on dump1090 and dump978
-  work should be handled the same way: upstream first, then embedded-copy sync and SignalHive integration.
+- SwiftRTLSDR PR #1 is merged and embedded. Remaining integration work: wire host gain control, expose rtl_tcp
+  server/client controls, and build SignalHive's true multi-hop scan engine UI on top of `RTLSDRScan.BandScanner`.
+  Claude's follow-on dump1090 and dump978 work should be handled the same way: upstream first, then embedded-copy sync
+  and SignalHive integration.
 - App Sandbox and direct RTL-SDR USB access are not currently compatible in this build. Do not re-enable sandboxing
   for the macOS targets until IOUSBHost access is proven on real hardware inside the sandbox, or until the driver is
   moved behind a privileged helper / DriverKit path.
@@ -144,6 +147,7 @@ is the next task after the channelizer; results go into a table below.
 Scanner sub-project (owner priority): see `docs/superpowers/specs/2026-09-29-scanner-design.md`. Order:
 S1 correct spectrum/waterfall/tuning (**done**), S2 channelizer + scan engine + identification + saved channels
 (core, tested), S3 scanner UI, S4 trunking/decoder hand-off.
+Radio workshop feature map and research notes: `docs/superpowers/specs/2026-09-29-radio-workshop-feature-map.md`.
 
 1. Verify and fix **Scanner with the local RTL-SDR** over the air (antenna, tune, spectrum, waterfall,
    AM/NFM/WFM demod audio, scan lists).

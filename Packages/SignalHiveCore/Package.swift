@@ -31,6 +31,7 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),
                 .product(name: "RTLSDRKit", package: "SwiftRTLSDR", condition: .when(platforms: [.macOS])),
+                .product(name: "RTLSDRScan", package: "SwiftRTLSDR", condition: .when(platforms: [.macOS])),
             ],
             path: "Sources/SignalHiveCore",
             resources: [

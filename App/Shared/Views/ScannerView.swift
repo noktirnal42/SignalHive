@@ -11,16 +11,15 @@ struct ScannerView: View {
     @State private var gain: Double = 30
     @State private var squelchDB: Float = -80
     @State private var mode: DemodMode = .nfm
-    @State private var latest = LatestSpectrum()           // full resolution, for the finder (no redraw on write)
-    @State private var displaySpectrum: [Float] = []       // reduced for drawing
+    @State private var latest = LatestSpectrum()
+    @State private var displaySpectrum: [Float] = []
     @State private var waterfall = WaterfallBuffer(width: 2048, height: 400)
     @State private var waterfallImage: CGImage?
     @State private var scale = SpectrumScale(minDB: -100, maxDB: -40)
     @State private var rowThrottle = FrameThrottle(minimumInterval: 1.0 / 25)
     @State private var drawThrottle = FrameThrottle(minimumInterval: 1.0 / 30)
+    @State private var activityThrottle = FrameThrottle(minimumInterval: 0.8)
     @State private var fftSize = 4096
-    @AppStorage("scannerVolumeLevel") private var volumeLevel = 0.6
-    @AppStorage("scannerMuted") private var muted = false
     @State private var frequencyText = ""
     @State private var stepKHz: Double = 12.5
     @State private var rssiDB: Float = -140
@@ -29,21 +28,43 @@ struct ScannerView: View {
     @State private var showFinder = false
     @State private var rtlTCPHost = ""
     @State private var showingRTLTCPField = false
+    @State private var liveScan = true
+    @State private var activityLog = ScanActivityLog()
+    @State private var selectedActivityID: Int?
+    @State private var heldActivityID: Int?
+    @State private var lockedOutKeys: Set<Int> = []
+
+    @AppStorage("scannerVolumeLevel") private var volumeLevel = 0.6
+    @AppStorage("scannerMuted") private var muted = false
 
     private let displayBins = 1024
     private let sampleRateHz = 2_048_000.0
-
     private static let stepsKHz: [Double] = [5, 6.25, 12.5, 25, 100, 1000]
 
+    private var selectedActivity: ScanActivity? {
+        guard let selectedActivityID else { return activityLog.hits.first { !$0.lockedOut } }
+        return activityLog.hits.first { $0.id == selectedActivityID }
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            frequencyHeader
-            Divider()
-            spectrumDisplay
-            waterfallDisplay
-            Divider()
-            controls
-            deviceSection
+        ZStack {
+            HiveWorkbenchBackground()
+            HStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    frequencyHeader
+                    Divider().overlay(.white.opacity(0.08))
+                    spectrumDisplay
+                    waterfallDisplay
+                    Divider().overlay(.white.opacity(0.08))
+                    controls
+                }
+                .frame(minWidth: 620, maxWidth: .infinity, maxHeight: .infinity)
+
+                Divider().overlay(.white.opacity(0.10))
+
+                scannerRail
+                    .frame(width: 350)
+            }
         }
         .navigationTitle("Scanner")
         .task {
@@ -51,9 +72,7 @@ struct ScannerView: View {
             if let pending = model.pendingScanFrequency {
                 frequencyMHz = pending / 1_000_000
                 model.pendingScanFrequency = nil
-                if running {
-                    await retune()
-                }
+                if running { await retune() }
             }
         }
         .onChange(of: model.pendingScanFrequency) { _, pending in
@@ -65,47 +84,86 @@ struct ScannerView: View {
         .sheet(isPresented: $showFinder) { finderSheet }
     }
 
-    // MARK: Header
-
     private var frequencyHeader: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 10) {
-                Button { step(-1) } label: { Image(systemName: "minus.circle") }
-                    .buttonStyle(.borderless)
-                    .help("Tune down one step")
-                TextField("MHz", text: $frequencyText)
-                    .textFieldStyle(.plain)
-                    .multilineTextAlignment(.center)
-                    .font(.system(size: 34, weight: .semibold, design: .monospaced))
-                    .frame(maxWidth: 260)
-                    .onSubmit { commitFrequencyText() }
-                Text("MHz").font(.system(size: 20, weight: .medium, design: .monospaced)).foregroundStyle(.secondary)
-                Button { step(1) } label: { Image(systemName: "plus.circle") }
-                    .buttonStyle(.borderless)
-                    .help("Tune up one step")
-                Picker("Step", selection: $stepKHz) {
-                    ForEach(Self.stepsKHz, id: \.self) { khz in
-                        Text(khz >= 1000 ? "\(Int(khz / 1000)) MHz" : "\(khz.formatted()) kHz").tag(khz)
-                    }
+        HStack(alignment: .center, spacing: 18) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    HiveStatusBadge(running ? "receiving" : "standby", tint: running ? HiveInk.mint : HiveInk.amber)
+                    HiveStatusBadge(liveScan ? "live scan" : "monitor", tint: liveScan ? HiveInk.cyan : .secondary)
+                    if heldActivityID != nil { HiveStatusBadge("hold", tint: HiveInk.copper) }
                 }
-                .labelsHidden()
-                .frame(width: 96)
+                HStack(spacing: 10) {
+                    Button { step(-1) } label: { Image(systemName: "minus.circle") }
+                        .buttonStyle(.borderless)
+                        .foregroundStyle(HiveInk.cyan)
+                        .help("Tune down one step")
+                    TextField("MHz", text: $frequencyText)
+                        .textFieldStyle(.plain)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 42, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(.white)
+                        .frame(width: 300)
+                        .onSubmit { commitFrequencyText() }
+                    Text("MHz")
+                        .font(.system(size: 20, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.white.opacity(0.55))
+                    Button { step(1) } label: { Image(systemName: "plus.circle") }
+                        .buttonStyle(.borderless)
+                        .foregroundStyle(HiveInk.cyan)
+                        .help("Tune up one step")
+                    Picker("Step", selection: $stepKHz) {
+                        ForEach(Self.stepsKHz, id: \.self) { khz in
+                            Text(khz >= 1000 ? "\(Int(khz / 1000)) MHz" : "\(khz.formatted()) kHz").tag(khz)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 104)
+                }
             }
-            HStack(spacing: 12) {
-                Text("RSSI \(String(format: "%.0f", rssiDB)) dBFS")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(rssiDB > squelchDB ? Color.green : Color.secondary)
-                Text(mode.rawValue)
-                    .font(.caption)
-                Spacer()
-                Text(statusMessage ?? (running ? "Receiving" : "Idle"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+
+            Spacer(minLength: 12)
+
+            VStack(alignment: .trailing, spacing: 8) {
+                Text(statusMessage ?? (running ? "Receiving from \(activeSourceName)" : "Select a source and start"))
+                    .font(.system(.caption, design: .rounded).weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.70))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.trailing)
+                HStack(spacing: 10) {
+                    metricBadge("RSSI", value: "\(Int(rssiDB)) dBFS", hot: rssiDB > squelchDB)
+                    metricBadge("Mode", value: mode.rawValue, hot: true)
+                    metricBadge("Hits", value: "\(activityLog.hits.filter { !$0.lockedOut }.count)", hot: !activityLog.hits.isEmpty)
+                }
             }
         }
-        .padding()
+        .padding(18)
+        .background {
+            LinearGradient(
+                colors: [HiveInk.panelTop.opacity(0.95), HiveInk.panel.opacity(0.86)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
         .onAppear { frequencyText = Self.format(frequencyMHz) }
         .onChange(of: frequencyMHz) { _, value in frequencyText = Self.format(value) }
+    }
+
+    private func metricBadge(_ label: String, value: String, hot: Bool) -> some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text(label.uppercased())
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.44))
+            Text(value)
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .foregroundStyle(hot ? HiveInk.mint : .white.opacity(0.62))
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
+    }
+
+    private var activeSourceName: String {
+        manager.activeDevices.first?.name ?? "source"
     }
 
     private var volume: AudioVolume { AudioVolume(level: Float(volumeLevel), isMuted: muted) }
@@ -138,8 +196,6 @@ struct ScannerView: View {
         if pipeline != nil { Task { await retune() } }
     }
 
-    // MARK: Spectrum
-
     private var spectrumDisplay: some View {
         GeometryReader { geometry in
             Canvas { context, size in
@@ -157,14 +213,26 @@ struct ScannerView: View {
                 fill.addLine(to: CGPoint(x: 0, y: size.height))
                 fill.closeSubpath()
                 context.fill(fill, with: .linearGradient(
-                    Gradient(colors: [Color.cyan.opacity(0.55), Color.blue.opacity(0.10)]),
-                    startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
-                context.stroke(line, with: .color(Color.cyan.opacity(0.95)), lineWidth: 1)
-                // Centre marker
+                    Gradient(colors: [HiveInk.cyan.opacity(0.58), HiveInk.blue.opacity(0.08)]),
+                    startPoint: .zero,
+                    endPoint: CGPoint(x: 0, y: size.height)
+                ))
+                context.stroke(line, with: .color(HiveInk.cyan.opacity(0.92)), lineWidth: 1)
+
+                for activity in activityLog.hits.prefix(12) where !activity.lockedOut {
+                    let fraction = (activity.frequencyHz / 1_000_000 - frequencyMHz) / (sampleRateHz / 1_000_000) + 0.5
+                    guard fraction >= 0, fraction <= 1 else { continue }
+                    let x = CGFloat(fraction) * size.width
+                    var marker = Path()
+                    marker.move(to: CGPoint(x: x, y: 0))
+                    marker.addLine(to: CGPoint(x: x, y: size.height))
+                    context.stroke(marker, with: .color(HiveInk.amber.opacity(0.42)), lineWidth: 1)
+                }
+
                 var centre = Path()
                 centre.move(to: CGPoint(x: size.width / 2, y: 0))
                 centre.addLine(to: CGPoint(x: size.width / 2, y: size.height))
-                context.stroke(centre, with: .color(.white.opacity(0.25)), style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
+                context.stroke(centre, with: .color(.white.opacity(0.30)), style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
             }
             .overlay(alignment: .bottom) {
                 HStack {
@@ -175,9 +243,9 @@ struct ScannerView: View {
                     Text(edgeLabel(0.5))
                 }
                 .font(.caption2.monospaced())
-                .foregroundStyle(.white.opacity(0.55))
-                .padding(.horizontal, 6)
-                .padding(.bottom, 2)
+                .foregroundStyle(.white.opacity(0.58))
+                .padding(.horizontal, 8)
+                .padding(.bottom, 3)
             }
             .contentShape(Rectangle())
             .gesture(SpatialTapGesture().onEnded { tap in
@@ -186,12 +254,11 @@ struct ScannerView: View {
                 setFrequency(mhz: FrequencyEntry.snap(mhz: clicked, stepKHz: stepKHz))
             })
         }
-        .frame(height: 120)
-        .background(Color.black.opacity(0.85))
+        .frame(height: 128)
+        .background(Color.black.opacity(0.88))
         .help("Click to tune")
     }
 
-    /// Frequency label at a fraction of the band (-0.5 = left edge, 0 = centre, 0.5 = right edge).
     private func edgeLabel(_ fraction: Double) -> String {
         String(format: "%.3f", frequencyMHz + fraction * sampleRateHz / 1_000_000)
     }
@@ -203,155 +270,343 @@ struct ScannerView: View {
                     .resizable()
                     .interpolation(.high)
             } else {
-                Color.black
+                Color.black.overlay {
+                    Text("Start a source to paint the waterfall")
+                        .font(.system(.callout, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.34))
+                }
             }
         }
-        .frame(height: 200)
+        .frame(maxHeight: .infinity)
+        .frame(minHeight: 240)
         .background(Color.black)
     }
 
-    // MARK: Controls
-
     private var controls: some View {
-        HStack(spacing: 16) {
-            Button {
-                Task { await toggleStream() }
-            } label: {
-                Label(running ? "Stop" : "Start", systemImage: running ? "stop.circle.fill" : "play.circle.fill")
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(running ? .red : .green)
-
-            VStack(alignment: .leading) {
-                Text("Gain \(Int(gain)) dB").font(.caption)
-                Slider(value: $gain, in: 0...49) { _ in Task { await applyControls() } }
-            }
-            VStack(alignment: .leading) {
-                Text("Squelch \(Int(squelchDB)) dB").font(.caption)
-                Slider(value: $squelchDB, in: -120...(-30)) { _ in Task { await applyControls() } }
-            }
-
-            HStack(spacing: 6) {
-                Button { muted.toggle() } label: {
-                    Image(systemName: volumeIcon)
-                        .frame(width: 22)
-                        .foregroundStyle(muted ? Color.secondary : Color.primary)
+        VStack(spacing: 10) {
+            HStack(spacing: 14) {
+                Button { Task { await toggleStream() } } label: {
+                    Label(running ? "Stop" : "Start", systemImage: running ? "stop.circle.fill" : "play.circle.fill")
                 }
-                .buttonStyle(.borderless)
-                .help(muted ? "Unmute" : "Mute")
-                Slider(value: $volumeLevel, in: 0...1)
-                    .frame(width: 100)
-                    .help("Volume")
-            }
-            .onChange(of: volumeLevel) { _, _ in Task { await pipeline?.setVolume(volume) } }
-            .onChange(of: muted) { _, _ in Task { await pipeline?.setVolume(volume) } }
+                .buttonStyle(.borderedProminent)
+                .tint(running ? .red : .green)
 
-            Picker("Mode", selection: $mode) {
-                ForEach(DemodMode.allCases, id: \.self) { m in
-                    Text(m.rawValue).tag(m)
+                Toggle(isOn: $liveScan) {
+                    Label("Live Scan", systemImage: "waveform.path.ecg.rectangle")
                 }
-            }
-            .frame(maxWidth: 110)
-            .onChange(of: mode) { _, _ in Task { await applyControls() } }
+                .toggleStyle(.switch)
 
-            Picker("Detail", selection: $fftSize) {
-                ForEach([2048, 4096, 8192, 16384], id: \.self) { size in
-                    Text("\(Int(sampleRateHz) / size) Hz").tag(size)
+                Button { holdSelected() } label: {
+                    Label(heldActivityID == nil ? "Hold" : "Release", systemImage: heldActivityID == nil ? "pause.circle" : "play.circle")
                 }
-            }
-            .frame(width: 130)
-            .help("Frequency detail: the width of each spectrum bin. Finer detail shows narrower signals.")
-            .onChange(of: fftSize) { _, _ in Task { await applyControls() } }
+                .disabled(selectedActivity == nil)
 
-            Button {
-                Task { await retune() }
-            } label: {
-                Image(systemName: "arrow.triangle.2.circlepath")
-            }
-            .help("Retune")
+                Button { skipSelected() } label: {
+                    Label("Skip", systemImage: "forward.end")
+                }
+                .disabled(selectedActivity == nil)
 
-            Button {
-                findActive()
-            } label: {
-                Label("Find", systemImage: "sparkle.magnifyingglass")
+                Button { toggleLockoutSelected() } label: {
+                    Label(selectedActivity?.lockedOut == true ? "Unlock" : "Lockout", systemImage: selectedActivity?.lockedOut == true ? "lock.open" : "lock")
+                }
+                .disabled(selectedActivity == nil)
+
+                Button { saveSelectedToCodeplug() } label: {
+                    Label("Save", systemImage: "plus.memorychip")
+                }
+                .disabled(selectedActivity == nil)
+
+                Spacer(minLength: 0)
             }
-            .disabled(displaySpectrum.isEmpty)
-            .help("Find active frequencies in the live spectrum")
+
+            HStack(spacing: 18) {
+                sliderBlock("Gain", value: $gain, range: 0...49, suffix: "dB") {
+                    Task { await applyControls() }
+                }
+                sliderBlock("Squelch", value: Binding(
+                    get: { Double(squelchDB) },
+                    set: { squelchDB = Float($0) }
+                ), range: -120...(-30), suffix: "dB") {
+                    Task { await applyControls() }
+                }
+
+                HStack(spacing: 7) {
+                    Button { muted.toggle() } label: {
+                        Image(systemName: volumeIcon)
+                            .frame(width: 22)
+                            .foregroundStyle(muted ? Color.secondary : Color.white.opacity(0.88))
+                    }
+                    .buttonStyle(.borderless)
+                    Slider(value: $volumeLevel, in: 0...1)
+                        .frame(width: 110)
+                }
+                .onChange(of: volumeLevel) { _, _ in Task { await pipeline?.setVolume(volume) } }
+                .onChange(of: muted) { _, _ in Task { await pipeline?.setVolume(volume) } }
+
+                Picker("Mode", selection: $mode) {
+                    ForEach(DemodMode.allCases, id: \.self) { m in
+                        Text(m.rawValue).tag(m)
+                    }
+                }
+                .frame(width: 112)
+                .onChange(of: mode) { _, _ in Task { await applyControls() } }
+
+                Picker("Detail", selection: $fftSize) {
+                    ForEach([2048, 4096, 8192, 16384], id: \.self) { size in
+                        Text("\(Int(sampleRateHz) / size) Hz").tag(size)
+                    }
+                }
+                .frame(width: 132)
+                .onChange(of: fftSize) { _, _ in Task { await applyControls() } }
+
+                Button { Task { await retune() } } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+                    .help("Retune")
+
+                Button { findActive() } label: {
+                    Label("Find", systemImage: "sparkle.magnifyingglass")
+                }
+                .disabled(displaySpectrum.isEmpty)
+            }
         }
-        .padding()
+        .padding(14)
+        .background(HiveInk.panel.opacity(0.92))
     }
 
-    // MARK: Device section
-
-    private var deviceSection: some View {
-        Section {
-            HStack {
-                Text("Source")
-                    .font(.headline)
-                Spacer()
-                Button {
-                    Task { await manager.scan() }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .disabled(manager.isScanning)
+    private func sliderBlock(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String, onEditingEnded: @escaping () -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("\(title) \(Int(value.wrappedValue)) \(suffix)")
+                .font(.caption.monospaced())
+                .foregroundStyle(.white.opacity(0.62))
+            Slider(value: value, in: range) { editing in
+                if !editing { onEditingEnded() }
             }
-            .padding([.top, .horizontal])
+        }
+        .frame(minWidth: 150, maxWidth: 240)
+    }
 
-            ForEach(manager.availableDevices, id: \.id) { device in
-                HStack {
-                    Label(device.name, systemImage: device.deviceType.icon)
-                    Spacer()
-                    if manager.activeDevices.contains(where: { $0.id == device.id }) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    } else {
-                        Button("Use") {
-                            Task { await useDevice(device) }
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                    }
-                }
-                .padding(.horizontal)
+    private var scannerRail: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12) {
+                activityPanel
+                scanBankPanel
+                sourcePanel
+                decoderPanel
             }
+            .padding(14)
+        }
+        .background(HiveInk.graphite.opacity(0.78))
+    }
 
-            if !RTLSDRAvailability.current.isAvailable {
-                Label {
-                    Text(RTLSDRAvailability.current.summary)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
-                        .lineLimit(5)
-                } icon: {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                }
-                .padding(.horizontal)
-            }
-
-            if showingRTLTCPField {
-                HStack {
-                    TextField("rtl_tcp host (e.g. 192.168.1.50)", text: $rtlTCPHost)
-                        .textFieldStyle(.roundedBorder)
-                    Button("Add") {
-                        addRTLTCP()
-                    }
-                    .disabled(rtlTCPHost.isEmpty)
-                }
-                .padding(.horizontal)
+    private var activityPanel: some View {
+        HiveInstrumentPanel("Activity", status: "\(activityLog.hits.count) hits") {
+            if activityLog.hits.isEmpty {
+                emptyRailState("No activity yet", icon: "waveform.badge.magnifyingglass")
             } else {
-                Button {
-                    showingRTLTCPField = true
-                } label: {
-                    Label("Add rtl_tcp source…", systemImage: "network")
+                VStack(spacing: 8) {
+                    ForEach(activityLog.hits.prefix(12)) { activity in
+                        activityRow(activity)
+                    }
                 }
-                .padding(.horizontal)
             }
-            Spacer(minLength: 8)
         }
     }
 
-    // MARK: Finder sheet
+    private func activityRow(_ activity: ScanActivity) -> some View {
+        let selected = selectedActivity?.id == activity.id
+        return Button {
+            selectedActivityID = activity.id
+        } label: {
+            HStack(alignment: .center, spacing: 10) {
+                Image(systemName: activity.lockedOut ? "lock.fill" : "dot.radiowaves.left.and.right")
+                    .foregroundStyle(activity.lockedOut ? HiveInk.copper : HiveInk.mint)
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(activity.displayMHz)
+                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.white.opacity(activity.lockedOut ? 0.45 : 0.94))
+                    HStack(spacing: 8) {
+                        Text("\(Int(activity.strengthDB)) dB")
+                        if let snr = activity.snrDB { Text("SNR \(Int(snr))") }
+                        Text("x\(activity.hitCount)")
+                    }
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.48))
+                }
+                Spacer(minLength: 0)
+                Button { tune(activity) } label: { Image(systemName: "scope") }
+                    .buttonStyle(.borderless)
+                    .help("Tune")
+                Button { save(activity) } label: { Image(systemName: "plus.memorychip") }
+                    .buttonStyle(.borderless)
+                    .help("Save to codeplug")
+            }
+            .padding(8)
+            .background(selected ? HiveInk.cyan.opacity(0.16) : Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 7))
+            .overlay {
+                RoundedRectangle(cornerRadius: 7)
+                    .stroke(selected ? HiveInk.cyan.opacity(0.42) : .white.opacity(0.06), lineWidth: 1)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var scanBankPanel: some View {
+        HiveInstrumentPanel("Scan Bank", status: ScanList.starterPublicSafety.name) {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(ScanList.starterPublicSafety.channels.prefix(7)) { channel in
+                    HStack(spacing: 8) {
+                        Image(systemName: channel.mode.icon)
+                            .foregroundStyle(HiveInk.amber)
+                            .frame(width: 18)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(channel.name)
+                                .font(.system(.caption, design: .rounded).weight(.semibold))
+                                .foregroundStyle(.white.opacity(0.84))
+                            Text(channel.displayMHz)
+                                .font(.caption2.monospaced())
+                                .foregroundStyle(.white.opacity(0.44))
+                        }
+                        Spacer(minLength: 0)
+                        Button { setFrequency(mhz: channel.frequencyHz / 1_000_000); mode = channel.mode } label: {
+                            Image(systemName: "scope")
+                        }
+                        .buttonStyle(.borderless)
+                        Button { model.addToCodeplug(channel: channel.codeplugChannel()) } label: {
+                            Image(systemName: "plus.memorychip")
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+    }
+
+    private var sourcePanel: some View {
+        HiveInstrumentPanel("Sources", status: manager.isScanning ? "refreshing" : "\(manager.availableDevices.count)") {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Button { Task { await manager.scan() } } label: {
+                        Label("Refresh", systemImage: "arrow.clockwise")
+                    }
+                    .disabled(manager.isScanning)
+                    Spacer()
+                    if RTLSDRAvailability.current.isAvailable {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(HiveInk.mint)
+                            .help(RTLSDRAvailability.current.summary)
+                    }
+                }
+
+                ForEach(manager.availableDevices, id: \.id) { device in
+                    sourceRow(device)
+                }
+
+                if !RTLSDRAvailability.current.isAvailable {
+                    Label {
+                        Text(RTLSDRAvailability.current.summary)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.56))
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(HiveInk.amber)
+                    }
+                }
+
+                Divider().overlay(.white.opacity(0.08))
+
+                if showingRTLTCPField {
+                    HStack {
+                        TextField("rtl_tcp host", text: $rtlTCPHost)
+                            .textFieldStyle(.roundedBorder)
+                        Button { addRTLTCP() } label: { Image(systemName: "plus") }
+                            .disabled(rtlTCPHost.isEmpty)
+                    }
+                } else {
+                    Button { showingRTLTCPField = true } label: {
+                        Label("Add rtl_tcp source", systemImage: "network")
+                    }
+                }
+            }
+        }
+    }
+
+    private func sourceRow(_ device: any SDRDevice) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: device.deviceType.icon)
+                .foregroundStyle(HiveInk.cyan)
+                .frame(width: 20)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(device.name)
+                    .font(.system(.caption, design: .rounded).weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.86))
+                    .lineLimit(1)
+                Text(device.frequencyRange.description)
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(.white.opacity(0.38))
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+            if manager.activeDevices.contains(where: { $0.id == device.id }) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(HiveInk.mint)
+            } else {
+                Button { Task { await useDevice(device) } } label: {
+                    Text("Use")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+        }
+        .padding(8)
+        .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 7))
+    }
+
+    private var decoderPanel: some View {
+        HiveInstrumentPanel("Decoder Queue", status: "next") {
+            VStack(alignment: .leading, spacing: 8) {
+                decoderChip("ADS-B", detail: "Tune 1090 MHz", frequencyMHz: 1090, mode: .raw, icon: "airplane")
+                decoderChip("UAT", detail: "Tune 978 MHz", frequencyMHz: 978, mode: .raw, icon: "cloud.sun.rain")
+                decoderChip("ACARS", detail: "VHF aviation text", frequencyMHz: 131.55, mode: .am, icon: "teletype")
+                decoderChip("AIS", detail: "Marine data", frequencyMHz: 162.025, mode: .nfm, icon: "ferry")
+            }
+        }
+    }
+
+    private func decoderChip(_ title: String, detail: String, frequencyMHz: Double, mode chipMode: DemodMode, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(HiveInk.violet)
+                .frame(width: 18)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.84))
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.44))
+            }
+            Spacer(minLength: 0)
+            Button { setFrequency(mhz: frequencyMHz); mode = chipMode } label: {
+                Image(systemName: "scope")
+            }
+            .buttonStyle(.borderless)
+        }
+    }
+
+    private func emptyRailState(_ text: String, icon: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundStyle(.white.opacity(0.32))
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.50))
+        }
+        .frame(maxWidth: .infinity, minHeight: 76)
+    }
 
     private var finderSheet: some View {
         NavigationStack {
@@ -365,14 +620,23 @@ struct ScannerView: View {
                             Text(peak.displayMHz)
                                 .font(.body.monospaced())
                             Spacer()
+                            if let snr = peak.snrDB {
+                                Text(String(format: "SNR %.0f", snr))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             Text(String(format: "%.0f dB", peak.strengthDB))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                            Button("Tune") {
+                                setFrequency(mhz: peak.frequencyHz / 1_000_000)
+                                showFinder = false
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
                             Button("Add") {
-                                model.addToCodeplug(channel: CodeplugChannel(
-                                    name: String(format: "%.3f", peak.frequencyHz / 1_000_000),
-                                    frequencyHz: peak.frequencyHz
-                                ))
+                                save(ScanActivity(frequencyHz: peak.frequencyHz, strengthDB: peak.strengthDB,
+                                                  noiseFloorDB: peak.noiseFloorDB, bandwidthHz: peak.bandwidthHz))
                             }
                             .buttonStyle(.bordered)
                             .controlSize(.small)
@@ -393,13 +657,12 @@ struct ScannerView: View {
         .presentationDetents([.medium, .large])
     }
 
-    // MARK: Spectrum intake
-
-    /// Called for every FFT frame (~125 a second). Only redraws about 30 times a second and adds a waterfall
-    /// row about 25 times a second, so the UI stays light and the waterfall scrolls at a readable speed.
     private func ingest(spectrum averaged: [Float]) {
         latest.bins = averaged
         let now = Date.timeIntervalSinceReferenceDate
+        if liveScan, activityThrottle.shouldEmit(at: now) {
+            updateActivity(from: averaged)
+        }
         guard drawThrottle.shouldEmit(at: now) else { return }
         displaySpectrum = SpectrumResampler.maxPool(averaged, to: displayBins)
         if let peak = averaged.max() { rssiDB = peak }
@@ -407,6 +670,21 @@ struct ScannerView: View {
         if rowThrottle.shouldEmit(at: now) {
             waterfall.push(row: averaged, scale: scale)
             waterfallImage = Self.makeImage(waterfall)
+        }
+    }
+
+    private func updateActivity(from averaged: [Float]) {
+        let peaks = FrequencyFinder.find(
+            magnitudes: averaged,
+            centerFrequencyHz: frequencyMHz * 1_000_000,
+            sampleRateHz: sampleRateHz,
+            thresholdDB: max(-95, squelchDB),
+            minimumSNRDB: 8
+        )
+        guard !peaks.isEmpty else { return }
+        activityLog.ingest(peaks, lockedOutKeys: lockedOutKeys)
+        if selectedActivityID == nil {
+            selectedActivityID = activityLog.hits.first { !$0.lockedOut }?.id
         }
     }
 
@@ -418,8 +696,6 @@ struct ScannerView: View {
                        bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
                        provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
     }
-
-    // MARK: Actions
 
     private func useDevice(_ device: any SDRDevice) async {
         do {
@@ -506,9 +782,69 @@ struct ScannerView: View {
         found = FrequencyFinder.find(
             magnitudes: latest.bins,
             centerFrequencyHz: frequencyMHz * 1_000_000,
-            sampleRateHz: sampleRateHz
+            sampleRateHz: sampleRateHz,
+            thresholdDB: max(-95, squelchDB),
+            minimumSNRDB: 8
         )
+        activityLog.ingest(found, lockedOutKeys: lockedOutKeys)
         showFinder = true
+    }
+
+    private func tune(_ activity: ScanActivity) {
+        selectedActivityID = activity.id
+        setFrequency(mhz: activity.frequencyHz / 1_000_000)
+    }
+
+    private func holdSelected() {
+        if heldActivityID != nil {
+            heldActivityID = nil
+            statusMessage = "Scan hold released"
+            return
+        }
+        guard let selectedActivity else { return }
+        heldActivityID = selectedActivity.id
+        tune(selectedActivity)
+        statusMessage = "Holding \(selectedActivity.displayMHz)"
+    }
+
+    private func skipSelected() {
+        guard let selectedActivity else { return }
+        let current = selectedActivity.id
+        selectedActivityID = activityLog.hits.first { !$0.lockedOut && $0.id != current }?.id
+        statusMessage = "Skipped \(selectedActivity.displayMHz)"
+    }
+
+    private func toggleLockoutSelected() {
+        guard let selectedActivity else { return }
+        let key = ScanActivity.key(for: selectedActivity.frequencyHz)
+        if lockedOutKeys.contains(key) {
+            lockedOutKeys.remove(key)
+            activityLog.setLockedOut(frequencyHz: selectedActivity.frequencyHz, lockedOut: false)
+            statusMessage = "Unlocked \(selectedActivity.displayMHz)"
+        } else {
+            lockedOutKeys.insert(key)
+            activityLog.setLockedOut(frequencyHz: selectedActivity.frequencyHz, lockedOut: true)
+            if heldActivityID == selectedActivity.id { heldActivityID = nil }
+            statusMessage = "Locked out \(selectedActivity.displayMHz)"
+        }
+    }
+
+    private func saveSelectedToCodeplug() {
+        guard let selectedActivity else { return }
+        save(selectedActivity)
+    }
+
+    private func save(_ activity: ScanActivity) {
+        let channel = ScanChannel(
+            name: activity.label.isEmpty ? "Live \(activity.displayMHz)" : activity.label,
+            frequencyHz: activity.frequencyHz,
+            bandwidthHz: activity.bandwidthHz ?? mode.defaultBandwidth,
+            mode: mode,
+            source: .liveHit,
+            notes: activity.snrDB.map { String(format: "Scanner hit: %.0f dB SNR, %.0f dBFS", $0, activity.strengthDB) } ?? "Scanner hit"
+        )
+        model.addToCodeplug(channel: channel.codeplugChannel())
+        statusMessage = "Saved \(activity.displayMHz) to codeplug"
     }
 
     private func addRTLTCP() {
@@ -521,8 +857,6 @@ struct ScannerView: View {
     }
 }
 
-/// Holds the newest full-resolution spectrum for the Frequency Finder. A class, so updating it every frame does
-/// not make SwiftUI redraw the view.
 final class LatestSpectrum {
     var bins: [Float] = []
 }
