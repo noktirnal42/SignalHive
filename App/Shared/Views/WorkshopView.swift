@@ -227,7 +227,10 @@ struct WorkshopView: View {
 }
 
 private struct Capability: Identifiable {
-    let id = UUID()
+    /// Stable across re-renders. These arrays are rebuilt on every `body` evaluation, so a per-instance
+    /// `UUID()` gave every tile a brand-new identity each time the device scan published, which crashed
+    /// SwiftUI's lazy layout at launch (about half of launches).
+    var id: String { title }
     var title: String
     var detail: String
     var icon: String

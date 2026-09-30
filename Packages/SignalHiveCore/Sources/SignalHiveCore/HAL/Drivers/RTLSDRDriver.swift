@@ -207,13 +207,24 @@ final class RTLSDRBridge: @unchecked Sendable {
         return String(cString: ptr)
     }
 
+    /// librtlsdr writes up to 256 bytes into each string argument of `rtlsdr_get_device_usb_strings`
+    /// ("The string arguments must provide space for up to 256 bytes." - rtl-sdr.h). A smaller buffer
+    /// overflows the heap, and the corruption then crashes the process in an unrelated later malloc.
+    static let usbStringBufferSize = 256
+
+    /// Hands `fetch` a zeroed buffer of `usbStringBufferSize` bytes and returns what it wrote,
+    /// or nil when `fetch` reports failure. The last byte is forced to NUL so a full buffer still terminates.
+    static func readUSBString(_ fetch: (UnsafeMutablePointer<CChar>) -> Int32) -> String? {
+        let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: usbStringBufferSize)
+        buffer.initialize(repeating: 0, count: usbStringBufferSize)
+        defer { buffer.deallocate() }
+        guard fetch(buffer) == 0 else { return nil }
+        buffer[usbStringBufferSize - 1] = 0
+        return String(cString: buffer)
+    }
+
     func deviceSerial(_ index: UInt32) -> String? {
-        var serial = [CChar](repeating: 0, count: 64)
-        guard rtlsdr_get_device_usb_strings(index, nil, nil, &serial) == 0 else { return nil }
-        return serial.withUnsafeBytes { bytes in
-            let nullTerminated = bytes.prefix(while: { $0 != 0 })
-            return String(bytes: nullTerminated, encoding: .utf8) ?? ""
-        }
+        Self.readUSBString { rtlsdr_get_device_usb_strings(index, nil, nil, $0) }
     }
 
     func open(_ index: UInt32) -> OpaquePointer? {
