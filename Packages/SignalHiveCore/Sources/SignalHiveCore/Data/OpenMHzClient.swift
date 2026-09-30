@@ -1,87 +1,366 @@
 import Foundation
 
 // MARK: - OpenMHz client (open, key-less community API)
-// https://api.openmhz.com — systems, talkgroups, calls.
+// https://api.openmhz.com: systems, talkgroups.
+//
+// The response shapes below are those of OpenMHz's own server (github.com/openmhz/trunk-server, backend/controllers):
+//   GET /systems               -> {"success": true, "systems": [{name, shortName, systemType, city, county, state, country,
+//                                  description, callAvg, clientCount, active, lastActive, status, ...}]}
+//   GET /<shortName>/talkgroups -> {"talkgroups": {"<num>": {_id, num, alpha, description, tag?, group?}}}
+// The parser also accepts the plainer shapes a mirror or a later version might send (a bare array, an array of
+// talkgroups, other spellings of the field names), because the server is not under this project's control.
 
 public enum OpenMHzError: Error, LocalizedError {
     case requestFailed(String)
+    case unexpectedResponse(String)
 
     public var errorDescription: String? {
         switch self {
         case let .requestFailed(detail): return "OpenMHz request failed: \(detail)"
+        case let .unexpectedResponse(detail): return "OpenMHz sent something unexpected: \(detail)"
         }
     }
 }
 
-public enum OpenMHzClient {
-
-    private static let base = URL(string: "https://api.openmhz.com")!
-
-    struct SystemResponse: Decodable {
-        var shortName: String?
-        var name: String?
-        var talkgroups: Int?
-        var calls: Int?
-        var lat: Double?
-        var lon: Double?
+/// Turns OpenMHz's JSON into models. It touches no network, so it is tested with fixtures.
+public enum OpenMHzParser {
+    public static func systems(from data: Data) throws -> [TrunkedSystem] {
+        let root = try json(data)
+        let items: [[String: Any]]
+        if let object = root as? [String: Any] {
+            if let list = object["systems"] as? [[String: Any]] {
+                items = list
+            } else if let map = object["systems"] as? [String: Any] {
+                items = map.values.compactMap { $0 as? [String: Any] }         // keyed by short name
+            } else {
+                throw OpenMHzError.unexpectedResponse("there is no list of systems in the answer")
+            }
+        } else if let list = root as? [[String: Any]] {
+            items = list
+        } else {
+            throw OpenMHzError.unexpectedResponse("the answer is not a list of systems")
+        }
+        return items.compactMap { item in
+            let shortName = string(item, ["shortName", "short_name", "id"])
+            guard !shortName.isEmpty else { return nil }
+            let name = string(item, ["name"])
+            return TrunkedSystem(
+                shortName: shortName, name: name.isEmpty ? shortName : name,
+                systemType: string(item, ["systemType", "type"]), city: string(item, ["city"]), county: string(item, ["county"]),
+                state: string(item, ["state"]), country: string(item, ["country"]), details: string(item, ["description"]),
+                callsPerHour: number(item["callAvg"]) ?? 0, listeners: integer(item["clientCount"]) ?? 0,
+                isActive: boolean(item["active"]) ?? true, lastActive: date(item["lastActive"]))
+        }
     }
 
-    struct TalkgroupResponse: Decodable {
-        struct Item: Decodable {
-            var num: Int?
-            var des: String?
-            var alphaTag: String?
-            var callCount: Int?
+    public static func talkgroups(from data: Data, system: String) throws -> [TrunkedTalkgroup] {
+        let root = try json(data)
+        var container: Any = root
+        if let object = root as? [String: Any], let inner = object["talkgroups"] { container = inner }
 
-            enum CodingKeys: String, CodingKey {
-                case num
-                case des
-                case alphaTag = "alphaTag"
-                case callCount = "callCount"
+        var entries: [(key: String?, item: [String: Any])] = []
+        if let map = container as? [String: Any] {
+            for (key, value) in map {
+                if let item = value as? [String: Any] { entries.append((key, item)) }
+            }
+        } else if let list = container as? [Any] {
+            for value in list {
+                if let item = value as? [String: Any] { entries.append((nil, item)) }
+            }
+        } else {
+            throw OpenMHzError.unexpectedResponse("there is no list of talkgroups in the answer")
+        }
+
+        let parsed: [TrunkedTalkgroup] = entries.compactMap { key, item in
+            guard let code = integer(item["num"]) ?? integer(item["decimal"]) ?? integer(item["id"]) ?? key.flatMap({ Int($0) }) else { return nil }
+            return TrunkedTalkgroup(
+                systemShortName: system, code: code, alphaTag: string(item, ["alpha", "alphaTag", "alpha_tag"]),
+                descriptionText: string(item, ["description", "des", "desc"]), tag: string(item, ["tag"]),
+                group: string(item, ["group"]), callCount: integer(item["callCount"]) ?? integer(item["count"]) ?? 0)
+        }
+        return parsed.sorted { $0.code < $1.code }
+    }
+
+    // MARK: Helpers
+
+    private static func json(_ data: Data) throws -> Any {
+        do {
+            return try JSONSerialization.jsonObject(with: data)
+        } catch {
+            throw OpenMHzError.unexpectedResponse("it is not JSON")
+        }
+    }
+
+    private static func string(_ item: [String: Any], _ keys: [String]) -> String {
+        for key in keys {
+            if let text = item[key] as? String { return text.trimmingCharacters(in: .whitespacesAndNewlines) }
+            if let number = item[key] as? NSNumber { return number.stringValue }
+        }
+        return ""
+    }
+
+    private static func integer(_ value: Any?) -> Int? {
+        if let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() { return number.intValue }
+        if let text = value as? String { return Int(text.trimmingCharacters(in: .whitespaces)) }
+        return nil
+    }
+
+    private static func number(_ value: Any?) -> Double? {
+        if let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() { return number.doubleValue }
+        if let text = value as? String { return Double(text.trimmingCharacters(in: .whitespaces)) }
+        return nil
+    }
+
+    private static func boolean(_ value: Any?) -> Bool? {
+        if let flag = value as? Bool { return flag }
+        if let number = value as? NSNumber { return number.intValue != 0 }
+        if let text = value as? String {
+            switch text.lowercased() {
+            case "true", "yes", "1": return true
+            case "false", "no", "0": return false
+            default: return nil
             }
         }
-        var talkgroups: [Item]
+        return nil
     }
 
-    public static func systems() async throws -> [TrunkedSystem] {
-        let (data, _) = try await get(path: "/systems")
-        let decoded = try JSONDecoder().decode([SystemResponse].self, from: data)
-        return decoded.compactMap { s in
-            guard let shortName = s.shortName else { return nil }
-            return TrunkedSystem(
-                shortName: shortName,
-                name: s.name ?? shortName,
-                talkgroupCount: s.talkgroups ?? 0,
-                callCount: s.calls ?? 0,
-                lat: s.lat,
-                lon: s.lon
-            )
-        }
+    private static func date(_ value: Any?) -> Date? {
+        guard let text = value as? String, !text.isEmpty else { return nil }
+        let fractional = ISO8601DateFormatter()
+        fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = fractional.date(from: text) { return date }
+        return ISO8601DateFormatter().date(from: text)
     }
+}
+
+public struct OpenMHzClient: Sendable {
+    public typealias Fetch = @Sendable (URLRequest) async throws -> (Data, URLResponse)
+
+    private let baseURL: URL
+    private let fetch: Fetch
+
+    /// - Parameter fetch: How to perform a request; tests supply canned answers.
+    public init(baseURL: URL = URL(string: "https://api.openmhz.com")!,
+                fetch: @escaping Fetch = { request in try await URLSession.shared.data(for: request) }) {
+        self.baseURL = baseURL
+        self.fetch = fetch
+    }
+
+    public func systems() async throws -> [TrunkedSystem] {
+        try OpenMHzParser.systems(from: try await get(path: "/systems"))
+    }
+
+    public func talkgroups(systemShortName: String) async throws -> [TrunkedTalkgroup] {
+        // A slash inside a name must not become a path separator.
+        var allowed = CharacterSet.urlPathAllowed
+        allowed.remove(charactersIn: "/")
+        let name = systemShortName.addingPercentEncoding(withAllowedCharacters: allowed) ?? systemShortName
+        return try OpenMHzParser.talkgroups(from: try await get(path: "/\(name)/talkgroups"), system: systemShortName)
+    }
+
+    // Convenience for callers that do not need to inject anything.
+    public static func systems() async throws -> [TrunkedSystem] { try await OpenMHzClient().systems() }
 
     public static func talkgroups(systemShortName: String) async throws -> [TrunkedTalkgroup] {
-        let (data, _) = try await get(path: "/\(systemShortName)/talkgroups")
-        let decoded = try JSONDecoder().decode(TalkgroupResponse.self, from: data)
-        return decoded.talkgroups.compactMap { t in
-            guard let code = t.num else { return nil }
-            return TrunkedTalkgroup(
-                systemShortName: systemShortName,
-                code: code,
-                alphaTag: t.alphaTag ?? "",
-                descriptionText: t.des ?? "",
-                callCount: t.callCount ?? 0
-            )
+        try await OpenMHzClient().talkgroups(systemShortName: systemShortName)
+    }
+
+    private func get(path: String) async throws -> Data {
+        guard let url = URL(string: baseURL.absoluteString + path) else {
+            throw OpenMHzError.requestFailed("bad address for \(path)")
+        }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 30
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await fetch(request)
+        } catch {
+            throw OpenMHzError.requestFailed(error.localizedDescription)
+        }
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            if http.statusCode == 403, (http.value(forHTTPHeaderField: "cf-mitigated")?.lowercased() == "challenge") {
+                throw OpenMHzError.requestFailed("Cloudflare challenged \(path); live OpenMHz data is blocked for this native request")
+            }
+            throw OpenMHzError.requestFailed("HTTP \(http.statusCode) for \(path)")
+        }
+        return data
+    }
+}
+
+// MARK: - Cache
+
+/// The last systems and talkgroups that loaded, kept on disk so Trunked still browses without a connection.
+public struct TrunkedCache: Sendable {
+    private let directory: URL
+
+    public init(directory: URL) {
+        self.directory = directory
+    }
+
+    public static var standard: TrunkedCache {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return TrunkedCache(directory: base.appendingPathComponent("SignalHive/Trunked", isDirectory: true))
+    }
+
+    private struct Snapshot<Value: Codable>: Codable {
+        var savedAt: Date
+        var value: Value
+    }
+
+    public func saveSystems(_ systems: [TrunkedSystem], at date: Date = Date()) throws {
+        try write(Snapshot(savedAt: date, value: systems), to: "systems.json")
+    }
+
+    public func loadSystems() -> (systems: [TrunkedSystem], savedAt: Date)? {
+        guard let snapshot: Snapshot<[TrunkedSystem]> = read("systems.json") else { return nil }
+        return (snapshot.value, snapshot.savedAt)
+    }
+
+    public func saveTalkgroups(_ talkgroups: [TrunkedTalkgroup], system: String, at date: Date = Date()) throws {
+        try write(Snapshot(savedAt: date, value: talkgroups), to: fileName(forTalkgroupsOf: system))
+    }
+
+    public func loadTalkgroups(system: String) -> (talkgroups: [TrunkedTalkgroup], savedAt: Date)? {
+        guard let snapshot: Snapshot<[TrunkedTalkgroup]> = read(fileName(forTalkgroupsOf: system)) else { return nil }
+        return (snapshot.value, snapshot.savedAt)
+    }
+
+    func fileName(forTalkgroupsOf system: String) -> String {
+        let safe = system.map { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" ? $0 : "_" }
+        return "talkgroups-" + String(safe) + ".json"
+    }
+
+    private func write<Value: Codable>(_ snapshot: Snapshot<Value>, to name: String) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        // Dates keep the default encoding so they come back exactly as they went in.
+        try JSONEncoder().encode(snapshot).write(to: directory.appendingPathComponent(name), options: .atomic)
+    }
+
+    private func read<Value: Codable>(_ name: String) -> Snapshot<Value>? {
+        guard let data = try? Data(contentsOf: directory.appendingPathComponent(name)) else { return nil }
+        return try? JSONDecoder().decode(Snapshot<Value>.self, from: data)
+    }
+}
+
+// MARK: - Repository
+
+/// What a load returned, and whether it is fresh.
+public struct TrunkedLoad<Value: Sendable>: Sendable {
+    public var value: Value
+    /// When the data was saved, if it came from the cache.
+    public var savedAt: Date?
+    public var isCached: Bool { savedAt != nil }
+    /// True when the app fell back to the bundled starter directory because neither the network nor a local cache worked.
+    public var isSeeded: Bool
+    /// Why the network was not used, when the cache stood in for it.
+    public var networkError: String?
+
+    public init(value: Value, savedAt: Date? = nil, isSeeded: Bool = false, networkError: String? = nil) {
+        self.value = value
+        self.savedAt = savedAt
+        self.isSeeded = isSeeded
+        self.networkError = networkError
+    }
+}
+
+/// Small offline starter directory for first launch and for API blocks. It is deliberately modest: SignalHive still
+/// prefers live OpenMHz and the user's saved cache, but the Trunked browser should never open as an empty dead pane.
+public struct TrunkedSeed: Sendable {
+    public var systems: [TrunkedSystem]
+    public var talkgroups: [String: [TrunkedTalkgroup]]
+
+    public init(systems: [TrunkedSystem], talkgroups: [String: [TrunkedTalkgroup]]) {
+        self.systems = systems
+        self.talkgroups = talkgroups
+    }
+
+    public static let starter = TrunkedSeed(
+        systems: [
+            TrunkedSystem(shortName: "sccsd", name: "Santa Clara County Sheriff", systemType: "p25",
+                          city: "San Jose", county: "Santa Clara", state: "CA", country: "US",
+                          details: "Starter directory entry. Use Reload when OpenMHz is reachable for live metadata.",
+                          callsPerHour: 40),
+            TrunkedSystem(shortName: "tippco", name: "Tippecanoe County Public Safety", systemType: "p25",
+                          city: "Lafayette", county: "Tippecanoe", state: "IN", country: "US",
+                          details: "Starter directory entry based on public OpenMHz system naming.",
+                          callsPerHour: 25),
+            TrunkedSystem(shortName: "monroecony", name: "Monroe and Ontario Counties", systemType: "p25",
+                          city: "Rochester", county: "Monroe", state: "NY", country: "US",
+                          details: "Starter directory entry based on public OpenMHz system naming.",
+                          callsPerHour: 20),
+            TrunkedSystem(shortName: "wmata", name: "WMATA Bus", systemType: "smartnet",
+                          city: "Washington", state: "DC", country: "US",
+                          details: "Starter directory entry. Older SmartNet systems are useful for codeplug planning tests.",
+                          callsPerHour: 7)
+        ],
+        talkgroups: [
+            "sccsd": [
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 5, alphaTag: "SO Tac", descriptionText: "Sheriff Tactical", tag: "Law Tac", group: "Sheriff"),
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 10, alphaTag: "SO Disp", descriptionText: "Sheriff Dispatch", tag: "Law Dispatch", group: "Sheriff"),
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 20, alphaTag: "FD Disp", descriptionText: "Fire Dispatch", tag: "Fire Dispatch", group: "Fire"),
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 300, alphaTag: "PW Yard", descriptionText: "Public Works Yard", tag: "Public Works", group: "Public Works")
+            ],
+            "tippco": [
+                TrunkedTalkgroup(systemShortName: "tippco", code: 101, alphaTag: "Law Disp", descriptionText: "Law Dispatch", tag: "Law Dispatch", group: "Public Safety"),
+                TrunkedTalkgroup(systemShortName: "tippco", code: 2105, alphaTag: "Fire Ops", descriptionText: "Fire Operations", tag: "Fire-Tac", group: "Fire"),
+                TrunkedTalkgroup(systemShortName: "tippco", code: 3101, alphaTag: "EMS Disp", descriptionText: "EMS Dispatch", tag: "EMS Dispatch", group: "EMS")
+            ],
+            "monroecony": [
+                TrunkedTalkgroup(systemShortName: "monroecony", code: 1806, alphaTag: "County Law", descriptionText: "County law dispatch", tag: "Law Dispatch", group: "Law"),
+                TrunkedTalkgroup(systemShortName: "monroecony", code: 1811, alphaTag: "Fire Main", descriptionText: "Fire dispatch", tag: "Fire Dispatch", group: "Fire"),
+                TrunkedTalkgroup(systemShortName: "monroecony", code: 2201, alphaTag: "Hospital", descriptionText: "Hospital coordination", tag: "Hospital", group: "Medical")
+            ],
+            "wmata": [
+                TrunkedTalkgroup(systemShortName: "wmata", code: 1001, alphaTag: "Bus Ops", descriptionText: "Bus operations", tag: "Transit", group: "Transit"),
+                TrunkedTalkgroup(systemShortName: "wmata", code: 1002, alphaTag: "Rail Ops", descriptionText: "Rail operations", tag: "Transit", group: "Transit")
+            ]
+        ]
+    )
+}
+
+/// Loads from OpenMHz, remembers what it got, and falls back to the last copy when the network fails.
+public struct TrunkedRepository: Sendable {
+    private let client: OpenMHzClient
+    private let cache: TrunkedCache
+    private let seed: TrunkedSeed?
+
+    public init(client: OpenMHzClient = OpenMHzClient(), cache: TrunkedCache = .standard, seed: TrunkedSeed? = .starter) {
+        self.client = client
+        self.cache = cache
+        self.seed = seed
+    }
+
+    public func systems() async throws -> TrunkedLoad<[TrunkedSystem]> {
+        do {
+            let fresh = try await client.systems()
+            try? cache.saveSystems(fresh)
+            return TrunkedLoad(value: fresh)
+        } catch {
+            if let cached = cache.loadSystems(), !cached.systems.isEmpty {
+                return TrunkedLoad(value: cached.systems, savedAt: cached.savedAt, networkError: error.localizedDescription)
+            }
+            if let seed, !seed.systems.isEmpty {
+                return TrunkedLoad(value: seed.systems, isSeeded: true, networkError: error.localizedDescription)
+            }
+            throw error
         }
     }
 
-    private static func get(path: String) async throws -> (Data, HTTPURLResponse?) {
-        var request = URLRequest(url: base.appendingPathComponent(path))
-        request.timeoutInterval = 30
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
-            throw OpenMHzError.requestFailed("HTTP error for \(path)")
+    public func talkgroups(system: String) async throws -> TrunkedLoad<[TrunkedTalkgroup]> {
+        do {
+            let fresh = try await client.talkgroups(systemShortName: system)
+            try? cache.saveTalkgroups(fresh, system: system)
+            return TrunkedLoad(value: fresh)
+        } catch {
+            if let cached = cache.loadTalkgroups(system: system), !cached.talkgroups.isEmpty {
+                return TrunkedLoad(value: cached.talkgroups, savedAt: cached.savedAt, networkError: error.localizedDescription)
+            }
+            if let talkgroups = seed?.talkgroups[system] {
+                return TrunkedLoad(value: talkgroups, isSeeded: true, networkError: error.localizedDescription)
+            }
+            throw error
         }
-        return (data, http)
     }
 }
