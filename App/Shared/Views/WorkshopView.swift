@@ -187,7 +187,11 @@ struct WorkshopView: View {
 
     private var hardwareCapabilities: [Capability] {
         [
-            Capability("RTL-SDR USB", "Native librtlsdr driver loads from Homebrew, /usr/local, or bundled app resources.", "usb", .live),
+            Capability("RTL-SDR USB",
+                       RTLSDRLibrary.status.isAvailable
+                           ? "RTL-SDR support library is loaded; plug in a dongle and choose it in Scanner."
+                           : RTLSDRLibrary.status.summary,
+                       "usb", RTLSDRLibrary.status.isAvailable ? .live : .external),
             Capability("Network SDR / Raspberry Pi", "Optional remote sources for later Pi field boxes; direct USB RTL-SDR on this Mac remains the default path.", "network", .live),
             Capability("Uniden scanners", "Serial protocol helpers for scanner programming mode exist in core.", "radio", .external),
             Capability("GPS", "Location models are used in sites; live GPS ingest still needs device binding.", "location", .planned),

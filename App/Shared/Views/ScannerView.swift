@@ -316,6 +316,19 @@ struct ScannerView: View {
                 .padding(.horizontal)
             }
 
+            if !RTLSDRLibrary.status.isAvailable {
+                Label {
+                    Text(RTLSDRLibrary.status.summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                        .lineLimit(5)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                }
+                .padding(.horizontal)
+            }
+
             if showingRTLTCPField {
                 HStack {
                     TextField("rtl_tcp host (e.g. 192.168.1.50)", text: $rtlTCPHost)

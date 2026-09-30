@@ -97,6 +97,26 @@ final class AppModel: ObservableObject {
         }
         await refreshManifest()
         await refreshStates()
+        writeDiagnostics()
+    }
+
+    /// A plain-text snapshot of what the app can see, saved next to its data (`diagnostics.txt`) so problems
+    /// like "the dongle is not listed" can be explained without guessing.
+    func writeDiagnostics() {
+        let sandboxed = ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] != nil
+        var lines = [
+            "SignalHive diagnostics \(Date().formatted(date: .abbreviated, time: .standard))",
+            "macOS \(ProcessInfo.processInfo.operatingSystemVersionString), sandboxed: \(sandboxed)",
+            "Support directory: \(Self.supportDirectory.path)",
+            "Installed FCC packs: \(installedCount)",
+            "Pack server: \(manifestNote ?? "reachable")",
+            "",
+            "RTL-SDR library: \(RTLSDRLibrary.status.isAvailable ? "available" : "NOT available")",
+            RTLSDRLibrary.status.summary,
+        ]
+        if let error = lastError { lines.append("Last error: \(error)") }
+        try? lines.joined(separator: "\n").write(to: Self.supportDirectory.appendingPathComponent("diagnostics.txt"),
+                                                atomically: true, encoding: .utf8)
     }
 
     func refreshManifest() async {

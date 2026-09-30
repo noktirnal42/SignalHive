@@ -134,6 +134,99 @@ public final class RTLSDRDevice: SDRDevice, @unchecked Sendable {
     }
 }
 
+// MARK: - Library discovery (interim: replaced by the native Swift driver, see docs/superpowers/specs/2026-09-29-originalization-plan.md)
+
+/// Why the RTL-SDR support library is or is not available, in words a person can act on.
+public struct RTLSDRLibraryStatus: Equatable, Sendable {
+    public struct Attempt: Equatable, Sendable {
+        public var path: String
+        public var reason: String
+    }
+
+    public enum State: Equatable, Sendable {
+        case loaded(path: String)
+        case loadFailed(attempts: [Attempt])
+    }
+
+    public var state: State
+
+    public var isAvailable: Bool {
+        if case .loaded = state { return true }
+        return false
+    }
+
+    public var summary: String {
+        switch state {
+        case let .loaded(path):
+            return "RTL-SDR support library loaded from \(path)."
+        case let .loadFailed(attempts):
+            let detail = attempts.map { "\($0.path): \($0.reason)" }.joined(separator: "; ")
+            return "The RTL-SDR support library could not be loaded. \(detail)"
+        }
+    }
+}
+
+public enum RTLSDRLibrary {
+    /// Functions the driver needs. A library without all of them is rejected.
+    static let requiredSymbols = [
+        "rtlsdr_get_device_count", "rtlsdr_get_device_name", "rtlsdr_get_device_usb_strings", "rtlsdr_open",
+        "rtlsdr_close", "rtlsdr_set_sample_rate", "rtlsdr_set_center_freq", "rtlsdr_set_tuner_gain_mode",
+        "rtlsdr_set_tuner_gain", "rtlsdr_set_offset_tuning", "rtlsdr_set_direct_sampling", "rtlsdr_reset_buffer",
+        "rtlsdr_cancel_async", "rtlsdr_read_async", "rtlsdr_set_bias_tee",
+    ]
+
+    /// A copy inside the app is tried first, then the usual Homebrew locations.
+    static func candidatePaths(bundlePath: String) -> [String] {
+        [bundlePath + "/Contents/Frameworks/librtlsdr.dylib", "/opt/homebrew/lib/librtlsdr.dylib", "/usr/local/lib/librtlsdr.dylib"]
+    }
+
+    /// Tries each path in order and reports what happened to every one (not only the last), so a failure inside
+    /// a sandbox or under library validation is visible instead of silent.
+    static func locate(
+        paths: [String],
+        open: (String) -> (handle: UnsafeMutableRawPointer?, error: String?),
+        hasSymbols: (UnsafeMutableRawPointer) -> Bool
+    ) -> (handle: UnsafeMutableRawPointer?, status: RTLSDRLibraryStatus) {
+        var attempts: [RTLSDRLibraryStatus.Attempt] = []
+        for path in paths {
+            let result = open(path)
+            guard let handle = result.handle else {
+                attempts.append(.init(path: path, reason: result.error ?? "could not be opened"))
+                continue
+            }
+            guard hasSymbols(handle) else {
+                attempts.append(.init(path: path, reason: "opened, but it is missing required functions"))
+                continue
+            }
+            return (handle, RTLSDRLibraryStatus(state: .loaded(path: path)))
+        }
+        return (nil, RTLSDRLibraryStatus(state: .loadFailed(attempts: attempts)))
+    }
+
+    /// The loaded handle is created once, never mutated and never closed, so sharing it is safe.
+    struct LoadResult: @unchecked Sendable {
+        let handle: UnsafeMutableRawPointer?
+        let status: RTLSDRLibraryStatus
+    }
+
+    static let loadResult: LoadResult = {
+        let located = locate(
+            paths: candidatePaths(bundlePath: Bundle.main.bundlePath),
+            open: { path in
+                guard let handle = dlopen(path, RTLD_NOW | RTLD_LOCAL) else {
+                    return (nil, dlerror().map { String(cString: $0) } ?? "dlopen failed")
+                }
+                return (handle, nil)
+            },
+            hasSymbols: { handle in requiredSymbols.allSatisfy { dlsym(handle, $0) != nil } }
+        )
+        return LoadResult(handle: located.handle, status: located.status)
+    }()
+
+    /// Current availability, for display.
+    public static var status: RTLSDRLibraryStatus { loadResult.status }
+}
+
 // MARK: - Dynamic library bridge (loaded at runtime to satisfy GPL)
 
 /// Wraps a non-Sendable value for explicit unsafe cross-thread transfer.
@@ -171,15 +264,7 @@ final class RTLSDRBridge: @unchecked Sendable {
     private let rtlsdr_get_center_freq: (@convention(c) (OpaquePointer) -> UInt32)?
 
     private init?() {
-        let paths = [
-            "/opt/homebrew/lib/librtlsdr.dylib",
-            "/usr/local/lib/librtlsdr.dylib",
-            Bundle.main.bundlePath + "/Contents/Frameworks/librtlsdr.dylib",
-        ]
-        guard let path = paths.first(where: { FileManager.default.fileExists(atPath: $0) }),
-              let h = dlopen(path, RTLD_NOW | RTLD_LOCAL) else {
-            return nil
-        }
+        guard let h = RTLSDRLibrary.loadResult.handle else { return nil }
         self.handle = h
 
         guard
