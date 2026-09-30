@@ -69,7 +69,8 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
 | RTL-SDR detected over USB | Pass (dongle "Generic RTL2832U OEM" enumerates; Workshop shows 2 sources) | `rtl_probe`, Workshop gauge |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
-| Scanner: live spectrum, tuning, demod audio from the RTL-SDR | **Partly broken**: streams from the dongle and the Test Signal, but (a) `FFTProcessor` drops the lower half of the band for IQ input, so the spectrum, centre and Frequency Finder are wrong; (b) the waterfall never receives rows; (c) no way to type/step a frequency; (d) the dongle showed no FM stations with librtlsdr's own `rtl_power` (probably no antenna attached); (e) audio not verified | Driven in the running app; see section 5 |
+| Scanner display: spectrum, waterfall, tuning, volume | **Fixed and verified on the real dongle (S1)**: full centre-shifted spectrum, fed high-resolution waterfall (2048x400 pixel buffer, inferno palette, 25 rows/s, selectable 125 Hz - 1 kHz detail), auto-scaling, typed/stepped/click-to-tune frequency snapped to the step grid, volume + mute. Tests: FFT tones, waterfall buffer, palette, throttle, frequency entry, volume | Running app with the RTL-SDR; 102 tests |
+| Scanner audio from the RTL-SDR | **Not usable yet**: demodulators run on the whole 2.048 MHz capture with no channel filter or decimation, then linear-resample to 48 kHz (aliasing). Needs a channelizer (mix, filter, decimate) - first item of S2. The dongle also showed no FM stations with `rtl_power` (probably no antenna attached) | Code read; `rtl_power` |
 | Decoders (ADS-B, UAT, ACARS, AIS, Morse, ...) | Code exists in core with unit tests; **no UI to use them yet** (Workshop lists them as capabilities) | |
 | Trunked (OpenMHz browser) | Not verified; needs network | |
 | AI Lab (Foundation Models / PCC probes, MLX catalog) | Builds; catalog/compat logic unit-tested; runtime probes not verified; MLX inference and downloader are not implemented | GPT's own note |
@@ -99,6 +100,10 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
    A code comment in `SDRDeviceManager` blames libusb's hotplug thread for "heap corruption if no device is
    connected"; that diagnosis was wrong (the overflow needs a device). The launch-time scan is safe again.
 
+5c. **Scanner spectrum wrong** (owner-visible): `FFTProcessor` ran a complex FFT but kept only the first N/2 bins, so
+   everything below the centre frequency was invisible and the centre sat at the edge; `FrequencyFinder` (which
+   assumed the correct layout) therefore reported wrong frequencies; the waterfall state was never fed. Fixed with
+   tone-position tests. Also: fixed dB range replaced by a noise-floor-relative auto scale.
 5b. **Dongle configured in direct-sampling mode** (bypasses the tuner, HF only): `configure()` called a method named
    `setIQBalance` that was wired to `rtlsdr_set_direct_sampling(on: 1)`. Reproduced on the real dongle (read-back
    said mode 1); fixed and covered by a hardware test (`RTLSDRHardwareTests`).
@@ -119,8 +124,8 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 ## 7. Roadmap
 
 Scanner sub-project (owner priority): see `docs/superpowers/specs/2026-09-29-scanner-design.md`. Order:
-S1 correct spectrum/waterfall/tuning, S2 scan engine + identification + saved channels (core, tested),
-S3 scanner UI, S4 trunking/decoder hand-off.
+S1 correct spectrum/waterfall/tuning (**done**), S2 channelizer + scan engine + identification + saved channels
+(core, tested), S3 scanner UI, S4 trunking/decoder hand-off.
 
 1. Verify and fix **Scanner with the local RTL-SDR** (tune, spectrum, waterfall, AM/NFM/WFM demod audio).
 2. A **Decoder Hub** that puts the existing decoders behind a UI (ADS-B map first, then Morse, ACARS, AIS, ...).

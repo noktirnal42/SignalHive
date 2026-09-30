@@ -17,6 +17,7 @@ public actor DSPPipeline {
         public var fftConfig: FFTProcessor.Config = .init()
         public var squelchDBFS: Float = -80
         public var audioOutputEnabled: Bool = true
+        public var volume: AudioVolume = AudioVolume()
         public var classificationEnabled: Bool = true
 
         public init() {}
@@ -75,12 +76,19 @@ public actor DSPPipeline {
         demodulator = DemodulatorFactory.make(mode: newConfig.mode, sampleRate: newConfig.sampleRate)
         squelch.thresholdDBFS = newConfig.squelchDBFS
         audioPlayer = newConfig.audioOutputEnabled ? SDRAudioPlayer(sampleRate: newConfig.sampleRate) : nil
+        audioPlayer?.setVolume(newConfig.volume.gain)
 
         try await device.configure(
             frequency: newConfig.frequency,
             sampleRate: newConfig.sampleRate,
             gain: newConfig.gain
         )
+    }
+
+    /// Changes the listening volume immediately (no reconfiguration, no gap in the audio).
+    public func setVolume(_ volume: AudioVolume) {
+        config.volume = volume
+        audioPlayer?.setVolume(volume.gain)
     }
 
     public func attachDecoder(_ decoder: any SignalDecoder) {
@@ -465,6 +473,11 @@ final class SDRAudioPlayer: @unchecked Sendable {
         engine.connect(playerNode, to: engine.mainMixerNode, format: format)
         try? engine.start()
         playerNode.play()
+    }
+
+    /// Linear gain 0...1 applied at the mixer, so it affects everything that is playing.
+    func setVolume(_ gain: Float) {
+        engine.mainMixerNode.outputVolume = max(0, min(1, gain))
     }
 
     func enqueue(_ samples: [Float]) {

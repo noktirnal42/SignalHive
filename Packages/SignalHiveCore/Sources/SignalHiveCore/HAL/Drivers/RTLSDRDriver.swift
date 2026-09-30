@@ -50,7 +50,7 @@ public final class RTLSDRDevice: SDRDevice, @unchecked Sendable {
             throw SDRError.openFailed("librtlsdr not available — install via Homebrew: brew install librtlsdr")
         }
         guard let handle = bridge.open(deviceIndex) else {
-            throw SDRError.openFailed("Failed to open RTL-SDR device \(deviceIndex)")
+            throw SDRError.openFailed("Could not open RTL-SDR device \(deviceIndex). Another program (or another SignalHive window) may be using it; only one can at a time.")
         }
         self.deviceHandle = handle
     }

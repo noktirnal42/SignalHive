@@ -2,7 +2,11 @@ import Foundation
 import Accelerate
 
 /// Real-time FFT processor using vDSP (Accelerate framework).
-/// Computes power spectrum in dBFS, with windowing, averaging, and peak hold.
+/// Computes the power spectrum of complex IQ in dBFS, with windowing, averaging, and peak hold.
+///
+/// IQ data has meaningful negative frequencies, so the output covers the WHOLE band, centre-shifted:
+/// bin 0 is -fs/2, bin fftSize/2 is the tuner centre, and the last bin is +fs/2 - fs/fftSize.
+/// (Keeping only the first half, as a real-input FFT would, throws away everything below the centre.)
 public final class FFTProcessor: @unchecked Sendable {
     // MARK: - Configuration
 
@@ -65,15 +69,15 @@ public final class FFTProcessor: @unchecked Sendable {
 
         self.splitReal = [Float](repeating: 0, count: size)
         self.splitImag = [Float](repeating: 0, count: size)
-        self.powerSpectrum   = [Float](repeating: 0, count: size / 2)
-        self.averagedSpectrum = [Float](repeating: -120, count: size / 2)
-        self.peakHoldSpectrum = [Float](repeating: -120, count: size / 2)
+        self.powerSpectrum   = [Float](repeating: 0, count: size)
+        self.averagedSpectrum = [Float](repeating: -120, count: size)
+        self.peakHoldSpectrum = [Float](repeating: -120, count: size)
     }
 
     // MARK: - Main processing
 
     /// Process one block of IQ samples.
-    /// - Returns: (averaged dBFS spectrum, peak-hold dBFS spectrum), each length fftSize/2
+    /// - Returns: (averaged dBFS spectrum, peak-hold dBFS spectrum), each of length fftSize, centre-shifted
     public func process(samples: [ComplexFloat]) -> (averaged: [Float], peakHold: [Float]) {
         let n = min(samples.count, config.fftSize)
 
@@ -103,13 +107,16 @@ public final class FFTProcessor: @unchecked Sendable {
 
         // Compute power spectrum: |FFT[k]|² / (N²)
         let normFactor = 1.0 / Float(config.fftSize * config.fftSize)
-        for k in 0..<config.fftSize / 2 {
-            powerSpectrum[k] = (splitReal[k] * splitReal[k] + splitImag[k] * splitImag[k]) * normFactor
+        // Output index j holds FFT bin (j + N/2) mod N, which puts the tuner centre at N/2.
+        let half = config.fftSize / 2
+        for j in 0..<config.fftSize {
+            let k = (j + half) % config.fftSize
+            powerSpectrum[j] = (splitReal[k] * splitReal[k] + splitImag[k] * splitImag[k]) * normFactor
         }
 
         // Convert to dBFS
-        var dbfs = [Float](repeating: 0, count: config.fftSize / 2)
-        for k in 0..<config.fftSize / 2 {
+        var dbfs = [Float](repeating: 0, count: config.fftSize)
+        for k in 0..<config.fftSize {
             dbfs[k] = 10 * log10f(max(powerSpectrum[k], 1e-12)) + config.referenceLevel
         }
 
@@ -120,7 +127,7 @@ public final class FFTProcessor: @unchecked Sendable {
             peakHoldSpectrum = dbfs
             isFirstFrame = false
         } else {
-            for k in 0..<config.fftSize / 2 {
+            for k in 0..<config.fftSize {
                 averagedSpectrum[k] = alpha * dbfs[k] + (1 - alpha) * averagedSpectrum[k]
                 // Peak hold with decay
                 if dbfs[k] > peakHoldSpectrum[k] {
@@ -137,22 +144,15 @@ public final class FFTProcessor: @unchecked Sendable {
     /// Reset averaging and peak hold (call on frequency change).
     public func reset() {
         isFirstFrame = true
-        averagedSpectrum = [Float](repeating: -120, count: config.fftSize / 2)
-        peakHoldSpectrum = [Float](repeating: -120, count: config.fftSize / 2)
+        averagedSpectrum = [Float](repeating: -120, count: config.fftSize)
+        peakHoldSpectrum = [Float](repeating: -120, count: config.fftSize)
     }
 
-    /// Convert FFT bin index to frequency offset from center (Hz).
+    /// Frequency (Hz) of an output bin. The spectrum is centre-shifted: bin fftSize/2 is `centerFrequency`,
+    /// bin 0 is centre - sampleRate/2.
     public func binToFrequency(bin: Int, sampleRate: Double, centerFrequency: Double) -> Double {
         let binWidth = sampleRate / Double(config.fftSize)
-        // Bins 0..N/2-1 map to 0..sampleRate/2 (positive), N/2..N-1 to -sampleRate/2..0 (negative)
-        // After FFT shift: bin 0 = center, bins increase to the right
-        let offset: Double
-        if bin < config.fftSize / 2 {
-            offset = Double(bin) * binWidth
-        } else {
-            offset = Double(bin - config.fftSize) * binWidth
-        }
-        return centerFrequency + offset
+        return centerFrequency + Double(bin - config.fftSize / 2) * binWidth
     }
 
     // MARK: - Window generation
@@ -192,7 +192,7 @@ public extension FFTProcessor {
                    sampleRate: Double, centerFrequency: Double) -> Float {
         let binWidth = sampleRate / Double(config.fftSize)
         let lowBin = max(0, Int((lowFreq - centerFrequency + sampleRate / 2) / binWidth))
-        let highBin = min(config.fftSize / 2 - 1, Int((highFreq - centerFrequency + sampleRate / 2) / binWidth))
+        let highBin = min(config.fftSize - 1, Int((highFreq - centerFrequency + sampleRate / 2) / binWidth))
         guard lowBin <= highBin else { return -120 }
 
         let slice = spectrum[lowBin...highBin]
