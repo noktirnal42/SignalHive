@@ -70,9 +70,9 @@ if [[ "$MOCK_DATA" -eq 1 ]]; then
 fi
 
 if [[ "${#ARGS[@]}" -gt 0 ]]; then
-  /usr/bin/open -n "$APP_PATH" --args "${ARGS[@]}"
+  /usr/bin/open "$APP_PATH" --args "${ARGS[@]}"
 else
-  /usr/bin/open -n "$APP_PATH"
+  /usr/bin/open "$APP_PATH"
 fi
 
 if [[ "$VERIFY" -eq 1 ]]; then
