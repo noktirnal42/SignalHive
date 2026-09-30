@@ -20,7 +20,9 @@ struct MapViewportTests {
         let view = try viewport()
         let middle = view.point(for: GeoCoordinate(latitude: 40, longitude: -100))
         #expect(abs(middle.x - 100) < 1e-9)
-        #expect(abs(middle.y - 50) < 0.2, "Mercator is not quite linear in latitude, so the centre is a hair off 50")
+        // Mercator is not linear in latitude: over two degrees at 40 N the middle latitude sits 0.366 px below the middle of a
+        // 100 px tall view (ln tan(45 + phi/2) worked out independently: 50.36617).
+        #expect(abs(middle.y - 50.36617) < 1e-4)
     }
 
     @Test func pointsAndCoordinatesConvertBothWays() throws {

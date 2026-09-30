@@ -65,7 +65,7 @@ struct RadioCapabilityTests {
 }
 
 struct CodeplugValidatorTests {
-    private func plug(_ target: RadioTarget = .baofengUV5R, _ channels: [CodeplugChannel]) -> Codeplug {
+    private func plug(_ channels: [CodeplugChannel], target: RadioTarget = .baofengUV5R) -> Codeplug {
         Codeplug(name: "Test", target: target, channels: channels)
     }
 
@@ -90,7 +90,7 @@ struct CodeplugValidatorTests {
         #expect(codes(issues).contains(.nameTooLong) && codes(issues).contains(.emptyName))
         #expect(issues.first { $0.code == .nameTooLong }?.message.contains("SHERIFF") == true)
         #expect(issues.first { $0.code == .nameTooLong }?.position == 1)
-        #expect(CodeplugValidator.validate(plug(.unidenSDS100, [channel("SHERIFF DEPT", 155.475)])).isEmpty, "16 characters fit")
+        #expect(CodeplugValidator.validate(plug([channel("SHERIFF DEPT", 155.475)], target: .unidenSDS100)).isEmpty, "16 characters fit")
     }
 
     @Test func channelsWithoutAFrequencyAreProblemsUnlessTheRadioFollowsTalkgroups() {
@@ -98,7 +98,7 @@ struct CodeplugValidatorTests {
         #expect(onBaofeng.first?.code == .noFrequency && onBaofeng.first?.severity == .error)
         #expect(onBaofeng.first?.message.contains("talkgroup") == true)
 
-        let onUniden = CodeplugValidator.validate(plug(.unidenBCD436HP, [channel("TG101", 0, mode: .p25, talkgroup: 101)]))
+        let onUniden = CodeplugValidator.validate(plug([channel("TG101", 0, mode: .p25, talkgroup: 101)], target: .unidenBCD436HP))
         #expect(onUniden.first?.code == .talkgroupOnly && onUniden.first?.severity == .info)
 
         let plain = CodeplugValidator.validate(plug([channel("X", 0)]))
@@ -108,7 +108,7 @@ struct CodeplugValidatorTests {
     @Test func frequenciesOutsideTheRadiosBandsAreWarnings() {
         let air = channel("AIR", 121.9, mode: .am)
         #expect(codes(CodeplugValidator.validate(plug([air]))).contains(.outOfRange))
-        #expect(!codes(CodeplugValidator.validate(plug(.unidenBCD436HP, [air]))).contains(.outOfRange))
+        #expect(!codes(CodeplugValidator.validate(plug([air], target: .unidenBCD436HP))).contains(.outOfRange))
     }
 
     @Test func modesTheRadioCannotDecodeAreProblems() {
@@ -155,9 +155,11 @@ struct CodeplugValidatorTests {
         #expect(counts.errors == 2 && counts.warnings == 1 && counts.notes == 0)
     }
 
-    @Test func issueIdentitiesAreUniquePerChannelAndKind() {
+    @Test func everyIssueHasItsOwnIdentity() {
+        // One channel with a bad tone, a bad code and both set: two "non-standard tone" issues and a conflict.
         let issues = CodeplugValidator.validate(plug([channel("A", 155.1, tone: 100.5, dcs: 24)]))
-        #expect(Set(issues.map(\.id)).count == issues.count - (issues.filter { $0.code == .nonStandardTone }.count - 1))
+        #expect(issues.count == 3)
+        #expect(Set(issues.map(\.id)).count == 3)
     }
 }
 

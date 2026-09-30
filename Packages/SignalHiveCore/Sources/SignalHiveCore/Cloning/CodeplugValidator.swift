@@ -40,7 +40,9 @@ public struct CodeplugIssue: Identifiable, Equatable, Sendable {
     public var position: Int?
     public var message: String
 
-    public var id: String { code.rawValue + "|" + (channelID?.uuidString ?? "plug") }
+    /// Stable across re-checks, and unique: one channel can raise the same kind of issue twice (a bad CTCSS tone and a bad
+    /// DCS code), so the wording is part of the identity.
+    public var id: String { code.rawValue + "|" + (channelID?.uuidString ?? "plug") + "|" + message }
 }
 
 /// Deterministic checks of a codeplug against the radio it is for: the mistakes that waste an evening at the bench
