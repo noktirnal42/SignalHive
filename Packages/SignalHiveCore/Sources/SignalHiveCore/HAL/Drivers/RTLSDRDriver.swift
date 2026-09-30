@@ -59,6 +59,9 @@ public final class RTLSDRDevice: SDRDevice, @unchecked Sendable {
         guard let bridge = RTLSDRBridge.shared, let handle = deviceHandle else {
             throw SDRError.configurationFailed("Device not open")
         }
+        // Use the tuner path. Direct sampling (1/2) bypasses the tuner and only receives HF, so VHF/UHF
+        // (scanner, airband, ADS-B ...) would show noise. Select it explicitly, before tuning.
+        _ = bridge.setDirectSampling(handle, mode: 0)
         // Sample rate
         guard bridge.setSampleRate(handle, rate: UInt32(sampleRate)) == 0 else {
             throw SDRError.configurationFailed("Failed to set sample rate \(sampleRate)")
@@ -74,14 +77,27 @@ public final class RTLSDRDevice: SDRDevice, @unchecked Sendable {
             _ = bridge.setTunerGainMode(handle, manual: 1)
             _ = bridge.setTunerGain(handle, gain: Int32(gain * 10))
         }
-        // Offset tuning for RTL-SDR V4
+        // Offset tuning moves the DC spike away from the centre on tuners that support it (E4000);
+        // R820T/R828D report "unsupported", which is harmless.
         _ = bridge.setOffsetTuning(handle, on: 1)
-        // DC offset / IQ balance
-        _ = bridge.setIQBalance(handle, on: 1)
 
         currentFrequency = frequency
         currentSampleRate = sampleRate
         currentGain = gain
+    }
+
+    /// The device's actual state as reported by librtlsdr, for diagnostics and hardware tests.
+    public struct Diagnostics: Equatable, Sendable {
+        /// 0 = tuner path (required for VHF/UHF), 1/2 = direct sampling (HF only, bypasses the tuner).
+        public var directSampling: Int32
+        public var centerFrequencyHz: UInt32
+    }
+
+    public func diagnostics() -> Diagnostics? {
+        guard let bridge = RTLSDRBridge.shared, let handle = deviceHandle,
+              let direct = bridge.directSamplingMode(handle),
+              let center = bridge.centerFrequency(handle) else { return nil }
+        return Diagnostics(directSampling: direct, centerFrequencyHz: center)
     }
 
     public func startStreaming(callback: @Sendable @escaping (UnsafeBufferPointer<UInt8>, Int) -> Void) async throws {
@@ -150,6 +166,9 @@ final class RTLSDRBridge: @unchecked Sendable {
         @convention(c) (UnsafeMutableRawPointer?, UInt32, UnsafeMutableRawPointer?) -> Void,
         UnsafeMutableRawPointer?, UInt32, UInt32) -> Int32
     private let rtlsdr_set_bias_tee: @convention(c) (OpaquePointer, Int32) -> Int32
+    // Read-back functions (optional: absent in very old librtlsdr builds). Used for diagnostics and tests.
+    private let rtlsdr_get_direct_sampling: (@convention(c) (OpaquePointer) -> Int32)?
+    private let rtlsdr_get_center_freq: (@convention(c) (OpaquePointer) -> UInt32)?
 
     private init?() {
         let paths = [
@@ -196,6 +215,12 @@ final class RTLSDRBridge: @unchecked Sendable {
         rtlsdr_cancel_async        = unsafeBitCast(f12, to: (@convention(c) (OpaquePointer) -> Int32).self)
         rtlsdr_read_async          = unsafeBitCast(f13, to: (@convention(c) (OpaquePointer, @convention(c) (UnsafeMutableRawPointer?, UInt32, UnsafeMutableRawPointer?) -> Void, UnsafeMutableRawPointer?, UInt32, UInt32) -> Int32).self)
         rtlsdr_set_bias_tee        = unsafeBitCast(f14, to: (@convention(c) (OpaquePointer, Int32) -> Int32).self)
+        rtlsdr_get_direct_sampling = dlsym(h, "rtlsdr_get_direct_sampling").map {
+            unsafeBitCast($0, to: (@convention(c) (OpaquePointer) -> Int32).self)
+        }
+        rtlsdr_get_center_freq = dlsym(h, "rtlsdr_get_center_freq").map {
+            unsafeBitCast($0, to: (@convention(c) (OpaquePointer) -> UInt32).self)
+        }
     }
 
     deinit { dlclose(handle) }
@@ -261,10 +286,16 @@ final class RTLSDRBridge: @unchecked Sendable {
         rtlsdr_set_offset_tuning(handle, on)
     }
 
+    /// mode: 0 = normal tuner path, 1 = direct sampling on the I branch, 2 = on the Q branch.
     @discardableResult
-    func setIQBalance(_ handle: OpaquePointer, on: Int32) -> Int32 {
-        rtlsdr_set_direct_sampling(handle, on)
+    func setDirectSampling(_ handle: OpaquePointer, mode: Int32) -> Int32 {
+        rtlsdr_set_direct_sampling(handle, mode)
     }
+
+    /// 0 = normal tuner path, 1 = direct sampling on the I branch, 2 = on the Q branch. Nil when unsupported.
+    func directSamplingMode(_ handle: OpaquePointer) -> Int32? { rtlsdr_get_direct_sampling?(handle) }
+
+    func centerFrequency(_ handle: OpaquePointer) -> UInt32? { rtlsdr_get_center_freq?(handle) }
 
     @discardableResult
     func resetBuffer(_ handle: OpaquePointer) -> Int32 { rtlsdr_reset_buffer(handle) }
