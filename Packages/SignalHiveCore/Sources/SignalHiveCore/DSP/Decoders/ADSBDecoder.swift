@@ -163,7 +163,6 @@ public struct AircraftPosition: Sendable {
 // MARK: - ADS-B Decoder
 
 /// Decodes Mode S messages at 1090 MHz.
-/// Bridges to libmodes (watson/libmodes, MIT license) via Swift C interop.
 public final class ADSBDecoder: SignalDecoder, @unchecked Sendable {
     public let identifier = "ADS-B"
     public let requiredBandwidth: Double = 4_000_000  // 1090 MHz ±2 MHz
