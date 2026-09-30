@@ -17,6 +17,9 @@ Codex sessions):
 - **All Swift where feasible.** Existing decoders/demodulators in other languages are to be re-implemented as
   original Swift code, using existing projects only as inspiration. External command-line tools (`multimon-ng`,
   `dsdccx`) are temporary adapters only.
+- **The Scanner must behave like a real police/radio scanner** (owner, 2026-09-29): quickly sweep and find active
+  frequencies, identify them (from FCC data: who holds the license, which county/service), cover trunked and other
+  common systems with the useful decoders, hold/skip/lockout, and let users **save channels** into scan lists.
 - Visually distinctive, animated instrument-style UI; no generic AI-generated look. A painted app icon.
 - AI features: Core ML, Apple Foundation Models (on-device and Private Cloud Compute), MLX models from Hugging
   Face with a downloader that annotates which models will run well on this Mac.
@@ -66,7 +69,7 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
 | RTL-SDR detected over USB | Pass (dongle "Generic RTL2832U OEM" enumerates; Workshop shows 2 sources) | `rtl_probe`, Workshop gauge |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
-| Scanner: live spectrum, tuning, demod audio from the RTL-SDR | **Not yet verified** | next |
+| Scanner: live spectrum, tuning, demod audio from the RTL-SDR | **Partly broken**: streams from the dongle and the Test Signal, but (a) `FFTProcessor` drops the lower half of the band for IQ input, so the spectrum, centre and Frequency Finder are wrong; (b) the waterfall never receives rows; (c) no way to type/step a frequency; (d) the dongle showed no FM stations with librtlsdr's own `rtl_power` (probably no antenna attached); (e) audio not verified | Driven in the running app; see section 5 |
 | Decoders (ADS-B, UAT, ACARS, AIS, Morse, ...) | Code exists in core with unit tests; **no UI to use them yet** (Workshop lists them as capabilities) | |
 | Trunked (OpenMHz browser) | Not verified; needs network | |
 | AI Lab (Foundation Models / PCC probes, MLX catalog) | Builds; catalog/compat logic unit-tested; runtime probes not verified; MLX inference and downloader are not implemented | GPT's own note |
@@ -96,6 +99,10 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
    A code comment in `SDRDeviceManager` blames libusb's hotplug thread for "heap corruption if no device is
    connected"; that diagnosis was wrong (the overflow needs a device). The launch-time scan is safe again.
 
+5b. **Dongle configured in direct-sampling mode** (bypasses the tuner, HF only): `configure()` called a method named
+   `setIQBalance` that was wired to `rtlsdr_set_direct_sampling(on: 1)`. Reproduced on the real dongle (read-back
+   said mode 1); fixed and covered by a hardware test (`RTLSDRHardwareTests`).
+
 ## 6. Known issues and gaps (not yet fixed)
 
 - Browse shows five columns at the default 900x450 window (app sidebar, states, counties, licenses, detail):
@@ -110,6 +117,10 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 - Agency grouping and Census county names (planned in the data plan, Task 10) are not built.
 
 ## 7. Roadmap
+
+Scanner sub-project (owner priority): see `docs/superpowers/specs/2026-09-29-scanner-design.md`. Order:
+S1 correct spectrum/waterfall/tuning, S2 scan engine + identification + saved channels (core, tested),
+S3 scanner UI, S4 trunking/decoder hand-off.
 
 1. Verify and fix **Scanner with the local RTL-SDR** (tune, spectrum, waterfall, AM/NFM/WFM demod audio).
 2. A **Decoder Hub** that puts the existing decoders behind a UI (ADS-B map first, then Morse, ACARS, AIS, ...).
