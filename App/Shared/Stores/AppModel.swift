@@ -226,6 +226,14 @@ final class AppModel: ObservableObject {
         persistCodeplug()
     }
 
+    /// Adds trunked talkgroups to the open codeplug; returns how many were new.
+    @discardableResult
+    func addTalkgroups(_ talkgroups: [TrunkedTalkgroup], on system: TrunkedSystem) -> Int {
+        let added = codeplug.addTalkgroups(talkgroups, on: system)
+        if added > 0 { persistCodeplug() }
+        return added
+    }
+
     func removeChannel(_ channel: CodeplugChannel) {
         codeplug.remove(channelID: channel.id)
         persistCodeplug()
@@ -247,6 +255,96 @@ final class AppModel: ObservableObject {
     func newCodeplug(name: String, target: RadioTarget) {
         codeplug = Codeplug(name: name, target: target)
         persistCodeplug()
+    }
+
+    /// Switches to a saved codeplug.
+    func selectCodeplug(_ id: UUID) {
+        if let found = codeplugs.first(where: { $0.id == id }) { codeplug = found }
+    }
+
+    func renameCodeplug(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        codeplug.name = trimmed
+        codeplug.updatedAt = Date()
+        persistCodeplug()
+    }
+
+    func setCodeplugTarget(_ target: RadioTarget) {
+        codeplug.target = target
+        codeplug.updatedAt = Date()
+        persistCodeplug()
+    }
+
+    /// Deletes a codeplug from the database. If it was the open one, another takes its place (or a fresh empty one).
+    func deleteCodeplug(_ id: UUID) {
+        guard let userData else { return }
+        Task {
+            do {
+                try await userData.deleteCodeplug(id: id)
+                codeplugs = try await userData.codeplugs()
+                if codeplug.id == id {
+                    codeplug = codeplugs.first ?? Codeplug()
+                    if codeplugs.isEmpty { persistCodeplug() }
+                }
+            } catch {
+                lastError = "Could not delete the codeplug: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    func duplicateCodeplug() {
+        var copy = codeplug
+        copy.id = UUID()
+        copy.name = codeplug.name + " copy"
+        copy.createdAt = Date()
+        copy.updatedAt = Date()
+        codeplug = copy
+        persistCodeplug()
+    }
+
+    func updateChannel(_ channel: CodeplugChannel) {
+        codeplug.update(channel)
+        persistCodeplug()
+    }
+
+    func moveChannels(from source: IndexSet, to destination: Int) {
+        codeplug.moveChannels(from: source, to: destination)
+        persistCodeplug()
+    }
+
+    func duplicateChannel(_ channel: CodeplugChannel) {
+        codeplug.duplicate(channelID: channel.id)
+        persistCodeplug()
+    }
+
+    func sortCodeplugByFrequency() {
+        codeplug.sortByFrequency()
+        persistCodeplug()
+    }
+
+    @discardableResult
+    func removeDuplicateChannels() -> Int {
+        let removed = codeplug.removeDuplicates()
+        if removed > 0 { persistCodeplug() }
+        return removed
+    }
+
+    @discardableResult
+    func fitCodeplugToRadio() -> (shortenedNames: Int, dropped: Int) {
+        let result = codeplug.fitToRadio()
+        if result.shortenedNames > 0 || result.dropped > 0 { persistCodeplug() }
+        return result
+    }
+
+    /// Adds the channels of a CHIRP CSV to the open codeplug. Returns what was read and what was skipped.
+    func importCHIRP(csv: String) -> CHIRPCSVImporter.Result {
+        let result = CHIRPCSVImporter.parse(csv)
+        if !result.channels.isEmpty {
+            codeplug.insert(result.channels)
+            persistCodeplug()
+        }
+        return result
     }
 
     func tuneInScanner(frequencyHz: Double) {
