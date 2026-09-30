@@ -142,16 +142,6 @@ final class ModeSPipeline: @unchecked Sendable {
     }
 }
 
-/// How a receiver is doing, for the status line.
-public struct ReceiverHealth: Sendable, Equatable {
-    /// Blocks of samples received from the dongle.
-    public var blocks: Int
-    /// Valid frames found in them.
-    public var frames: Int
-    /// Seconds since the last block; nil before the first one.
-    public var secondsSinceLastBlock: TimeInterval?
-}
-
 /// Receives 1090 MHz ADS-B and Mode S from an SDR that delivers unsigned 8-bit I/Q (an RTL-SDR, or one behind
 /// `rtl_tcp`), and hands the aircraft it hears to a callback twice a second.
 public actor ADSB1090Receiver {

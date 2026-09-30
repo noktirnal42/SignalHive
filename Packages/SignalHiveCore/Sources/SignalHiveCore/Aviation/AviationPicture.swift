@@ -150,3 +150,19 @@ public struct AviationPicture: Sendable, Equatable {
         revision += 1
     }
 }
+
+/// How a receiver is doing, for the status line.
+public struct ReceiverHealth: Sendable, Equatable {
+    /// Blocks of samples received from the dongle.
+    public var blocks: Int
+    /// Valid frames found in them.
+    public var frames: Int
+    /// Seconds since the last block; nil before the first one.
+    public var secondsSinceLastBlock: TimeInterval?
+
+    public init(blocks: Int, frames: Int, secondsSinceLastBlock: TimeInterval?) {
+        self.blocks = blocks
+        self.frames = frames
+        self.secondsSinceLastBlock = secondsSinceLastBlock
+    }
+}

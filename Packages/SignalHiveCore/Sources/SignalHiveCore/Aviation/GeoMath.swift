@@ -11,6 +11,52 @@ public struct GeoCoordinate: Sendable, Hashable, Codable {
         self.longitude = longitude
     }
 
+    /// Reads a position typed by a person: "40.1234, -100.5", "40.1234 -100.5", or "40.1234 N 100.5 W" (degree signs
+    /// and letters are optional; S and W make a value negative). Returns nil when it is not a valid position.
+    public static func parse(_ text: String) -> GeoCoordinate? {
+        let cleaned = text.uppercased()
+            .replacingOccurrences(of: "\u{00B0}", with: " ")
+            .replacingOccurrences(of: ",", with: " ")
+            .replacingOccurrences(of: ";", with: " ")
+        var numbers: [Double] = []
+        var hemispheres: [Character?] = []
+        for token in cleaned.split(whereSeparator: { $0.isWhitespace }) {
+            var body = String(token)
+            var hemisphere: Character?
+            if let last = body.last, "NSEW".contains(last) {
+                hemisphere = last
+                body.removeLast()
+            } else if let first = body.first, "NSEW".contains(first) {
+                hemisphere = first
+                body.removeFirst()
+            }
+            if body.isEmpty {
+                // A letter on its own belongs to the number before it: "40.1 N".
+                if let hemisphere, !numbers.isEmpty, hemispheres[hemispheres.count - 1] == nil {
+                    hemispheres[hemispheres.count - 1] = hemisphere
+                    continue
+                }
+                return nil
+            }
+            guard let value = Double(body), value.isFinite else { return nil }
+            numbers.append(value)
+            hemispheres.append(hemisphere)
+        }
+        guard numbers.count == 2 else { return nil }
+        var latitude = numbers[0]
+        var longitude = numbers[1]
+        if hemispheres[0] == "S" { latitude = -abs(latitude) }
+        if hemispheres[1] == "W" { longitude = -abs(longitude) }
+        // "100.5 W 40.1 N": longitude first, when the letters say so.
+        if hemispheres[0] == "E" || hemispheres[0] == "W" || hemispheres[1] == "N" || hemispheres[1] == "S" {
+            swap(&latitude, &longitude)
+            if hemispheres[1] == "S" { latitude = -abs(latitude) }
+            if hemispheres[0] == "W" { longitude = -abs(longitude) }
+        }
+        let result = GeoCoordinate(latitude: latitude, longitude: longitude)
+        return result.isValid ? result : nil
+    }
+
     /// Finite and on the globe. Decoders can hand over garbage when a frame is corrupt but still passes a checksum.
     public var isValid: Bool {
         latitude.isFinite && longitude.isFinite && abs(latitude) <= 90 && abs(longitude) <= 180

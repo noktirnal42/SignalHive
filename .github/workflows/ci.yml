@@ -72,3 +72,23 @@ jobs:
             echo "=== $log ==="
             grep -E "error:" "$log" | sort -u | head -100
           done
+
+  project:
+    name: Committed Xcode project builds
+    runs-on: macos-26
+    timeout-minutes: 45
+    # What someone without XcodeGen opens: SignalHive.xcodeproj as committed. It must list every source file
+    # (script/register_app_sources.py adds new ones).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every App source file is registered
+        run: python3 script/register_app_sources.py --check
+      - name: Build macOS app from the committed project
+        run: |
+          set -o pipefail
+          xcodebuild -project SignalHive.xcodeproj -scheme SignalHive -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log | tail -n 5
+      - name: Compiler errors
+        if: failure()
+        run: grep -E "error:" build.log | sort -u | head -100

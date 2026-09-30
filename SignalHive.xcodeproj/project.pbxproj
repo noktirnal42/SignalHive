@@ -62,6 +62,18 @@
 		FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
 		FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 		FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
+		1B37A98EF15EE1223885E9BB /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2BC0CA485DB24AB480B634 /* AirMapView.swift */; };
+		2E90BBE82E96AB256AB379EE /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA91A5667F7441B4B8B0330 /* AviationModel.swift */; };
+		3C0EE6A59049B87691DD4216 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
+		3E015259BE7896D15ADBEB43 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2BC0CA485DB24AB480B634 /* AirMapView.swift */; };
+		4CD015D69D4CC2B5B0ECB13F /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
+		6092FCE97E98B0A5016AE03D /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
+		6626B1459BA96E72DAA86410 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2BC0CA485DB24AB480B634 /* AirMapView.swift */; };
+		727363CBE0C66A5F71007BFB /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA91A5667F7441B4B8B0330 /* AviationModel.swift */; };
+		74F59E9D4EF82AF6653A0CFE /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA91A5667F7441B4B8B0330 /* AviationModel.swift */; };
+		7B3D33B30519F190831AB3E8 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
+		CD43E56250E2C6A8D6056817 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
+		D56493188259778AD195197E /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -94,6 +106,10 @@
 		F6884868AC2561809B1890F7 /* MenuBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarApp.swift; sourceTree = "<group>"; };
 		FE53DC740AEEAF549EF95771 /* MacPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPlatform.swift; sourceTree = "<group>"; };
 		FE79022937FEAE9AAA3DBFBD /* SignalHiveMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHiveMenuBar.entitlements; sourceTree = "<group>"; };
+		35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftIconRenderer.swift; sourceTree = "<group>"; };
+		9FA91A5667F7441B4B8B0330 /* AviationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationModel.swift; sourceTree = "<group>"; };
+		A956D185F00F09375E48A2B1 /* AirDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDataView.swift; sourceTree = "<group>"; };
+		FD2BC0CA485DB24AB480B634 /* AirMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -154,6 +170,7 @@
 				49A6491476F78E7B4EB6E58C /* Design */,
 				1ACBAD8D417904F0271CD964 /* Stores */,
 				D7EA068CBA56C88CA6DB41E6 /* Views */,
+				56BCBB987E54C58AA256453E /* Aviation */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -243,8 +260,19 @@
 				8A7BC3463759467EC305C361 /* SettingsView.swift */,
 				0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */,
 				69AFB203A996B9F769878976 /* WorkshopView.swift */,
+				A956D185F00F09375E48A2B1 /* AirDataView.swift */,
+				FD2BC0CA485DB24AB480B634 /* AirMapView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		56BCBB987E54C58AA256453E /* Aviation */ = {
+			isa = PBXGroup;
+			children = (
+				35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */,
+				9FA91A5667F7441B4B8B0330 /* AviationModel.swift */,
+			);
+			path = Aviation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -402,6 +430,10 @@
 				4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */,
 				66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */,
 				193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */,
+				6626B1459BA96E72DAA86410 /* AirMapView.swift in Sources */,
+				74F59E9D4EF82AF6653A0CFE /* AviationModel.swift in Sources */,
+				7B3D33B30519F190831AB3E8 /* AirDataView.swift in Sources */,
+				D56493188259778AD195197E /* AircraftIconRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,6 +457,10 @@
 				A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */,
 				73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */,
 				C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */,
+				3E015259BE7896D15ADBEB43 /* AirMapView.swift in Sources */,
+				6092FCE97E98B0A5016AE03D /* AirDataView.swift in Sources */,
+				727363CBE0C66A5F71007BFB /* AviationModel.swift in Sources */,
+				CD43E56250E2C6A8D6056817 /* AircraftIconRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -449,6 +485,10 @@
 				A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */,
 				36812FF465737730CC288846 /* TrunkedView.swift in Sources */,
 				E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */,
+				1B37A98EF15EE1223885E9BB /* AirMapView.swift in Sources */,
+				2E90BBE82E96AB256AB379EE /* AviationModel.swift in Sources */,
+				3C0EE6A59049B87691DD4216 /* AirDataView.swift in Sources */,
+				4CD015D69D4CC2B5B0ECB13F /* AircraftIconRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

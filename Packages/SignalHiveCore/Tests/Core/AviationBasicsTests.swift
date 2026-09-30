@@ -39,6 +39,21 @@ struct GeoMathTests {
         #expect(abs(GeoMath.mercatorY(latitude: 0)) < 1e-12)
     }
 
+    @Test(arguments: [
+        ("40.1234, -100.5", 40.1234, -100.5), ("40.1234 -100.5", 40.1234, -100.5), ("  40.1234,-100.5 ", 40.1234, -100.5),
+        ("40.1234 N 100.5 W", 40.1234, -100.5), ("40.1234N, 100.5W", 40.1234, -100.5), ("33.9 S 151.2 E", -33.9, 151.2),
+        ("40.1234\u{00B0}, -100.5\u{00B0}", 40.1234, -100.5), ("100.5 W 40.1234 N", 40.1234, -100.5),
+    ] as [(String, Double, Double)])
+    func typedPositionsAreUnderstood(text: String, latitude: Double, longitude: Double) throws {
+        let parsed = try #require(GeoCoordinate.parse(text))
+        #expect(abs(parsed.latitude - latitude) < 1e-9 && abs(parsed.longitude - longitude) < 1e-9)
+    }
+
+    @Test(arguments: ["", "hello", "40", "40, 200", "95, 10", "40 50 60", "N N"])
+    func nonsensePositionsAreRefused(text: String) {
+        #expect(GeoCoordinate.parse(text) == nil)
+    }
+
     @Test func invalidCoordinatesAreRejected() {
         #expect(!GeoCoordinate(latitude: 91, longitude: 0).isValid)
         #expect(!GeoCoordinate(latitude: 0, longitude: .nan).isValid)
