@@ -31,13 +31,6 @@ targets:
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: true
         ENABLE_HARDENED_RUNTIME: true
-    entitlements:
-      path: App/macOS/SignalHive.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.device.usb: true
-        com.apple.security.network.client: true
-        com.apple.security.files.user-selected.read-write: true
   SignalHiveMenuBar:
     type: application
     platform: macOS
@@ -55,13 +48,6 @@ targets:
         CODE_SIGN_STYLE: Automatic
         INFOPLIST_FILE: App/MenuBar/Info.plist
         ENABLE_HARDENED_RUNTIME: true
-    entitlements:
-      path: App/MenuBar/SignalHiveMenuBar.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.device.usb: true
-        com.apple.security.network.client: true
-        com.apple.security.files.user-selected.read-only: true
   SignalHive-iOS:
     type: application
     platform: iOS

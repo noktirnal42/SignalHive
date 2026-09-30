@@ -72,7 +72,7 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | macOS, menu-bar and iOS targets build | Pass | `xcodebuild` for all three schemes |
 | App launches without crashing | **Pass** after fix: 0 of 20 launches crashed (was 4 of 8) | `script/launch_stability_test.sh` |
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
-| RTL-SDR detected over USB | **Native Swift path integrated.** SignalHive now depends on `Packages/SwiftRTLSDR` and uses `NativeRTLSDRDevice` over Apple's IOUSBHost API; no `dlopen(librtlsdr)` is used for RTL-SDR. Main macOS app has the USB entitlement; menu-bar target now has it too. | SignalHiveCore hardware tests exercised the attached dongle; SwiftRTLSDR tests passed |
+| RTL-SDR detected over USB | **Native Swift path integrated.** SignalHive now depends on `Packages/SwiftRTLSDR` and uses `NativeRTLSDRDevice` over Apple's IOUSBHost API; no `dlopen(librtlsdr)` is used for RTL-SDR. The local macOS app is intentionally unsandboxed because IOUSBHost whole-device open is blocked in the App Sandbox on the tested RTL2832U/R820T dongle. | SignalHiveCore hardware tests exercised the attached dongle; sandboxed self-test failed before unsandboxing with `IOKit 0xe00002e2` / `0xe00002c9` |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
 | Scanner display: spectrum, waterfall, tuning, volume | **Fixed and verified on the real dongle (S1)**: full centre-shifted spectrum, fed high-resolution waterfall (2048x400 pixel buffer, inferno palette, 25 rows/s, selectable 125 Hz - 1 kHz detail), auto-scaling, typed/stepped/click-to-tune frequency snapped to the step grid, volume + mute. Tests: FFT tones, waterfall buffer, palette, throttle, frequency entry, volume | Running app with the RTL-SDR; 102 tests |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
@@ -133,6 +133,9 @@ is the next task after the channelizer; results go into a table below.
 - SwiftRTLSDR PR #1 is still draft/in progress. Once it merges, update `Packages/SwiftRTLSDR`, rerun both package
   test suites, then wire stable scanner/server/AGC features into SignalHive. Claude's follow-on dump1090 and dump978
   work should be handled the same way: upstream first, then embedded-copy sync and SignalHive integration.
+- App Sandbox and direct RTL-SDR USB access are not currently compatible in this build. Do not re-enable sandboxing
+  for the macOS targets until IOUSBHost access is proven on real hardware inside the sandbox, or until the driver is
+  moved behind a privileged helper / DriverKit path.
 - No test target exists for the app layer (views/model); only the package is unit-tested.
 - Agency grouping and Census county names (planned in the data plan, Task 10) are not built.
 
