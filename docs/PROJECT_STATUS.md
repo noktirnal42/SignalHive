@@ -14,6 +14,9 @@ Codex sessions):
   paging, P25/DMR metadata, ...), trunking, weather and satellite reception, radio programming and control.
 - Support for external hardware: GPS, ESP32, Raspberry Pi, Arduino, Wi-Fi/Bluetooth/IoT, ham radios, scanners.
 - **RTL-SDR is a local USB dongle on the Mac** (primary path). Network/Raspberry Pi sources come later.
+- **Originalize everything** (owner, 2026-09-29): every external library, decoder, demodulator and driver is to be
+  refactored into original Swift code, using the external code only as inspiration/reference. Plan, rules and
+  order: `docs/superpowers/specs/2026-09-29-originalization-plan.md`.
 - **All Swift where feasible.** Existing decoders/demodulators in other languages are to be re-implemented as
   original Swift code, using existing projects only as inspiration. External command-line tools (`multimon-ng`,
   `dsdccx`) are temporary adapters only.
@@ -67,7 +70,7 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | macOS, menu-bar and iOS targets build | Pass | `xcodebuild` for all three schemes |
 | App launches without crashing | **Pass** after fix: 0 of 20 launches crashed (was 4 of 8) | `script/launch_stability_test.sh` |
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
-| RTL-SDR detected over USB | Pass (dongle "Generic RTL2832U OEM" enumerates; Workshop shows 2 sources) | `rtl_probe`, Workshop gauge |
+| RTL-SDR detected over USB | **Unsigned build: yes** (2 sources). **Signed, sandboxed build: NO** (Workshop shows 1 source, the Test Signal): the sandbox/hardened runtime cannot load Homebrew's librtlsdr. This is very likely why the owner's radio features do not work. Fix = native Swift driver (originalization plan, step 1) | `rtl_probe`; ad-hoc signed build launched and Workshop read |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
 | Scanner display: spectrum, waterfall, tuning, volume | **Fixed and verified on the real dongle (S1)**: full centre-shifted spectrum, fed high-resolution waterfall (2048x400 pixel buffer, inferno palette, 25 rows/s, selectable 125 Hz - 1 kHz detail), auto-scaling, typed/stepped/click-to-tune frequency snapped to the step grid, volume + mute. Tests: FFT tones, waterfall buffer, palette, throttle, frequency entry, volume | Running app with the RTL-SDR; 102 tests |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
