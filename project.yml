@@ -27,6 +27,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.noktirnal42.SignalHive
         PRODUCT_NAME: SignalHive
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: true
         ENABLE_HARDENED_RUNTIME: true
@@ -50,6 +51,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.noktirnal42.SignalHive.MenuBar
         PRODUCT_NAME: SignalHive MenuBar
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         INFOPLIST_FILE: App/MenuBar/Info.plist
         ENABLE_HARDENED_RUNTIME: true
@@ -71,6 +73,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.noktirnal42.SignalHive
         PRODUCT_NAME: SignalHive
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: false
         INFOPLIST_FILE: App/iOS/Info.plist

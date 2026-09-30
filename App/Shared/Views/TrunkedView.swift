@@ -9,6 +9,7 @@ struct TrunkedView: View {
     @State private var talkgroups: [TrunkedTalkgroup] = []
     @State private var loadingTGs = false
     @State private var error: String?
+    @State private var talkgroupError: String?
 
     var body: some View {
         NavigationSplitView {
@@ -71,6 +72,17 @@ struct TrunkedView: View {
                 Section(system.name) {
                     if loadingTGs {
                         ProgressView()
+                    } else if let talkgroupError {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Could not load talkgroups")
+                                .font(.callout)
+                            Text(talkgroupError)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Button("Retry") {
+                                Task { await loadTalkgroups() }
+                            }
+                        }
                     } else if talkgroups.isEmpty {
                         Text("No talkgroups on file")
                             .font(.caption)
@@ -118,6 +130,7 @@ struct TrunkedView: View {
     private func loadSystems() async {
         loading = true
         error = nil
+        talkgroupError = nil
         defer { loading = false }
         do {
             systems = try await OpenMHzClient.systems()
@@ -129,7 +142,13 @@ struct TrunkedView: View {
     private func loadTalkgroups() async {
         guard let system = selectedSystem else { return }
         loadingTGs = true
+        talkgroupError = nil
         defer { loadingTGs = false }
-        talkgroups = (try? await OpenMHzClient.talkgroups(systemShortName: system.shortName)) ?? []
+        do {
+            talkgroups = try await OpenMHzClient.talkgroups(systemShortName: system.shortName)
+        } catch {
+            talkgroups = []
+            talkgroupError = error.localizedDescription
+        }
     }
 }

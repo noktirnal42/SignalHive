@@ -11,6 +11,7 @@ struct SignalHiveApp: App {
         }
         #if os(macOS)
         .windowStyle(.automatic)
+        .defaultSize(width: 1280, height: 780)
         #endif
 
         #if os(macOS)

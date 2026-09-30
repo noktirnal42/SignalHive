@@ -217,7 +217,7 @@ struct MenuHeaderView: View {
             if model.importActive, let progress = model.importProgress {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text(progress.phase.rawValue.capitalized)
+                        Text(progress.phase)
                             .font(.caption.weight(.medium))
                         Spacer()
                         Text("\(Int(progress.fraction * 100))%")
@@ -226,9 +226,6 @@ struct MenuHeaderView: View {
                     }
                     ProgressView(value: min(1, max(0, progress.fraction)))
                         .tint(.blue)
-                    Text(progress.detail)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
                 }
             } else if let summary = model.lastImportSummary {
                 Label(summary, systemImage: "checkmark.circle.fill")
@@ -238,7 +235,7 @@ struct MenuHeaderView: View {
                 HStack {
                     Image(systemName: "cylinder")
                         .foregroundStyle(.blue)
-                    Text("\(model.stats.licenses) licenses, \(model.stats.frequencies) frequencies")
+                    Text("\(model.installedCount) states installed")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer()

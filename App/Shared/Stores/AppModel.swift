@@ -6,84 +6,180 @@ import SignalHiveCore
 @Observable
 @MainActor
 final class AppModel: ObservableObject {
-    var database: AppDatabase?
-    var databaseReady = false
+
+    // Data
+    @ObservationIgnored let packs: PackStore
+    @ObservationIgnored let browse: any BrowseDataSource
+    @ObservationIgnored private var userData: UserDatabase?
+    var states: [StateAvailability] = []
+    /// Live progress for installs in flight (the pack store only reports milestones).
+    var liveStatus: [String: PackStatus] = [:]
+    /// Why the hosted pack list is unavailable. Not fatal: local build still works.
+    var manifestNote: String?
+    var lastError: String?
     var databaseError: String?
+    var databaseReady = false
 
-    var importProgress: ULSImportProgress?
+    // "Build from FCC on this Mac"
     var importActive = false
+    var importProgress: PackBuildProgress?
     var lastImportSummary: String?
+    var localBuildServices: Set<ULSService.ID> = [ULSService.lmPriv.rawValue, ULSService.lmComm.rawValue]
+    @ObservationIgnored private var buildTask: Task<Void, Never>?
 
-    var stats: (licenses: Int, frequencies: Int, locations: Int) = (0, 0, 0)
+    // Codeplug
     var codeplug = Codeplug()
     var codeplugs: [Codeplug] = []
 
     // Cross-view navigation intent
     var pendingScanFrequency: Double?
 
-    private var importer = ULSImporter()
+    @ObservationIgnored private var didBootstrap = false
 
-    init() {
+    // MARK: Locations
+
+    /// `-supportDirectory <path>` on the command line (or the same UserDefaults key) redirects all app data,
+    /// so a test run never touches the real library.
+    static var supportDirectory: URL {
+        if let override = UserDefaults.standard.string(forKey: "supportDirectory"), !override.isEmpty {
+            return URL(fileURLWithPath: override, isDirectory: true)
+        }
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return base.appendingPathComponent("SignalHive", isDirectory: true)
+    }
+    static var userDataURL: URL { supportDirectory.appendingPathComponent("UserData.sqlite") }
+    static var packDirectory: URL { supportDirectory.appendingPathComponent("Packs", isDirectory: true) }
+    static var localPacksDirectory: URL { supportDirectory.appendingPathComponent("LocalPacks", isDirectory: true) }
+    static var workDirectory: URL { supportDirectory.appendingPathComponent("Work", isDirectory: true) }
+    static var legacyDatabaseURL: URL { supportDirectory.appendingPathComponent("SignalHive.sqlite") }
+
+    // MARK: Init
+
+    convenience init() {
+        let packs = PackStore(manifestBaseURL: AppConfiguration.packBaseURL, installDirectory: Self.packDirectory)
+        if AppConfiguration.usesMockData {
+            self.init(browse: MockBrowseDataSource(), packs: packs)
+        } else {
+            self.init(browse: PackBrowseDataSource(packs: packs), packs: packs)
+        }
         Task { await bootstrap() }
     }
 
+    /// Injectable form for previews and tests.
+    init(browse: any BrowseDataSource, packs: PackStore) {
+        self.browse = browse
+        self.packs = packs
+    }
+
+    var installedCount: Int {
+        states.filter { if case .installed = $0.status { return true } else { return false } }.count
+    }
+
+    func status(for code: String) -> PackStatus {
+        liveStatus[code] ?? states.first { $0.code == code }?.status ?? .notInstalled(sizeBytes: nil)
+    }
+
+    // MARK: Bootstrap
+
     func bootstrap() async {
+        guard !didBootstrap else { return }
+        didBootstrap = true
         do {
-            let db = try await AppDatabase.open(at: AppDatabase.defaultURL().path)
-            try await db.seedStatesIfNeeded()
-            database = db
+            try FileManager.default.createDirectory(at: Self.supportDirectory, withIntermediateDirectories: true)
+            let db = try await UserDatabase.open(at: Self.userDataURL.path)
+            userData = db
             databaseReady = true
-            await refreshStats()
-            codeplugs = (try? await db.codeplugs()) ?? []
-            if let first = codeplugs.first {
-                codeplug = first
-            }
+            _ = try await db.migrateCodeplugsIfNeeded(fromLegacy: Self.legacyDatabaseURL.path)
+            codeplugs = try await db.codeplugs()
+            if let first = codeplugs.first { codeplug = first }
         } catch {
             databaseError = error.localizedDescription
         }
+        await refreshManifest()
+        await refreshStates()
     }
 
-    func refreshStats() async {
-        guard let database else { return }
-        stats = (try? await database.stats()) ?? (0, 0, 0)
+    func refreshManifest() async {
+        guard !AppConfiguration.usesMockData else {
+            manifestNote = "Demo data is active. Launch without -mockData to use installed FCC packs."
+            return
+        }
+        do {
+            try await packs.refreshManifest()
+            manifestNote = nil
+        } catch {
+            manifestNote = error.localizedDescription
+        }
     }
 
-    // MARK: ULS import
+    func refreshStates() async {
+        states = await browse.states()
+    }
 
-    func importServices(_ services: [ULSService]) async {
-        guard let database, !importActive else { return }
+    // MARK: Packs
+
+    func install(state: String) async {
+        lastError = nil
+        do {
+            try await packs.install(state: state) { [weak self] status in
+                Task { @MainActor in self?.liveStatus[state] = status }
+            }
+        } catch {
+            lastError = error.localizedDescription
+        }
+        liveStatus[state] = nil
+        await refreshStates()
+    }
+
+    func removePack(state: String) async {
+        do {
+            try await packs.remove(state: state)
+        } catch {
+            lastError = error.localizedDescription
+        }
+        await refreshStates()
+    }
+
+    // MARK: Local build
+
+    func buildLocally(states requested: Set<String>) async {
+        guard !importActive else { return }
         importActive = true
+        importProgress = nil
         lastImportSummary = nil
-
-        await importer.setProgressHandler { [weak self] progress in
-            Task { @MainActor in
-                self?.importProgress = progress
-            }
-        }
-
-        var total = 0
-        for service in services {
-            do {
-                total += try await importer.importService(service, into: database)
-            } catch is CancellationError {
-                break
-            } catch {
-                lastImportSummary = "Import failed: \(error.localizedDescription)"
-                importActive = false
-                importProgress = nil
-                await refreshStats()
-                return
-            }
-        }
-
-        lastImportSummary = "Imported \(total) records from \(services.count) service(s)"
+        lastError = nil
+        let task = Task { await performLocalBuild(requested) }
+        buildTask = task
+        await task.value
+        buildTask = nil
         importActive = false
         importProgress = nil
-        await refreshStats()
+        for code in requested { liveStatus[code] = nil }
+        await refreshStates()
     }
 
     func cancelImport() {
-        Task { await importer.cancel() }
+        buildTask?.cancel()
+    }
+
+    private func performLocalBuild(_ requested: Set<String>) async {
+        for code in requested { liveStatus[code] = .downloading(progress: 0) }
+        let services = ULSService.allCases.filter { localBuildServices.contains($0.id) }
+        let service = LocalPackService(workDirectory: Self.workDirectory, outputDirectory: Self.localPacksDirectory)
+        do {
+            let manifest = try await service.build(services: services, states: requested) { [weak self] progress in
+                Task { @MainActor in self?.importProgress = progress }
+            }
+            let local = PackStore(manifestBaseURL: Self.localPacksDirectory, installDirectory: Self.packDirectory)
+            for pack in manifest.packs { try await local.install(state: pack.stateCode) { _ in } }
+            let built = manifest.packs.map(\.stateCode).sorted().joined(separator: ", ")
+            lastImportSummary = "Built \(built) from FCC data (snapshot \(manifest.fccSnapshotDate))"
+        } catch is CancellationError {
+            lastImportSummary = nil
+        } catch {
+            if Task.isCancelled { return }
+            lastError = error.localizedDescription
+        }
     }
 
     // MARK: Codeplug
@@ -99,11 +195,15 @@ final class AppModel: ObservableObject {
     }
 
     func persistCodeplug() {
-        guard let database else { return }
+        guard let userData else { return }
         let plug = codeplug
         Task {
-            try? await database.saveCodeplug(plug)
-            codeplugs = (try? await database.codeplugs()) ?? codeplugs
+            do {
+                try await userData.saveCodeplug(plug)
+                codeplugs = try await userData.codeplugs()
+            } catch {
+                lastError = "Could not save the codeplug: \(error.localizedDescription)"
+            }
         }
     }
 

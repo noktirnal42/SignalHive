@@ -311,13 +311,23 @@ struct ScannerView: View {
     }
 
     private func toggleStream() async {
-        guard let pipeline else { return }
+        guard let pipeline else {
+            statusMessage = "Select a source first"
+            return
+        }
         if running {
             await pipeline.stop()
             running = false
+            statusMessage = "Stopped"
         } else {
-            try? await pipeline.start()
-            running = true
+            do {
+                try await pipeline.start()
+                running = true
+                statusMessage = "Receiving"
+            } catch {
+                running = false
+                statusMessage = "Start failed: \(error.localizedDescription)"
+            }
         }
     }
 
@@ -327,14 +337,27 @@ struct ScannerView: View {
         config.gain = gain
         config.squelchDBFS = squelchDB
         config.mode = mode
-        try? await pipeline.configure(config)
+        do {
+            try await pipeline.configure(config)
+            statusMessage = "\(mode.rawValue) \(String(format: "%.0f", gain)) dB"
+        } catch {
+            statusMessage = "Configure failed: \(error.localizedDescription)"
+        }
     }
 
     private func retune() async {
-        guard let pipeline else { return }
+        guard let pipeline else {
+            statusMessage = "Select a source first"
+            return
+        }
         var config = await pipeline.currentConfig
         config.frequency = frequencyMHz * 1_000_000
-        try? await pipeline.configure(config)
+        do {
+            try await pipeline.configure(config)
+            statusMessage = String(format: "Tuned %.5f MHz", frequencyMHz)
+        } catch {
+            statusMessage = "Tune failed: \(error.localizedDescription)"
+        }
     }
 
     private func findActive() {

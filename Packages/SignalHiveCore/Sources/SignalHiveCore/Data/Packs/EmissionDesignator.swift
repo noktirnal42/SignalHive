@@ -16,6 +16,31 @@ public enum ModeHint: String, Codable, CaseIterable, Sendable, Comparable {
     public static func < (lhs: ModeHint, rhs: ModeHint) -> Bool {
         (allCases.firstIndex(of: lhs) ?? 0) < (allCases.firstIndex(of: rhs) ?? 0)
     }
+
+    /// Short label for chips and rows.
+    public var displayName: String {
+        switch self {
+        case .analogFM: return "FM"
+        case .am: return "AM"
+        case .ssb: return "SSB"
+        case .digitalP25: return "P25"
+        case .digitalOther: return "Digital"
+        case .unknown: return "Unknown"
+        }
+    }
+}
+
+extension ChannelMode {
+    /// Picks the codeplug mode for a frequency from what the FCC emission designators imply.
+    /// Airband is always AM; a frequency carrying both analog and P25 is programmed as analog because
+    /// every radio can receive it.
+    public static func suggested(frequencyHz: Double, hints: [ModeHint], bandwidthHz: Double?) -> ChannelMode {
+        if (118_000_000...136_975_000).contains(frequencyHz) { return .am }
+        if hints.contains(.digitalP25), !hints.contains(.analogFM) { return .p25 }
+        if hints.contains(.analogFM) { return (bandwidthHz ?? 0) > 12_500 ? .fm : .nfm }
+        if hints.contains(.am) || hints.contains(.ssb) { return .am }
+        return .nfm
+    }
 }
 
 public struct EmissionInfo: Equatable, Sendable {

@@ -4,16 +4,28 @@ import SignalHiveCore
 
 struct ULSParserTests {
 
-    static let testDir = "/var/folders/jd/zf9v8l9j7bx200284js3k6080000gn/T/opencode/uls_test"
+    static var realArchiveDirectory: URL? {
+        guard let value = ProcessInfo.processInfo.environment["SIGNALHIVE_REAL_ARCHIVES"], !value.isEmpty else {
+            return nil
+        }
+        return URL(fileURLWithPath: value, isDirectory: true)
+    }
 
     @Test func parsesRealAircraftDump() async throws {
-        guard FileManager.default.fileExists(atPath: "\(Self.testDir)/EN.dat") else {
-            Issue.record("Test data missing — download l_aircr.zip to \(Self.testDir)")
+        guard let directory = Self.realArchiveDirectory else {
+            print("Skipping real aircraft parser test: set SIGNALHIVE_REAL_ARCHIVES to a directory containing EN.dat and HD.dat.")
+            return
+        }
+        let enURL = directory.appendingPathComponent("EN.dat")
+        let hdURL = directory.appendingPathComponent("HD.dat")
+        guard FileManager.default.fileExists(atPath: enURL.path),
+              FileManager.default.fileExists(atPath: hdURL.path) else {
+            print("Skipping real aircraft parser test: \(directory.path) does not contain EN.dat and HD.dat.")
             return
         }
 
-        let en = try ULSParser.parseTable(at: URL(fileURLWithPath: "\(Self.testDir)/EN.dat"))
-        let hd = try ULSParser.parseTable(at: URL(fileURLWithPath: "\(Self.testDir)/HD.dat"))
+        let en = try ULSParser.parseTable(at: enURL)
+        let hd = try ULSParser.parseTable(at: hdURL)
 
         #expect(en.entities.count > 1000)
         #expect(hd.licenses.count > 1000)

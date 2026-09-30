@@ -11,9 +11,12 @@
 		0BDE5FE62A614B9D09D614C6 /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
 		107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
 		14834E128153021E5B9F2770 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
+		193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
 		2418D316E1312AF0973268AB /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 37F3717AC3E08F594D491B33 /* SignalHiveCore */; };
 		271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */; };
+		2734480FB21FA65258BDAF8B /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
 		36812FF465737730CC288846 /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
+		4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
 		41C77ABBF61E8AFDF6A260AC /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
 		42B6525233723D525A63AEF8 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
 		4B3FC808ADC54710A9907B1A /* MenuBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6884868AC2561809B1890F7 /* MenuBarApp.swift */; };
@@ -21,6 +24,7 @@
 		61AE2650F85D34ED71310B15 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
 		66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
 		67E62303ACEDDAD564B36707 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
+		68132DB5283FAB5FE025A120 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		6C87C4AC101A3F9F75CA1A9E /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
 		70777A10BEE917F32185C0D7 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
 		7218F49A826B4803E7A7CBB4 /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
@@ -28,22 +32,33 @@
 		7F1CED761D15B67B09F5A795 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
 		80327CF9EC8C59FF02DDDBA1 /* IOSPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F281C2E5409DFA34E2603A8 /* IOSPlatform.swift */; };
 		84C954774CD570C1022B68F5 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
+		8B86E737807DED9676F18485 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
+		9BCA6FE1F34D9C80DC77B3DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		9C3F508B1F2B7B0F5DB46667 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
+		A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
+		A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
 		AE6D5B5A9C5E8F61BEB60CAF /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B7AE917721E446C187D13B0 /* SignalHiveCore */; };
 		BA60D6CE7801E55AC5E482E6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
+		C1D608EC968BC097430BC9E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		C58151539066A5EC98AE2698 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
+		C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
+		C9AF7621627797C098DBB7FF /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
 		CB9FC040DA006C27A37A9D56 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
 		CC937FB5565D9FE0DC3D86A5 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
 		CD4CD3E59552109B2B834601 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
 		D057BC4F5D009DFE69C73E63 /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
+		D1AD43EDC6BA8E39F6DAA82E /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
 		D25F44B6F0219F175958B25E /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
 		D44019462AF3B5702FD37246 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
 		D8FCE62A61494CC02D6CA682 /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = E37025EDFFB2492E594A896D /* SignalHiveCore */; };
 		D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
 		D96607A4DD6949BC6B193C59 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 		E11480BC31DF356B5C63A99C /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
+		E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
+		ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
 		F6FB10A584252396376E20CF /* MacPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE53DC740AEEAF549EF95771 /* MacPlatform.swift */; };
+		F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
 		FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 		FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
@@ -54,10 +69,14 @@
 		0F281C2E5409DFA34E2603A8 /* IOSPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSPlatform.swift; sourceTree = "<group>"; };
 		113EAD5193D1C4434B5297AB /* SignalHive-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SignalHive-iOS.entitlements"; sourceTree = "<group>"; };
 		1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		27373345F1C7E36527757CDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		55F95B8F4A3ED4CB3F199908 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5FFDD44E7F1F8E48B6AAC698 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6281A33AE2902FAF37439A94 /* CodeplugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugView.swift; sourceTree = "<group>"; };
+		62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		69AFB203A996B9F769878976 /* WorkshopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopView.swift; sourceTree = "<group>"; };
 		6ABF61028C20628FB5F4E497 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveVisualSystem.swift; sourceTree = "<group>"; };
 		8A7BC3463759467EC305C361 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8D5CFBBD77118015D765AA70 /* SignalHive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignalHive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveIntents.swift; sourceTree = "<group>"; };
@@ -67,6 +86,7 @@
 		B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		B4BE49843C1B12AB457B4085 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILabView.swift; sourceTree = "<group>"; };
 		E5579AEB9B0CB0704D1AC011 /* SignalHiveCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SignalHiveCore; path = Packages/SignalHiveCore; sourceTree = SOURCE_ROOT; };
 		E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveApp.swift; sourceTree = "<group>"; };
 		EDAF074463E07B618C6565DE /* SignalHive.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHive.entitlements; sourceTree = "<group>"; };
@@ -126,13 +146,24 @@
 		4255AAC509BDA186B86A2523 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */,
+				27373345F1C7E36527757CDF /* Assets.xcassets */,
 				6ABF61028C20628FB5F4E497 /* ContentView.swift */,
 				E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */,
 				C4F39A45E6239B581A7464C0 /* AppIntents */,
+				49A6491476F78E7B4EB6E58C /* Design */,
 				1ACBAD8D417904F0271CD964 /* Stores */,
 				D7EA068CBA56C88CA6DB41E6 /* Views */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		49A6491476F78E7B4EB6E58C /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */,
+			);
+			path = Design;
 			sourceTree = "<group>";
 		};
 		63ECABEB271F13F29FEADCBA /* macOS */ = {
@@ -203,6 +234,7 @@
 		D7EA068CBA56C88CA6DB41E6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */,
 				B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */,
 				6281A33AE2902FAF37439A94 /* CodeplugView.swift */,
 				AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */,
@@ -210,6 +242,7 @@
 				F685913ED57BC8289A8B578E /* SearchView.swift */,
 				8A7BC3463759467EC305C361 /* SettingsView.swift */,
 				0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */,
+				69AFB203A996B9F769878976 /* WorkshopView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -222,6 +255,7 @@
 			buildConfigurationList = 56660D97E557F8D5AE70CB04 /* Build configuration list for PBXNativeTarget "SignalHive-iOS" */;
 			buildPhases = (
 				DB527FF0D0454111674543FA /* Sources */,
+				6B1EDE80F06663FA04CBBB20 /* Resources */,
 				C59EA3B75D3279AA925B0659 /* Frameworks */,
 			);
 			buildRules = (
@@ -241,6 +275,7 @@
 			buildConfigurationList = AF2F530E643D0659C5C69C83 /* Build configuration list for PBXNativeTarget "SignalHiveMenuBar" */;
 			buildPhases = (
 				4FC6818E2889441AB19C5316 /* Sources */,
+				54C8249C0F2A3E094827EE1D /* Resources */,
 				EA665E2A8A55369525A332FA /* Frameworks */,
 			);
 			buildRules = (
@@ -260,6 +295,7 @@
 			buildConfigurationList = 072AF821564A6387191CD19B /* Build configuration list for PBXNativeTarget "SignalHive" */;
 			buildPhases = (
 				BD8E8E3896BEFC20B6177498 /* Sources */,
+				5D9B1EDD539996EE2DE99DB4 /* Resources */,
 				F35300FB598343712B4E9B33 /* Frameworks */,
 			);
 			buildRules = (
@@ -318,11 +354,40 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		54C8249C0F2A3E094827EE1D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9BCA6FE1F34D9C80DC77B3DB /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5D9B1EDD539996EE2DE99DB4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C1D608EC968BC097430BC9E1 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6B1EDE80F06663FA04CBBB20 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68132DB5283FAB5FE025A120 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		4FC6818E2889441AB19C5316 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B86E737807DED9676F18485 /* AILabView.swift in Sources */,
+				D1AD43EDC6BA8E39F6DAA82E /* AppConfiguration.swift in Sources */,
 				70777A10BEE917F32185C0D7 /* AppModel.swift in Sources */,
 				D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */,
 				107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */,
@@ -334,7 +399,9 @@
 				D96607A4DD6949BC6B193C59 /* SettingsView.swift in Sources */,
 				84C954774CD570C1022B68F5 /* SignalHiveApp.swift in Sources */,
 				0BDE5FE62A614B9D09D614C6 /* SignalHiveIntents.swift in Sources */,
+				4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */,
 				66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */,
+				193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,6 +409,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */,
+				C9AF7621627797C098DBB7FF /* AppConfiguration.swift in Sources */,
 				D44019462AF3B5702FD37246 /* AppModel.swift in Sources */,
 				CB9FC040DA006C27A37A9D56 /* BrowseView.swift in Sources */,
 				6C87C4AC101A3F9F75CA1A9E /* CodeplugView.swift in Sources */,
@@ -353,7 +422,9 @@
 				FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */,
 				61AE2650F85D34ED71310B15 /* SignalHiveApp.swift in Sources */,
 				41C77ABBF61E8AFDF6A260AC /* SignalHiveIntents.swift in Sources */,
+				A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */,
 				73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */,
+				C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,6 +432,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */,
+				2734480FB21FA65258BDAF8B /* AppConfiguration.swift in Sources */,
 				5EDD2F8E5D23959EEFEA0882 /* AppModel.swift in Sources */,
 				7F1CED761D15B67B09F5A795 /* BrowseView.swift in Sources */,
 				271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */,
@@ -373,7 +446,9 @@
 				FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */,
 				C58151539066A5EC98AE2698 /* SignalHiveApp.swift in Sources */,
 				E11480BC31DF356B5C63A99C /* SignalHiveIntents.swift in Sources */,
+				A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */,
 				36812FF465737730CC288846 /* TrunkedView.swift in Sources */,
+				E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

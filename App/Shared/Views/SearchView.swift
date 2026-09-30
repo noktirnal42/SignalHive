@@ -4,94 +4,75 @@ import SignalHiveCore
 struct SearchView: View {
     @Environment(AppModel.self) private var model
     @State private var query = ""
-    @State private var results: [AppDatabase.SearchResult] = []
+    @State private var results: [SearchHit] = []
     @State private var searching = false
-    @State private var searchTask: Task<Void, Never>?
+    @State private var errorText: String?
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
                     HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundStyle(.secondary)
+                        Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                         TextField("Call sign, licensee, or frequency (MHz)", text: $query)
                             .textFieldStyle(.plain)
-                            .onSubmit { runSearch() }
                     }
                     .padding(8)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
                 }
-
-                if searching {
+                if model.installedCount == 0 {
+                    Text("Install a state's data from Browse to search it.").foregroundStyle(.secondary)
+                } else if searching {
                     ProgressView()
+                } else if let errorText {
+                    Text(errorText).foregroundStyle(.red)
                 } else if !results.isEmpty {
                     Section("Results (\(results.count))") {
-                        ForEach(results) { result in
-                            resultRow(result)
+                        ForEach(results) { hit in
+                            NavigationLink(value: hit.uid) { row(hit) }
                         }
                     }
-                } else if !query.isEmpty {
-                    Text("No matches")
-                        .foregroundStyle(.secondary)
+                } else if !query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Text("No matches").foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Search")
+            .navigationDestination(for: Int64.self) { uid in FrequencyDetailView(uid: uid) }
+            .task(id: query) { await runSearch() }
         }
     }
 
-    @ViewBuilder
-    private func resultRow(_ result: AppDatabase.SearchResult) -> some View {
-        if result.kind == "license", let uid = result.uid {
-            NavigationLink(value: uid) {
-                rowContent(result)
-            }
-        } else {
-            Button {
-                if let hz = result.frequencyHz {
-                    model.tuneInScanner(frequencyHz: hz)
-                }
-                if let uid = result.uid {
-                    openLicense(uid: uid)
-                }
-            } label: {
-                rowContent(result)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private func rowContent(_ result: AppDatabase.SearchResult) -> some View {
+    private func row(_ hit: SearchHit) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(result.title)
-                .font(.body)
+            Text(hit.title)
             HStack(spacing: 6) {
-                Image(systemName: result.kind == "frequency" ? "waveform" : "person.text.rectangle")
-                    .font(.caption2)
-                Text(result.subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Image(systemName: hit.kind == .frequency ? "waveform" : "person.text.rectangle").font(.caption2)
+                Text(hit.subtitle).font(.caption).foregroundStyle(.secondary)
             }
         }
     }
 
-    @State private var openedUID: Int64?
-
-    private func openLicense(uid: Int64) {
-        openedUID = uid
-    }
-
-    private func runSearch() {
-        searchTask?.cancel()
-        guard let database = model.database else { return }
+    /// Debounced: `.task(id:)` cancels the previous run when the text changes.
+    private func runSearch() async {
+        let text = query.trimmingCharacters(in: .whitespaces)
+        guard !text.isEmpty else {
+            results = []
+            errorText = nil
+            return
+        }
+        try? await Task.sleep(for: .milliseconds(250))
+        guard !Task.isCancelled else { return }
         searching = true
-        let q = query
-        searchTask = Task {
-            let found = (try? await database.search(query: q, service: nil, state: nil)) ?? []
-            await MainActor.run {
-                results = found
-                searching = false
-            }
+        defer { searching = false }
+        do {
+            let found = try await model.browse.search(text, scope: .all)
+            guard !Task.isCancelled else { return }
+            results = found
+            errorText = nil
+        } catch {
+            guard !Task.isCancelled else { return }
+            results = []
+            errorText = error.localizedDescription
         }
     }
 }

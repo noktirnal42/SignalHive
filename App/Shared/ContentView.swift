@@ -6,11 +6,13 @@ struct ContentView: View {
     @State private var selection: Panel?
 
     enum Panel: String, CaseIterable, Identifiable {
-        case browse, search, trunked, scanner, codeplug
+        case workshop, aiLab, browse, search, trunked, scanner, codeplug
         var id: String { rawValue }
 
         var title: String {
             switch self {
+            case .workshop: return "Workshop"
+            case .aiLab: return "AI Lab"
             case .browse: return "Browse"
             case .search: return "Search"
             case .trunked: return "Trunked"
@@ -21,6 +23,8 @@ struct ContentView: View {
 
         var icon: String {
             switch self {
+            case .workshop: return "radio"
+            case .aiLab: return "brain.head.profile"
             case .browse: return "list.bullet.indent"
             case .search: return "magnifyingglass"
             case .trunked: return "antenna.radiowaves.left.and.right"
@@ -40,8 +44,14 @@ struct ContentView: View {
             }
             .listStyle(.sidebar)
             .navigationTitle("SignalHive")
+            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 260)
         } detail: {
-            switch selection ?? .browse {
+            switch selection ?? .workshop {
+            case .workshop:
+                WorkshopView { panel in
+                    selection = panel
+                }
+            case .aiLab: AILabView()
             case .browse: BrowseView()
             case .search: SearchView()
             case .trunked: TrunkedView()
@@ -60,14 +70,14 @@ struct ContentView: View {
 }
 
 struct ImportStatusBar: View {
-    var progress: ULSImportProgress
+    var progress: PackBuildProgress
     var onCancel: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
             ProgressView(value: min(1, max(0, progress.fraction)))
                 .frame(maxWidth: 320)
-            Text("\(progress.phase.rawValue.capitalized): \(progress.detail)")
+            Text(progress.phase)
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Button("Cancel", action: onCancel)

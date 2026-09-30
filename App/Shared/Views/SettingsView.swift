@@ -3,12 +3,13 @@ import SignalHiveCore
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
-    @State private var selectedServices: Set<ULSService.ID> = [ULSService.lmComm.rawValue, ULSService.gmrs.rawValue]
+    @AppStorage("packBaseURL") private var packBaseURL = ""
 
     var body: some View {
         Form {
-            databaseSection
-            importSection
+            packsSection
+            localBuildSection
+            serverSection
             aboutSection
         }
         #if os(macOS)
@@ -16,100 +17,80 @@ struct SettingsView: View {
         #endif
     }
 
-    private var databaseSection: some View {
-        Section("Frequency Database") {
-            if model.database != nil {
-                HStack {
-                    Text("Licenses")
-                    Spacer()
-                    Text("\(model.stats.licenses)").foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Frequencies")
-                    Spacer()
-                    Text("\(model.stats.frequencies)").foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Locations")
-                    Spacer()
-                    Text("\(model.stats.locations)").foregroundStyle(.secondary)
-                }
-                if model.lastImportSummary != nil {
-                    Text(model.lastImportSummary!)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } else if let error = model.databaseError {
-                Text(error).foregroundStyle(.red)
-            } else {
-                ProgressView()
+    private var packsSection: some View {
+        Section("Installed data") {
+            let installed = model.states.filter { if case .installed = $0.status { return true } else { return false } }
+            if installed.isEmpty {
+                Text("Nothing installed yet. Choose a state in Browse.").foregroundStyle(.secondary)
             }
+            ForEach(installed) { state in
+                HStack {
+                    Text(state.name)
+                    Spacer()
+                    if case let .installed(snapshot) = state.status {
+                        Text("FCC data \(snapshot)").font(.caption).foregroundStyle(.secondary)
+                    }
+                    Button("Remove", role: .destructive) { Task { await model.removePack(state: state.code) } }
+                        .buttonStyle(.borderless)
+                }
+            }
+            if let error = model.databaseError { Text(error).foregroundStyle(.red) }
+            if let error = model.lastError { Text(error).font(.caption).foregroundStyle(.red) }
         }
     }
 
-    private var importSection: some View {
-        Section("Update ULS Data (public domain, no API key)") {
+    private var localBuildSection: some View {
+        Section("Build from FCC on this Mac") {
+            Text("Downloads the FCC's weekly public database directly and builds the data on this Mac. Use it when no data server is available.")
+                .font(.caption).foregroundStyle(.secondary)
             ForEach(ULSService.allCases) { service in
                 Toggle(isOn: Binding(
-                    get: { selectedServices.contains(service.id) },
+                    get: { model.localBuildServices.contains(service.id) },
                     set: { on in
-                        if on { selectedServices.insert(service.id) } else { selectedServices.remove(service.id) }
+                        if on { model.localBuildServices.insert(service.id) } else { model.localBuildServices.remove(service.id) }
                     }
                 )) {
                     HStack {
                         Text(service.displayName)
                         Spacer()
-                        Text("~\(service.approximateSizeMB) MB")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Text("~\(service.approximateSizeMB) MB").font(.caption).foregroundStyle(.secondary)
                     }
                 }
             }
-
             HStack {
                 Button {
-                    let services = ULSService.allCases.filter { selectedServices.contains($0.id) }
-                    Task { await model.importServices(services) }
+                    Task { await model.buildLocally(states: Set(USStateCatalog.states.map(\.code))) }
                 } label: {
-                    if model.importActive {
-                        HStack {
-                            ProgressView().controlSize(.small)
-                            Text("Importing…")
-                        }
-                    } else {
-                        Label("Download & Import", systemImage: "arrow.down.circle")
-                    }
+                    Label(model.importActive ? "Building…" : "Build all states", systemImage: "hammer")
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(model.importActive || selectedServices.isEmpty)
-
-                if model.importActive {
-                    Button("Cancel") { model.cancelImport() }
-                }
+                .disabled(model.importActive || model.localBuildServices.isEmpty)
+                if model.importActive { Button("Cancel") { model.cancelImport() } }
             }
-
             if let progress = model.importProgress {
                 VStack(alignment: .leading) {
-                    Text("\(progress.phase.rawValue.capitalized): \(progress.detail)")
-                        .font(.caption)
+                    Text(progress.phase).font(.caption)
                     ProgressView(value: min(1, max(0, progress.fraction)))
                 }
             }
+            if let summary = model.lastImportSummary { Text(summary).font(.caption).foregroundStyle(.secondary) }
+        }
+    }
+
+    private var serverSection: some View {
+        Section("Data server (advanced)") {
+            TextField("https://example.com/packs", text: $packBaseURL)
+            Text(model.manifestNote ?? "Data server reachable. Changes apply the next time the app opens.")
+                .font(.caption).foregroundStyle(.secondary)
         }
     }
 
     private var aboutSection: some View {
         Section("About") {
             VStack(alignment: .leading, spacing: 4) {
-                Text("SignalHive")
-                    .font(.headline)
-                Text(DataAttribution.fccNotice)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text("SignalHive").font(.headline)
+                Text(DataAttribution.fccNotice).font(.caption).foregroundStyle(.secondary)
                 ForEach(DataAttribution.sources, id: \.self) { source in
-                    Text("• \(source)")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    Text("• \(source)").font(.caption2).foregroundStyle(.secondary)
                 }
             }
         }
