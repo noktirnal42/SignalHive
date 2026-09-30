@@ -15,19 +15,31 @@ private func responseDB(_ taps: [Float], at frequency: Double, sampleRate: Doubl
 
 struct FIRDesignTests {
     @Test func aLowPassPassesDCAtUnityGainAndIsSymmetric() {
-        let taps = FIRDesign.lowPass(cutoffHz: 8_000, transitionHz: 6_000, sampleRate: 146_000)
+        let taps = FIRDesign.lowPass(passbandHz: 5_000, stopbandHz: 9_000, sampleRate: 146_000)
         #expect(abs(taps.reduce(0, +) - 1) < 1e-4)
         #expect(taps.count % 2 == 1)
-        for i in 0..<taps.count / 2 { #expect(abs(taps[i] - taps[taps.count - 1 - i]) < 1e-7) }
+        for i in 0..<taps.count / 2 {
+            #expect(abs(taps[i] - taps[taps.count - 1 - i]) < 1e-7)
+        }
     }
 
     @Test func thePassbandIsFlatAndTheStopbandIsDeep() {
         let rate = 146_000.0
-        let taps = FIRDesign.lowPass(cutoffHz: 8_000, transitionHz: 6_000, sampleRate: rate)
-        #expect(abs(responseDB(taps, at: 4_000, sampleRate: rate)) < 0.2)                 // passband
-        #expect(responseDB(taps, at: 8_000, sampleRate: rate) > -4 && responseDB(taps, at: 8_000, sampleRate: rate) < -2)   // ~ -3 dB at the cutoff
-        #expect(responseDB(taps, at: 14_000, sampleRate: rate) < -50)                    // beyond the transition
-        #expect(responseDB(taps, at: 40_000, sampleRate: rate) < -60)
+        let taps = FIRDesign.lowPass(passbandHz: 5_000, stopbandHz: 9_000, sampleRate: rate)
+        #expect(abs(responseDB(taps, at: 3_000, sampleRate: rate)) < 0.2)               // flat in the passband
+        #expect(abs(responseDB(taps, at: 5_000, sampleRate: rate)) < 0.5)               // still flat at its edge
+        let middle = responseDB(taps, at: 7_000, sampleRate: rate)                      // mid-transition is about -6 dB
+        #expect(middle > -8)
+        #expect(middle < -4)
+        #expect(responseDB(taps, at: 9_000, sampleRate: rate) < -50)                    // deep from the stopband edge
+        #expect(responseDB(taps, at: 30_000, sampleRate: rate) < -60)
+    }
+
+    @Test func aSharperTransitionNeedsMoreTaps() {
+        let sharp = FIRDesign.lowPass(passbandHz: 5_000, stopbandHz: 6_000, sampleRate: 146_000)
+        let gentle = FIRDesign.lowPass(passbandHz: 5_000, stopbandHz: 20_000, sampleRate: 146_000)
+        #expect(sharp.count > gentle.count * 5)
+        #expect(sharp.count <= 4001)                                                    // bounded whatever is asked
     }
 }
 
@@ -58,12 +70,22 @@ struct ChannelDownconverterTests {
         let ddc = ChannelDownconverter(sampleRate: Self.rate, offsetHz: 300_000, bandwidthHz: 12_500, targetOutputRate: 48_000)
         let output = ddc.process(Self.tone(300_000, count: 400_000))
         let settled = output.dropFirst(200)                                   // skip filter warm-up
-        let magnitudes = settled.map { Double(($0.i * $0.i + $0.q * $0.q).squareRoot()) }
-        #expect(abs(magnitudes.reduce(0, +) / Double(magnitudes.count) - 1) < 0.02)   // unity gain
-        #expect((magnitudes.max()! - magnitudes.min()!) < 0.02)                        // steady
+        let magnitudes: [Double] = settled.map { sample in
+            let squared: Float = sample.i * sample.i + sample.q * sample.q
+            return Double(squared.squareRoot())
+        }
+        let total: Double = magnitudes.reduce(0, +)
+        let mean: Double = total / Double(magnitudes.count)
+        #expect(abs(mean - 1) < 0.02)                                                  // unity gain
+        let spread: Double = (magnitudes.max() ?? 0) - (magnitudes.min() ?? 0)
+        #expect(spread < 0.02)                                                         // steady
         // and it sits at DC: the phase barely moves from sample to sample
-        let drift = zip(settled, settled.dropFirst()).map { abs(atan2(Double($1.q), Double($1.i)) - atan2(Double($0.q), Double($0.i))) }
-        #expect(drift.max()! < 0.05)
+        let phases: [Double] = settled.map { atan2(Double($0.q), Double($0.i)) }
+        var worstStep = 0.0
+        for index in 1..<phases.count {
+            worstStep = max(worstStep, abs(phases[index] - phases[index - 1]))
+        }
+        #expect(worstStep < 0.05)
     }
 
     @Test(arguments: [50_000.0, 100_000.0, 700_000.0, -400_000.0])

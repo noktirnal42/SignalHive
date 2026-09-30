@@ -18,6 +18,9 @@ public actor DSPPipeline {
         public var squelchDBFS: Float = -80
         public var audioOutputEnabled: Bool = true
         public var volume: AudioVolume = AudioVolume()
+        /// The channel to demodulate: its frequency minus the tuner centre (0 = the centre). The tuner keeps
+        /// covering the whole band for the spectrum while this picks one signal out of it.
+        public var channelOffsetHz: Double = 0
         public var classificationEnabled: Bool = true
 
         public init() {}
@@ -36,7 +39,6 @@ public actor DSPPipeline {
     // Subscribers for raw IQ samples (recording, mesh, diagnostics)
     private var iqSubscribers: [@Sendable ([ComplexFloat]) -> Void] = []
     // Subscriber for audio samples (for AudioPlayer)
-    private var audioSubscribers: [@Sendable (UnsafeBufferPointer<Float>) -> Void] = []
     // Subscriber for FFT updates
     private var fftSubscribers: [@Sendable ([Float], [Float]) -> Void] = []
 
@@ -56,13 +58,25 @@ public actor DSPPipeline {
     // Audio engine
     private var audioPlayer: SDRAudioPlayer?
 
+    // Channel selection: mix the chosen channel to baseband, filter, decimate, then demodulate.
+    private var channel: ChannelDownconverter?
+    private var audioDecimator: DecimatingFIR?
+    private var audioRate: Double = 48_000
+    private var audioSubscribers: [@Sendable ([Float], Double) -> Void] = []
+    /// Power in the selected channel (what squelch acts on), as opposed to `signalPowerDBFS` for the whole band.
+    public private(set) var channelPowerDBFS: Float = -120
+
     // MARK: - Init
 
     public init(device: any SDRDevice, config: Config = .init()) {
         self.device = device
         self.config = config
         self.fftProcessor = FFTProcessor(config: config.fftConfig)
-        self.demodulator = DemodulatorFactory.make(mode: config.mode, sampleRate: config.sampleRate)
+        let setup = Self.makeChannel(for: config)
+        self.channel = setup.channel
+        self.audioDecimator = setup.decimator
+        self.audioRate = setup.audioRate
+        self.demodulator = setup.demodulator
         self.squelch = Squelch()
         self.squelch.thresholdDBFS = config.squelchDBFS
         self.audioPlayer = nil
@@ -73,9 +87,9 @@ public actor DSPPipeline {
     public func configure(_ newConfig: Config) async throws {
         config = newConfig
         fftProcessor = FFTProcessor(config: newConfig.fftConfig)
-        demodulator = DemodulatorFactory.make(mode: newConfig.mode, sampleRate: newConfig.sampleRate)
+        rebuildChannel()
         squelch.thresholdDBFS = newConfig.squelchDBFS
-        audioPlayer = newConfig.audioOutputEnabled ? SDRAudioPlayer(sampleRate: newConfig.sampleRate) : nil
+        audioPlayer = newConfig.audioOutputEnabled ? SDRAudioPlayer(sampleRate: audioRate) : nil
         audioPlayer?.setVolume(newConfig.volume.gain)
 
         try await device.configure(
@@ -89,6 +103,56 @@ public actor DSPPipeline {
     public func setVolume(_ volume: AudioVolume) {
         config.volume = volume
         audioPlayer?.setVolume(volume.gain)
+    }
+
+    /// Audio taps (recording, decoders, tests): demodulated, squelched audio and its sample rate.
+    public func subscribeToAudio(_ handler: @Sendable @escaping ([Float], Double) -> Void) {
+        audioSubscribers.append(handler)
+    }
+
+    private struct ChannelSetup {
+        var channel: ChannelDownconverter?
+        var decimator: DecimatingFIR?
+        var audioRate: Double
+        var demodulator: any Demodulator
+    }
+
+    /// The channel down-converter, demodulator and audio decimation for a mode and channel offset.
+    private static func makeChannel(for config: Config) -> ChannelSetup {
+        guard config.mode != .raw else {
+            return ChannelSetup(channel: nil, decimator: nil, audioRate: config.sampleRate,
+                                demodulator: DemodulatorFactory.make(mode: config.mode, sampleRate: config.sampleRate))
+        }
+        let bandwidth: Double
+        let target: Double
+        switch config.mode {
+        case .wfm: (bandwidth, target) = (200_000, 256_000)
+        case .usb, .lsb: (bandwidth, target) = (6_000, 48_000)     // keeps the whole sideband
+        case .cw: (bandwidth, target) = (2_000, 48_000)
+        case .am: (bandwidth, target) = (10_000, 48_000)
+        default: (bandwidth, target) = (12_500, 48_000)
+        }
+        let ddc = ChannelDownconverter(sampleRate: config.sampleRate, offsetHz: config.channelOffsetHz,
+                                       bandwidthHz: bandwidth, targetOutputRate: target)
+        var rate = ddc.outputRate
+        var decimator: DecimatingFIR?
+        if config.mode == .wfm {
+            // Wide FM leaves the demodulator at ~256 kHz; bring the audio down to ~48 kHz.
+            let factor = max(1, Int(rate / 48_000))
+            decimator = DecimatingFIR(taps: FIRDesign.lowPass(passbandHz: 15_000, stopbandHz: 19_000, sampleRate: rate),
+                                      factor: factor)
+            rate /= Double(factor)
+        }
+        return ChannelSetup(channel: ddc, decimator: decimator, audioRate: rate,
+                            demodulator: DemodulatorFactory.make(mode: config.mode, sampleRate: ddc.outputRate))
+    }
+
+    private func rebuildChannel() {
+        let setup = Self.makeChannel(for: config)
+        channel = setup.channel
+        audioDecimator = setup.decimator
+        audioRate = setup.audioRate
+        demodulator = setup.demodulator
     }
 
     public func attachDecoder(_ decoder: any SignalDecoder) {
@@ -186,17 +250,30 @@ public actor DSPPipeline {
             sub(averaged, peakHold)
         }
 
-        // Demodulate
-        var audioSamples = demodulator.demodulate(iq: samples)
+        // Demodulate the selected channel (not the whole capture)
+        var audioSamples: [Float]
+        if let channel {
+            let baseband = channel.process(samples)
+            if !baseband.isEmpty { channelPowerDBFS = baseband.rmsDBFS }
+            var audio = demodulator.demodulate(iq: baseband)
+            if audioDecimator != nil { audio = audioDecimator!.processReal(audio) }
+            isSquelchOpen = channelPowerDBFS > squelch.thresholdDBFS
+            audioSamples = squelch.gate(samples: audio, powerDBFS: channelPowerDBFS)
+        } else {
+            channelPowerDBFS = signalPowerDBFS
+            isSquelchOpen = signalPowerDBFS > squelch.thresholdDBFS
+            audioSamples = squelch.gate(samples: demodulator.demodulate(iq: samples), powerDBFS: signalPowerDBFS)
+        }
 
-        // Squelch gate
-        isSquelchOpen = signalPowerDBFS > squelch.thresholdDBFS
-        audioSamples = squelch.gate(samples: audioSamples, powerDBFS: signalPowerDBFS)
+        for sub in audioSubscribers where !audioSamples.isEmpty {
+            sub(audioSamples, audioRate)
+        }
 
         // Audio output
-        if config.audioOutputEnabled {
+        if config.audioOutputEnabled, !audioSamples.isEmpty {
             if audioPlayer == nil {
-                audioPlayer = SDRAudioPlayer(sampleRate: config.sampleRate)
+                audioPlayer = SDRAudioPlayer(sampleRate: audioRate)
+                audioPlayer?.setVolume(config.volume.gain)
             }
             audioPlayer?.enqueue(audioSamples)
         }
