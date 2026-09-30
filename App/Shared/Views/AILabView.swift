@@ -244,7 +244,7 @@ struct AILabView: View {
     private func modelTile(_ model: MLXModelCandidate) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "shippingbox.and.arrow.down")
+                Image(systemName: "shippingbox")
                     .foregroundStyle(color(for: model.compatibility))
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 3) {

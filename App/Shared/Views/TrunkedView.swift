@@ -229,11 +229,11 @@ struct TrunkedView: View {
                             TalkgroupRow(talkgroup: talkgroup)
                                 .tag(talkgroup.id)
                                 .swipeActions {
-                                    Button { add([talkgroup], on: system) } label: { Label("Add", systemImage: "plus.memorychip") }
+                                    Button { add([talkgroup], on: system) } label: { Label("Add", systemImage: "rectangle.stack.badge.plus") }
                                         .tint(.blue)
                                 }
                                 .contextMenu {
-                                    Button { add([talkgroup], on: system) } label: { Label("Add to codeplug", systemImage: "plus.memorychip") }
+                                    Button { add([talkgroup], on: system) } label: { Label("Add to codeplug", systemImage: "rectangle.stack.badge.plus") }
                                 }
                         }
                     } header: {
@@ -242,7 +242,9 @@ struct TrunkedView: View {
                 }
             }
         }
-        .searchable(text: $model.talkgroupSearch, prompt: "Search talkgroups")
+        // Not `.searchable`: the system list already owns the window's one search toolbar item, and a second one in the
+        // detail column makes NSToolbar throw (a crash on macOS the moment a system is selected).
+        .safeAreaInset(edge: .top, spacing: 0) { talkgroupSearchField(text: $model.talkgroupSearch) }
         .toolbar {
             #if os(iOS)
             ToolbarItem { EditButton() }
@@ -254,11 +256,26 @@ struct TrunkedView: View {
                     selectedTalkgroups = []
                 } label: {
                     Label(selectedTalkgroups.isEmpty ? "Add to codeplug" : "Add \(selectedTalkgroups.count) to codeplug",
-                          systemImage: "plus.memorychip")
+                          systemImage: "rectangle.stack.badge.plus")
                 }
                 .disabled(selectedTalkgroups.isEmpty)
             }
         }
+    }
+
+    private func talkgroupSearchField(text: Binding<String>) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            TextField("Search talkgroups", text: text)
+                .textFieldStyle(.plain)
+            if !text.wrappedValue.isEmpty {
+                Button { text.wrappedValue = "" } label: { Image(systemName: "xmark.circle.fill") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(8)
+        .background(.bar)
     }
 
     private var categoryChips: some View {

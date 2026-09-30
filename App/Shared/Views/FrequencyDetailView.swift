@@ -62,13 +62,13 @@ struct FrequencyDetailView: View {
                     .font(.caption).foregroundStyle(.secondary)
                 }
                 .contextMenu {
-                    Button { addToCodeplug(frequency, detail) } label: { Label("Add to Codeplug", systemImage: "plus.memorychip") }
+                    Button { addToCodeplug(frequency, detail) } label: { Label("Add to Codeplug", systemImage: "rectangle.stack.badge.plus") }
                     Button { model.tuneInScanner(frequencyHz: frequency.frequencyHz) } label: {
                         Label("Tune in Scanner", systemImage: "dot.radiowaves.left.and.right")
                     }
                 }
                 .swipeActions {
-                    Button { addToCodeplug(frequency, detail) } label: { Label("Add", systemImage: "plus.memorychip") }
+                    Button { addToCodeplug(frequency, detail) } label: { Label("Add", systemImage: "rectangle.stack.badge.plus") }
                         .tint(.blue)
                 }
             }

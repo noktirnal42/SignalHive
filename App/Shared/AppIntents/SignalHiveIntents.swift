@@ -50,7 +50,7 @@ struct SignalHiveAppShortcuts: AppShortcutsProvider {
                     "Save to codeplug in \(.applicationName)"
                 ],
                 shortTitle: "Add to Codeplug",
-                systemImageName: "plus.memorychip"
+                systemImageName: "rectangle.stack.badge.plus"
             ),
             AppShortcut(
                 intent: ImportULSDataIntent(),

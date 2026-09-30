@@ -312,7 +312,7 @@ struct ScannerView: View {
                 .disabled(selectedActivity == nil)
 
                 Button { saveSelectedToCodeplug() } label: {
-                    Label("Save", systemImage: "plus.memorychip")
+                    Label("Save", systemImage: "rectangle.stack.badge.plus")
                 }
                 .disabled(selectedActivity == nil)
 
@@ -436,7 +436,7 @@ struct ScannerView: View {
                 Button { tune(activity) } label: { Image(systemName: "scope") }
                     .buttonStyle(.borderless)
                     .help("Tune")
-                Button { save(activity) } label: { Image(systemName: "plus.memorychip") }
+                Button { save(activity) } label: { Image(systemName: "rectangle.stack.badge.plus") }
                     .buttonStyle(.borderless)
                     .help("Save to codeplug")
             }
@@ -472,7 +472,7 @@ struct ScannerView: View {
                         }
                         .buttonStyle(.borderless)
                         Button { model.addToCodeplug(channel: channel.codeplugChannel()) } label: {
-                            Image(systemName: "plus.memorychip")
+                            Image(systemName: "rectangle.stack.badge.plus")
                         }
                         .buttonStyle(.borderless)
                     }

@@ -34,7 +34,7 @@ public enum UATWeatherKind: String, Sendable, Codable, CaseIterable {
         switch self {
         case .metar: return "cloud.sun.fill"
         case .taf: return "cloud.fill"
-        case .pirep: return "turbulence"
+        case .pirep: return "airplane.circle"
         case .sigmet: return "exclamationmark.triangle.fill"
         case .convectiveSigmet: return "cloud.bolt.rain.fill"
         case .centerWeatherAdvisory: return "text.bubble.fill"

@@ -207,7 +207,7 @@ public enum WorkshopCatalog {
         items.append(WorkshopItem(
             "rtlsdr", .hardware, "RTL-SDR (USB)",
             env.rtlsdrDongles > 0 ? env.rtlsdrSummary + " Native Swift driver, no libraries to install." : (env.rtlsdrSummary.isEmpty ? "Native Swift driver, no libraries to install." : env.rtlsdrSummary),
-            symbol: "usb", status: env.rtlsdrDongles > 0 ? .ready : .needsSetup,
+            symbol: "cable.connector.horizontal", status: env.rtlsdrDongles > 0 ? .ready : .needsSetup,
             setup: env.rtlsdrDongles > 0 ? nil : "Plug in a dongle. Only one program can use it at a time."))
         items.append(WorkshopItem(
             "network", .hardware, "Network sources",
@@ -239,7 +239,7 @@ public enum WorkshopCatalog {
         // MARK: Planned
 
         for (id, title, detail, symbol) in [
-            ("apt", "NOAA APT weather satellite images", "Needs a pass planner, an audio capture chain and an image renderer.", "satellite"),
+            ("apt", "NOAA APT weather satellite images", "Needs a pass planner, an audio capture chain and an image renderer.", "dot.radiowaves.up.forward"),
             ("lrpt", "Meteor LRPT satellite images", "Needs QPSK demodulation, a deframer and an image renderer.", "globe.americas"),
             ("dvb", "Satellite and terrestrial TV", "Needs hardware beyond a standard RTL-SDR.", "tv"),
             ("follow", "Trunk following", "Needs control-channel decoding, talkgroup following and audio recording.", "point.3.connected.trianglepath.dotted"),

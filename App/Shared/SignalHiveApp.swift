@@ -2,6 +2,9 @@ import SwiftUI
 
 @main
 struct SignalHiveApp: App {
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(SignalHiveAppDelegate.self) private var appDelegate
+    #endif
     @State private var model = AppModel()
     @State private var aviation = AviationModel()
 
