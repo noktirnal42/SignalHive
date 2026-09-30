@@ -10,6 +10,8 @@ final class AppModel: ObservableObject {
     // Data
     @ObservationIgnored let packs: PackStore
     @ObservationIgnored let browse: any BrowseDataSource
+    /// On-device language models downloaded from Hugging Face (AI Lab).
+    let models = ModelLibrary()
     @ObservationIgnored private var userData: UserDatabase?
     var states: [StateAvailability] = []
     /// Live progress for installs in flight (the pack store only reports milestones).
@@ -155,17 +157,27 @@ final class AppModel: ObservableObject {
 
     // MARK: Packs
 
-    func install(state: String) async {
+    /// Installs one state's hosted pack. Returns whether it worked (the reason is in `lastError` when it did not).
+    @discardableResult
+    func install(state: String) async -> Bool {
         lastError = nil
+        let failure = await installHosted(state: state)
+        if let failure { lastError = (failure as? LocalizedError)?.errorDescription ?? failure.localizedDescription }
+        return failure == nil
+    }
+
+    private func installHosted(state: String) async -> Error? {
+        var failure: Error?
         do {
             try await packs.install(state: state) { [weak self] status in
                 Task { @MainActor in self?.liveStatus[state] = status }
             }
         } catch {
-            lastError = error.localizedDescription
+            failure = error
         }
         liveStatus[state] = nil
         await refreshStates()
+        return failure
     }
 
     func removePack(state: String) async {
@@ -175,6 +187,101 @@ final class AppModel: ObservableObject {
             lastError = error.localizedDescription
         }
         await refreshStates()
+    }
+
+    // MARK: Get data (several states at once)
+
+    /// One "get data" job: a plan and how far along it is.
+    struct DataJob {
+        var plan: DataPlan
+        var finished: Set<String> = []
+        var failures: [String: String] = [:]
+        var step = "Starting…"
+        var isRunning = true
+        var wasCancelled = false
+        var summary: String?
+
+        var totalCount: Int { plan.downloads.count + plan.builds.count }
+        var completedCount: Int { finished.count + failures.count }
+    }
+
+    var dataJob: DataJob?
+    @ObservationIgnored private var dataTask: Task<Void, Never>?
+
+    var dataJobRunning: Bool { dataJob?.isRunning == true }
+
+    /// The plan for a set of states, with this Mac's current view of what is installed and what is hosted.
+    func dataPlan(for requested: Set<String>, preference: DataSourcePreference, refreshInstalled: Bool) -> DataPlan {
+        DataPlan.make(requested: requested,
+                      states: states.map { StateAvailability(code: $0.code, name: $0.name, status: status(for: $0.code)) },
+                      hostedAvailable: manifestNote == nil && !AppConfiguration.usesMockData,
+                      preference: preference,
+                      services: ULSService.allCases.filter { localBuildServices.contains($0.id) },
+                      refreshInstalled: refreshInstalled)
+    }
+
+    /// Runs a plan: hosted packs one after another, then every state that has to be built in ONE pass over the FCC archives.
+    func getData(_ plan: DataPlan) async {
+        guard !plan.isEmpty, !dataJobRunning, !importActive else { return }
+        dataJob = DataJob(plan: plan)
+        let task = Task { await runDataJob(plan) }
+        dataTask = task
+        await task.value
+        dataTask = nil
+    }
+
+    func cancelDataJob() {
+        guard dataJobRunning else { return }
+        dataJob?.wasCancelled = true
+        dataTask?.cancel()
+        buildTask?.cancel()
+    }
+
+    func dismissDataJob() {
+        if !dataJobRunning { dataJob = nil }
+    }
+
+    private func runDataJob(_ plan: DataPlan) async {
+        var toBuild = plan.builds.map(\.code)
+        for item in plan.downloads {
+            if Task.isCancelled { break }
+            dataJob?.step = "Downloading \(item.name)…"
+            if let failure = await installHosted(state: item.code) {
+                if let store = failure as? PackStoreError, case .notInManifest = store {
+                    toBuild.append(item.code)           // no hosted pack for it after all: build it with the others
+                } else if failure is CancellationError || Task.isCancelled {
+                    break
+                } else {
+                    dataJob?.failures[item.code] = (failure as? LocalizedError)?.errorDescription ?? failure.localizedDescription
+                }
+            } else {
+                dataJob?.finished.insert(item.code)
+            }
+        }
+
+        if !toBuild.isEmpty, !Task.isCancelled {
+            dataJob?.step = "Building \(toBuild.count) state\(toBuild.count == 1 ? "" : "s") from the FCC data…"
+            await buildLocally(states: Set(toBuild))
+            for code in toBuild {
+                if case .installed = status(for: code) {
+                    dataJob?.finished.insert(code)
+                } else if !(dataJob?.wasCancelled ?? false) {
+                    dataJob?.failures[code] = lastError ?? "The build did not produce this state."
+                }
+            }
+        }
+
+        await refreshStates()
+        guard var job = dataJob else { return }
+        job.isRunning = false
+        if job.wasCancelled || Task.isCancelled {
+            job.summary = "Cancelled. \(job.finished.count) of \(job.totalCount) finished; what arrived is kept."
+        } else if job.failures.isEmpty {
+            job.summary = "Installed \(job.finished.count) state\(job.finished.count == 1 ? "" : "s")."
+        } else {
+            job.summary = "Installed \(job.finished.count) of \(job.totalCount); \(job.failures.count) failed."
+        }
+        dataJob = job
     }
 
     // MARK: Local build

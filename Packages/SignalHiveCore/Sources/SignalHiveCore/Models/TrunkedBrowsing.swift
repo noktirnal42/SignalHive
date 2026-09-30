@@ -38,10 +38,12 @@ public struct TrunkedSystemFilter: Equatable, Sendable {
 
     public func apply(to systems: [TrunkedSystem]) -> [TrunkedSystem] {
         let words = search.lowercased().split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        let wantedStates = Set(states.map { $0.uppercased() })
+        let wantedTypes = Set(types.map { $0.lowercased() })
         let matching = systems.filter { system in
             if activeOnly && !system.isActive { return false }
-            if !states.isEmpty && !states.contains(system.state.uppercased()) { return false }
-            if !types.isEmpty && !types.contains(system.systemType.lowercased()) { return false }
+            if !wantedStates.isEmpty && !wantedStates.contains(system.state.uppercased()) { return false }
+            if !wantedTypes.isEmpty && !wantedTypes.contains(system.systemType.lowercased()) { return false }
             guard !words.isEmpty else { return true }
             let haystack = [system.name, system.shortName, system.city, system.county, system.state, system.typeLabel,
                             system.details].joined(separator: " ").lowercased()

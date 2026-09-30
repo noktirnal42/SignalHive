@@ -5,8 +5,8 @@ import FoundationModels
 #endif
 
 struct AILabView: View {
+    @Environment(AppModel.self) private var app
     @State private var availability = FoundationAvailabilitySnapshot.unchecked
-    @State private var downloadStates: [String: MLXDownloadState] = [:]
 
     private let machine = LocalMachineProfile.current
     private let classifierValidation = AutoClassifierBundleValidator.validate()
@@ -23,7 +23,12 @@ struct AILabView: View {
     private var mlxModels: [MLXModelCandidate] {
         MLXModelCatalog.defaultCandidates(for: machine).map { model in
             var editable = model
-            editable.downloadState = downloadStates[model.repoID] ?? model.downloadState
+            switch app.models.state(for: model.repoID) {
+            case .notDownloaded: editable.downloadState = .notDownloaded
+            case .downloading: editable.downloadState = .downloading
+            case .installed: editable.downloadState = .installed
+            case .failed: editable.downloadState = .failed
+            }
             return editable
         }
     }
@@ -46,6 +51,7 @@ struct AILabView: View {
         .navigationTitle("AI Lab")
         .task {
             availability = FoundationAvailabilitySnapshot.evaluate()
+            await app.models.refresh(candidates: mlxModels.map(\.repoID))
         }
     }
 
@@ -223,6 +229,10 @@ struct AILabView: View {
                 Spacer()
                 HiveStatusBadge("\(machine.chipName) / \(machine.displayMemory)", tint: HiveInk.cyan)
             }
+            Text("Models are fetched from Hugging Face into SignalHive's Application Support folder and checked against their published checksums. A cancelled or interrupted download resumes at the file it stopped on. No inference runtime uses them yet.")
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.56))
+                .fixedSize(horizontal: false, vertical: true)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 330), spacing: 10)], spacing: 10) {
                 ForEach(mlxModels) { model in
                     modelTile(model)
@@ -267,28 +277,7 @@ struct AILabView: View {
                 .foregroundStyle(.white.opacity(0.48))
                 .fixedSize(horizontal: false, vertical: true)
 
-            HStack {
-                Button {
-                    downloadStates[model.repoID] = .queued
-                } label: {
-                    Label(downloadStates[model.repoID] == .queued ? "Queued" : "Queue", systemImage: "arrow.down.circle")
-                }
-                .buttonStyle(.bordered)
-                .tint(color(for: model.compatibility))
-                .disabled(model.compatibility == .notRecommended)
-
-                Link(destination: URL(string: "https://huggingface.co/\(model.repoID)")!) {
-                    Label("Hub", systemImage: "arrow.up.right.square")
-                }
-                .buttonStyle(.bordered)
-                .tint(HiveInk.cyan)
-
-                Spacer()
-
-                Text((downloadStates[model.repoID] ?? model.downloadState).displayName)
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.white.opacity(0.54))
-            }
+            downloadControls(for: model)
         }
         .padding(12)
         .frame(maxWidth: .infinity, minHeight: 232, alignment: .topLeading)
@@ -299,13 +288,86 @@ struct AILabView: View {
         }
     }
 
+    @ViewBuilder
+    private func downloadControls(for model: MLXModelCandidate) -> some View {
+        let state = app.models.state(for: model.repoID)
+        let partial = app.models.partialBytes[model.repoID] ?? 0
+        VStack(alignment: .leading, spacing: 8) {
+            switch state {
+            case .notDownloaded, .failed:
+                if case let .failed(reason) = state {
+                    Text(reason)
+                        .font(.caption)
+                        .foregroundStyle(.red.opacity(0.9))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                HStack {
+                    Button {
+                        app.models.download(model.repoID)
+                    } label: {
+                        Label(partial > 0 ? "Resume" : "Download", systemImage: "arrow.down.circle")
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(color(for: model.compatibility))
+                    .disabled(model.compatibility == .notRecommended)
+                    hubLink(model)
+                    Spacer()
+                    Text(partial > 0 ? "\(ByteCountFormatter.string(fromByteCount: partial, countStyle: .file)) already here" : model.downloadState.displayName)
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.white.opacity(0.54))
+                }
+            case let .downloading(progress):
+                ProgressView(value: progress.fraction)
+                    .tint(HiveInk.cyan)
+                HStack {
+                    Text(progressText(progress))
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.white.opacity(0.62))
+                        .lineLimit(1)
+                    Spacer()
+                    Button("Cancel") { app.models.cancel(model.repoID) }
+                        .buttonStyle(.bordered)
+                }
+            case let .installed(record):
+                HStack {
+                    Label("Installed, \(ByteCountFormatter.string(fromByteCount: record.totalBytes, countStyle: .file))", systemImage: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                    hubLink(model)
+                    Spacer()
+                    Button("Remove", role: .destructive) { Task { await app.models.remove(model.repoID) } }
+                        .buttonStyle(.bordered)
+                }
+            }
+        }
+    }
+
+    private func hubLink(_ model: MLXModelCandidate) -> some View {
+        Link(destination: URL(string: "https://huggingface.co/\(model.repoID)")!) {
+            Label("Hub", systemImage: "arrow.up.right.square")
+        }
+        .buttonStyle(.bordered)
+        .tint(HiveInk.cyan)
+    }
+
+    private func progressText(_ progress: ModelInstallProgress) -> String {
+        switch progress.phase {
+        case .listing: return "Listing files…"
+        case .finishing: return "Finishing…"
+        case .downloading:
+            let done = ByteCountFormatter.string(fromByteCount: progress.bytesDone, countStyle: .file)
+            let total = ByteCountFormatter.string(fromByteCount: progress.bytesTotal, countStyle: .file)
+            return "\(done) of \(total) · file \(progress.fileIndex)/\(progress.fileCount)"
+        }
+    }
+
     private var roadmap: some View {
         HiveInstrumentPanel("Implementation Path", status: "truthful gates") {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 10)], spacing: 10) {
                 roadmapStep("1", "Finish Core ML classifier assets", "Bundle or download the real AutoClassify_v2.mlpackage and show accuracy/latency evidence in-app.")
                 roadmapStep("2", "Turn RF coach into actions", "Attach Foundation summaries to Browse, Scanner, Trunked, ADS-B/UAT, AIS, and Codeplug views.")
                 roadmapStep("3", "Wire PCC only when entitled", "Use PCC for long reports after entitlement, network, quota, and availability checks pass.")
-                roadmapStep("4", "Replace MLX queue with transfer backend", "Download MLX repos into Application Support, verify manifests, then enable local inference adapters.")
+                roadmapStep("4", "Connect a local inference runtime", "Model downloads work: files are listed from Hugging Face, fetched, checked against their published SHA-256 and kept in Application Support. Nothing runs them yet; an MLX inference adapter is the next step.")
             }
         }
     }

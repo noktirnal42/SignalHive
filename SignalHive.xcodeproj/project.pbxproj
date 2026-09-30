@@ -74,6 +74,12 @@
 		7B3D33B30519F190831AB3E8 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
 		CD43E56250E2C6A8D6056817 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
 		D56493188259778AD195197E /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
+		3330E7965A9684316200F118 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2698DF12554B4121EB1136CE /* GetDataSheet.swift */; };
+		5E28B5B830FD184E3F9937A4 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2698DF12554B4121EB1136CE /* GetDataSheet.swift */; };
+		A4D3EEEF421D20D4A12B5A0A /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2698DF12554B4121EB1136CE /* GetDataSheet.swift */; };
+		17D83261857FEA79B25C8990 /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */; };
+		1E019CAB3446467B7410EB4C /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */; };
+		E1E6F6C594878DF70DC12C93 /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -110,6 +116,8 @@
 		9FA91A5667F7441B4B8B0330 /* AviationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationModel.swift; sourceTree = "<group>"; };
 		A956D185F00F09375E48A2B1 /* AirDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDataView.swift; sourceTree = "<group>"; };
 		FD2BC0CA485DB24AB480B634 /* AirMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMapView.swift; sourceTree = "<group>"; };
+		2698DF12554B4121EB1136CE /* GetDataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDataSheet.swift; sourceTree = "<group>"; };
+		AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLibrary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +152,7 @@
 			isa = PBXGroup;
 			children = (
 				1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */,
+				AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -262,6 +271,7 @@
 				69AFB203A996B9F769878976 /* WorkshopView.swift */,
 				A956D185F00F09375E48A2B1 /* AirDataView.swift */,
 				FD2BC0CA485DB24AB480B634 /* AirMapView.swift */,
+				2698DF12554B4121EB1136CE /* GetDataSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -434,6 +444,8 @@
 				74F59E9D4EF82AF6653A0CFE /* AviationModel.swift in Sources */,
 				7B3D33B30519F190831AB3E8 /* AirDataView.swift in Sources */,
 				D56493188259778AD195197E /* AircraftIconRenderer.swift in Sources */,
+				5E28B5B830FD184E3F9937A4 /* GetDataSheet.swift in Sources */,
+				17D83261857FEA79B25C8990 /* ModelLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,6 +473,8 @@
 				6092FCE97E98B0A5016AE03D /* AirDataView.swift in Sources */,
 				727363CBE0C66A5F71007BFB /* AviationModel.swift in Sources */,
 				CD43E56250E2C6A8D6056817 /* AircraftIconRenderer.swift in Sources */,
+				3330E7965A9684316200F118 /* GetDataSheet.swift in Sources */,
+				1E019CAB3446467B7410EB4C /* ModelLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -489,6 +503,8 @@
 				2E90BBE82E96AB256AB379EE /* AviationModel.swift in Sources */,
 				3C0EE6A59049B87691DD4216 /* AirDataView.swift in Sources */,
 				4CD015D69D4CC2B5B0ECB13F /* AircraftIconRenderer.swift in Sources */,
+				A4D3EEEF421D20D4A12B5A0A /* GetDataSheet.swift in Sources */,
+				E1E6F6C594878DF70DC12C93 /* ModelLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
