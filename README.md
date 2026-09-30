@@ -13,6 +13,9 @@ for AI-assisted RF work.
 - DSP, demodulator, decoder, codeplug, and AI workbench modules live in `Packages/SignalHiveCore`.
 - The UI is SwiftUI with an instrument-style visual system; it still needs a deeper UX pass before it should be
   called polished.
+- **Workshop and AI Lab are information screens today**: they report what works on this Mac but almost nothing in
+  them can be used yet. Making them function is the next milestone; the audit and build spec are in
+  `docs/UI_AUDIT_2026-09-30.md`. Agents should start from `CLAUDE.md`.
 
 ## AI Direction
 
@@ -30,6 +33,7 @@ The native Swift RTL-SDR stack has passed unit tests and local hardware tests on
 That does not yet prove every dongle, antenna setup, gain profile, or over-the-air workflow. See:
 
 - `docs/PROJECT_STATUS.md`
+- `docs/UI_AUDIT_2026-09-30.md` (screen-by-screen audit and the Workshop / AI Lab build spec)
 - `Packages/SwiftRTLSDR/README.md`
 - `Packages/SwiftRTLSDR/HARDWARE.md`
 
@@ -45,7 +49,7 @@ be pulled into SignalHive after it lands upstream and its package tests pass.
 ```bash
 xcodegen generate
 script/build_and_run.sh --verify
-cd Packages/SignalHiveCore && swift test
+cd Packages/SignalHiveCore && swift test --skip RTLSDRHardwareTests
 cd ../SwiftRTLSDR && swift test
 ```
 
