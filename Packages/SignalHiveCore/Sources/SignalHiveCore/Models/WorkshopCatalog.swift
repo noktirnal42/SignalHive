@@ -134,15 +134,15 @@ public enum WorkshopCatalog {
             symbol: "slider.horizontal.3", status: live, setup: liveNote, destination: .scanner))
         items.append(WorkshopItem(
             "airmap", .workflows, "Air Map: ADS-B and FIS-B",
-            "Aircraft on a map with painted icons colored by altitude, trails, and NEXRAD radar from FIS-B.\(env.hasLiveSource ? "" : " A demo sky runs without hardware.")",
+            "Aircraft on a map with painted icons colored by altitude, trails, and NEXRAD radar from FIS-B.",
             symbol: "airplane", status: env.rtlsdrDongles > 0 ? .ready : .needsSetup,
-            setup: env.rtlsdrDongles > 0 ? nil : "Live traffic needs an RTL-SDR (1090 MHz for aircraft, 978 MHz for FIS-B). The demo sky needs nothing.",
+            setup: env.rtlsdrDongles > 0 ? nil : "Live traffic needs an RTL-SDR (1090 MHz for aircraft, 978 MHz for FIS-B).",
             destination: .airMap))
         items.append(WorkshopItem(
             "airdata", .workflows, "Air Data: weather and messages",
             "METAR, TAF, PIREP, SIGMET, AIRMET, NOTAM and TFR text from FIS-B, decoded, with an airport weather board and alerts.",
             symbol: "doc.text.magnifyingglass", status: env.rtlsdrDongles > 0 ? .ready : .needsSetup,
-            setup: env.rtlsdrDongles > 0 ? nil : "FIS-B is broadcast on 978 MHz and needs an RTL-SDR. The demo feed needs nothing.",
+            setup: env.rtlsdrDongles > 0 ? nil : "FIS-B is broadcast on 978 MHz and needs an RTL-SDR.",
             destination: .airData))
         items.append(WorkshopItem(
             "codeplug", .workflows, "Radio programming",

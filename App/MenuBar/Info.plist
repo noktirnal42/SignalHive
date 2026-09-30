@@ -16,6 +16,8 @@
     <string>APPL</string>
     <key>LSUIElement</key>
     <true/>
+    <key>LSMultipleInstancesProhibited</key>
+    <true/>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
     <key>NSAppDelegateClass</key>
@@ -26,5 +28,7 @@
     <string>AppIcon</string>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2024. All rights reserved.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>SignalHive uses your location as the receiver antenna position for ADS-B range and map placement.</string>
 </dict>
 </plist>

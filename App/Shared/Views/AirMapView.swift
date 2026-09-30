@@ -64,6 +64,10 @@ struct AirMapView: View {
         }
         .onAppear { placeCameraOnce() }
         .onChange(of: model.activeSources) { _, _ in fitToTraffic() }
+        .onChange(of: model.receiverLocation) { _, location in
+            guard let location, model.picture.aircraft.isEmpty else { return }
+            centerOn(location)
+        }
     }
 
     private var mapArea: some View {
@@ -427,19 +431,12 @@ private struct AirEmptyState: View {
                 .foregroundStyle(HiveInk.cyan)
             Text("No aircraft yet")
                 .font(.system(.title3, design: .rounded).weight(.semibold))
-            Text("Listen for real traffic with an RTL-SDR (1090 MHz for airliners, 978 MHz for US general aviation and weather radar), or start the demo sky to see the map, icons, altitude colors, trails and radar working.")
+            Text("Listen for real traffic with an RTL-SDR. Use 1090 MHz for airliners and most aircraft; use 978 MHz for US general aviation, TIS-B and FIS-B weather. Set the antenna position first for faster ADS-B position fixes.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 380)
             HStack {
-                Button {
-                    Task { await model.start(.demo) }
-                } label: {
-                    Label("Start demo sky", systemImage: "sparkles")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(HiveInk.amber)
                 #if os(macOS)
                 Button {
                     Task { await model.start(.adsb1090) }
@@ -495,7 +492,7 @@ private struct SourcePanel: View {
     var body: some View {
         HiveInstrumentPanel("Sources", status: model.isRunning ? "running" : "idle") {
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(AviationModel.Source.allCases) { source in
+                ForEach(model.liveSources) { source in
                     sourceRow(source)
                 }
                 HStack {
@@ -517,10 +514,29 @@ private struct SourcePanel: View {
                             .onSubmit { applyPosition() }
                         Button("Set") { applyPosition() }
                     }
+                    HStack(spacing: 8) {
+                        Button {
+                            model.requestLocationServices()
+                        } label: {
+                            Label("Use device location", systemImage: "location")
+                        }
+                        .buttonStyle(.borderless)
+                        .font(.caption)
+                        if model.receiverLocation != nil {
+                            Button("Clear") {
+                                positionText = ""
+                                model.setReceiverLocation(nil)
+                            }
+                            .buttonStyle(.borderless)
+                            .font(.caption)
+                        }
+                    }
                     if positionError {
                         Text("Type latitude and longitude, like 40.1234, -100.5678.").font(.caption2).foregroundStyle(.red)
+                    } else if let error = model.locationError {
+                        Text(error).font(.caption2).foregroundStyle(.red)
                     } else if let location = model.receiverLocation {
-                        Text(AviationFormat.coordinate(location)).font(.caption2).foregroundStyle(.white.opacity(0.6))
+                        Text("\(model.locationStatus): \(AviationFormat.coordinate(location))").font(.caption2).foregroundStyle(.white.opacity(0.6))
                     } else {
                         Text("Unset: ranges are hidden, and a first 1090 MHz position needs an even and an odd report.")
                             .font(.caption2).foregroundStyle(.white.opacity(0.5))

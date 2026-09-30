@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 import SignalHiveCore
 
 /// State behind the Air Map and Air Data panels: what is being received, what has been heard, and how the map is set up.
@@ -35,6 +36,7 @@ final class AviationModel {
 
     var isRunning: Bool { !activeSources.isEmpty }
     var isDemo: Bool { activeSources.contains(.demo) }
+    var liveSources: [Source] { Source.allCases.filter(\.isLive) }
 
     /// One line for the status pill.
     var status: String {
@@ -63,10 +65,23 @@ final class AviationModel {
 
     /// Where the antenna is; used for range and to place a first position report.
     private(set) var receiverLocation: GeoCoordinate?
+    private(set) var locationStatus = "Manual position"
+    private(set) var locationError: String?
+    @ObservationIgnored private lazy var locationService = ReceiverLocationService { [weak self] coordinate in
+        self?.setReceiverLocation(coordinate)
+        self?.locationStatus = "From Location Services"
+        self?.locationError = nil
+    } onError: { [weak self] message in
+        self?.locationError = message
+        self?.locationStatus = "Location unavailable"
+    }
 
     func setReceiverLocation(_ coordinate: GeoCoordinate?) {
         receiverLocation = coordinate
         picture.receiver = coordinate
+        locationError = nil
+        locationStatus = coordinate == nil ? "Manual position" : "Manual position set"
+        let restart1090 = activeSources.contains(.adsb1090)
         let defaults = UserDefaults.standard
         if let coordinate {
             defaults.set(coordinate.latitude, forKey: Keys.latitude)
@@ -75,6 +90,15 @@ final class AviationModel {
             defaults.removeObject(forKey: Keys.latitude)
             defaults.removeObject(forKey: Keys.longitude)
         }
+        if restart1090 {
+            statuses[.adsb1090] = "Restarting 1090 MHz with receiver location"
+            Task { [weak self] in await self?.restartLiveSource(.adsb1090) }
+        }
+    }
+
+    func requestLocationServices() {
+        locationStatus = "Requesting location..."
+        locationService.requestLocation()
     }
 
     // Cached drawing inputs, rebuilt when the picture changes
@@ -197,6 +221,13 @@ final class AviationModel {
 
     private func stopLiveSources() async {
         for source in Source.allCases where source.isLive { await stop(source) }
+    }
+
+    private func restartLiveSource(_ source: Source) async {
+        guard source.isLive, activeSources.contains(source) else { return }
+        await stop(source)
+        await startLive(source)
+        startMaintenanceIfNeeded()
     }
 
     func clear() {

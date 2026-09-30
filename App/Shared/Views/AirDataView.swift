@@ -165,20 +165,11 @@ private struct AirDataEmpty: View {
                 .font(.system(.title3, design: .rounded).weight(.semibold))
             Text(hasAny
                  ? "Turn on more kinds, lower the severity, or clear the search."
-                 : "Weather reports and notices arrive from 978 MHz FIS-B ground stations; aircraft alerts arrive with ADS-B. Start the demo sky to see samples of every kind.")
+                 : "Weather reports and notices arrive from 978 MHz FIS-B ground stations; aircraft alerts arrive with ADS-B. Start 978 MHz UAT/FIS-B or 1090 MHz ADS-B from Air Map to receive live data.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 420)
-            if !hasAny {
-                Button {
-                    Task { await model.start(.demo) }
-                } label: {
-                    Label("Start demo sky", systemImage: "sparkles")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(HiveInk.amber)
-            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(30)
