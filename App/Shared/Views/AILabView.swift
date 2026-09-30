@@ -414,12 +414,16 @@ private struct FoundationAvailabilitySnapshot: Sendable, Equatable {
             onDeviceDetail = String(describing: model.availability)
         }
 
+        // Private Cloud Compute arrived with the 27 SDKs (Swift 6.4); older toolchains, such as the CI runner's, do not
+        // know the type, so the probe is compiled only where it exists.
+        #if compiler(>=6.4)
         if #available(macOS 27.0, iOS 27.0, *) {
             let model = PrivateCloudComputeLanguageModel()
             privateCloudAvailable = model.isAvailable
             privateCloudLabel = model.isAvailable ? "Available" : "Entitlement gated"
             privateCloudDetail = String(describing: model.availability)
         }
+        #endif
 
         return FoundationAvailabilitySnapshot(
             onDeviceAvailable: onDeviceAvailable,
