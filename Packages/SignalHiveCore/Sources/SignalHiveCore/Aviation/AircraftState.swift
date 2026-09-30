@@ -212,6 +212,7 @@ public enum ICAOAddressBlocks {
         Block(first: 0x380000, last: 0x3BFFFF, country: "France"),
         Block(first: 0x3C0000, last: 0x3FFFFF, country: "Germany"),
         Block(first: 0x400000, last: 0x43FFFF, country: "United Kingdom"),
+        Block(first: 0x480000, last: 0x487FFF, country: "Netherlands"),
         Block(first: 0x7C0000, last: 0x7FFFFF, country: "Australia"),
         Block(first: 0x840000, last: 0x87FFFF, country: "Japan"),
         Block(first: 0xA00000, last: 0xAFFFFF, country: "United States"),
