@@ -65,4 +65,48 @@ import Testing
         #expect(features.first { $0.id == "deep-rf-report" }?.status == .requiresEntitlement)
         #expect(features.first { $0.id == "local-mlx-assistant" }?.status == .needsModel)
     }
+
+    @Test func rfCoachExplainsWeatherRadioWithoutClassifier() async {
+        let engine = SignalDescriptionEngine()
+
+        let description = await engine.describe(context: SignalDescriptionContext(
+            frequencyHz: 162_550_000,
+            modeHints: [.analogFM]
+        ))
+
+        #expect(description.explanation.contains("NOAA Weather Radio"))
+        #expect(description.recommendation.contains("NFM"))
+        #expect(description.confidence.contains("rules"))
+    }
+
+    @Test func rfCoachUsesFCCContextWhenPresent() async {
+        let engine = SignalDescriptionEngine()
+
+        let description = await engine.describe(context: SignalDescriptionContext(
+            frequencyHz: 155_475_000,
+            bandwidthHz: 12_500,
+            rssiDBFS: -53,
+            licensee: "Coconino County",
+            callSign: "KAA123",
+            serviceName: "Public Safety Pool",
+            modeHints: [.analogFM]
+        ))
+
+        #expect(description.explanation.contains("Coconino County"))
+        #expect(description.explanation.contains("KAA123"))
+        #expect(description.recommendation.contains("12.5 kHz"))
+        #expect(description.confidence == "rules / high")
+    }
+
+    @Test func rfCoachRecognizesAviationDataChannels() async {
+        let engine = SignalDescriptionEngine()
+
+        let adsb = await engine.describe(context: SignalDescriptionContext(frequencyHz: 1_090_000_000))
+        let uat = await engine.describe(context: SignalDescriptionContext(frequencyHz: 978_000_000))
+
+        #expect(adsb.explanation.contains("ADS-B"))
+        #expect(adsb.recommendation.contains("Air Map"))
+        #expect(uat.explanation.contains("FIS-B"))
+        #expect(uat.recommendation.contains("978 MHz"))
+    }
 }

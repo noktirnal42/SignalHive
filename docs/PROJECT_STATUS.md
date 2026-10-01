@@ -1,10 +1,10 @@
 # SignalHive — Project Status and Handoff
 
-Last updated: 2026-09-30 (after the UI audit). This is a living document: update the "Verified status" table whenever
+Last updated: 2026-09-30 (after the RF Coach / unsandbox pass). This is a living document: update the "Verified status" table whenever
 something is tested, and add to "Bugs found and fixed" whenever a root cause is found.
 
-**Start here:** the current state, in one line: the data, scanner, aviation and trunking screens work; **Workshop and
-AI Lab are information screens that do not yet do anything**, which is the next job. The findings, the build spec and
+**Start here:** the current state, in one line: the data, scanner, aviation and trunking screens work; **AI Lab now has
+one usable local RF Coach action**, while Workshop is still mostly an information screen. The findings, the build spec and
 the suggested order are in [`UI_AUDIT_2026-09-30.md`](UI_AUDIT_2026-09-30.md); screenshots of every screen are in
 `docs/screenshots/2026-09-30/`. Working rules for any agent (Claude, Codex, cloud) are in the repo-root `CLAUDE.md`.
 
@@ -47,6 +47,7 @@ Codex sessions):
 | `ed1bf55` | Codex (GPT) | One large sync commit (about 18k lines) that **absorbed the whole Claude cloud-session branch `claude/vibrant-einstein-ro06r5`**: Aviation core and the Air Map / Air Data screens, the 1090 MHz and 978 MHz (UAT / FIS-B) receivers, codeplug validator / editor / CHIRP import, tolerant OpenMHz client with offline cache and category filters, `WorkshopCatalog` built from real machine facts, `GetDataSheet`, Hugging Face `ModelDownloadManager`, CI workflow, and the embedded driver's ISM / LRPT / RS41 / UAT decoders. Verified 2026-09-30: `main` contains everything on that branch plus later fixes, so **the remote branch is obsolete and can be deleted**. |
 | `80cdfc6`, `939285c` | Codex (GPT) | Receiver location service and live aviation setup (the "Start demo sky" button was removed from Air Map here); icon metadata and the single-instance launch script. |
 | 2026-09-30 | Claude Code (local) | UI audit (this doc's companion), Trunked crash fix, Dock icon hook, run-script race fix, invalid SF Symbol fixes, `script/check_sf_symbols.sh`, docs and screenshots for the cloud session. Finished what Codex was in the middle of (Dock icon); its "AI Lab pass" was never written, and is now specified in the audit. |
+| 2026-09-30 | Codex (GPT) | Removed macOS sandbox signing from the XcodeGen project and regenerated `SignalHive.xcodeproj`; verified the running app has no sandbox entitlement. Added `SignalDescriptionContext`, a rules-based RF Coach entry point, tests, and an AI Lab panel that runs it. Confirmed embedded `Packages/SwiftRTLSDR` matches Claude's `claude/determined-davinci-n2dt0t` branch. |
 
 The Codex session (for reference): `~/.codex/sessions/2026/09/29/rollout-2026-09-29T17-17-28-01a0efac-*.jsonl`,
 thread "Fix and finish SignalHive". Its last two requests ("work on AI workshop", "app icon missing from the taskbar")
@@ -91,24 +92,24 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 
 | Area | Status | Evidence |
 |---|---|---|
-| Package tests | **2026-09-30: SignalHiveCore 410 tests in 67 suites pass** (hardware tests skipped). SwiftRTLSDR was not re-run on 2026-09-30; last known 99 kit + 31 scan + 14 server tests pass (2026-09-29), CI runs it without blocking | `swift test --skip RTLSDRHardwareTests` in `Packages/SignalHiveCore` |
-| Workshop and AI Lab screens | **Information only.** Render correctly from real machine facts; almost nothing in them can be used. Full audit and build spec: `docs/UI_AUDIT_2026-09-30.md` | Driven in the running app, screenshots in `docs/screenshots/2026-09-30/` |
+| Package tests | **2026-09-30: SignalHiveCore 413 tests in 67 suites pass** (hardware tests skipped). SwiftRTLSDR also passes locally: 99 kit + 31 scan + 16 server + 87 decoder tests | `swift test --skip RTLSDRHardwareTests` in `Packages/SignalHiveCore`; `swift test` in `Packages/SwiftRTLSDR` |
+| Workshop and AI Lab screens | **Workshop mostly information only. AI Lab now has one real action**: RF Coach explains a frequency/mode/RSSI context through local deterministic rules and labels the provider honestly. Full audit and remaining build spec: `docs/UI_AUDIT_2026-09-30.md` | Driven in the running app; `AIWorkbenchModelsTests`; app-bound screenshot after pressing Explain |
 | Trunked (OpenMHz browser) | **Pass 2026-09-30** after a crash fix: live systems list, a 6,488-talkgroup system opens, category chips and inline search work. Add-to-codeplug not exercised | Driven in the running app |
 | Air Map / Air Data | UI renders and is complete (sources, layers, filters, receiver panel). Receivers not started in this pass (need an antenna); demo sky not reachable from the UI | Driven in the running app |
 | Dock icon | **Pass 2026-09-30**: painted icon in a rounded tile with the running indicator | Screenshot of the Dock |
 | macOS, menu-bar and iOS targets build | Pass | `xcodebuild` for all three schemes |
 | App launches without crashing | **Pass** after fix: 0 of 20 launches crashed (was 4 of 8) | `script/launch_stability_test.sh` |
 | FCC data: state -> county -> licenses -> frequencies | **Pass** with the owner's real Arizona pack (6,049 licenses, 13,101 sites, 41,354 frequencies, all 15 counties) | Driven in the running app: Coconino County lists licensees; the detail pane shows call sign, service, dates and frequencies with mode/bandwidth |
-| RTL-SDR detected over USB | **Native Swift path integrated.** SignalHive now depends on `Packages/SwiftRTLSDR` and uses `NativeRTLSDRDevice` over Apple's IOUSBHost API; no `dlopen(librtlsdr)` is used for RTL-SDR. The local macOS app is intentionally unsandboxed because IOUSBHost whole-device open is blocked in the App Sandbox on the tested RTL2832U/R820T dongle. | SignalHiveCore hardware tests exercised the attached dongle; sandboxed self-test failed before unsandboxing with `IOKit 0xe00002e2` / `0xe00002c9` |
+| RTL-SDR detected over USB | **Native Swift path integrated.** SignalHive now depends on `Packages/SwiftRTLSDR` and uses `NativeRTLSDRDevice` over Apple's IOUSBHost API; no `dlopen(librtlsdr)` is used for RTL-SDR. The local macOS app is intentionally unsandboxed because IOUSBHost whole-device open is blocked in the App Sandbox on the tested RTL2832U/R820T dongle. | SignalHiveCore hardware tests exercised the attached dongle; 2026-09-30 rebuilt app entitlement check shows only debug `get-task-allow`, no `com.apple.security.app-sandbox` |
 | Pack builder on real FCC data | Pass for LMcomm: 5.3 s, 47 MB peak, 55 packs / 3.4 MB | `docs/superpowers/specs/2026-09-29-data-foundation-spike.md`. LMpriv not measured by Claude; the owner's Arizona pack shows it works in the app |
 | Scanner display: spectrum, waterfall, tuning, volume | **Fixed and verified on the real dongle (S1)**: full centre-shifted spectrum, fed high-resolution waterfall (2048x400 pixel buffer, inferno palette, 25 rows/s, selectable 125 Hz - 1 kHz detail), auto-scaling, typed/stepped/click-to-tune frequency snapped to the step grid, volume + mute. Tests: FFT tones, waterfall buffer, palette, throttle, frequency entry, volume | Running app with the RTL-SDR; 102 tests |
 | Scanner activity workflow | **Partial S3 built**: live passband activity detection now uses `RTLSDRScan.PeakDetector` with a local noise floor; UI shows activity hits, tune, hold/release, skip, lockout/unlock, save-to-codeplug, starter scan bank, decoder quick-tune presets, and a repaired source rail. True multi-hop scan-list sweeping and FCC identification are still next. | `swift test --skip RTLSDRHardwareTests`; macOS app build |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
 | Scanner audio from the RTL-SDR (end to end) | **Still needs ear/over-the-air QA**: native USB streaming and DSP tests pass, but reception quality, antenna-dependent signals, and user-facing scan-list workflows still need field verification. | hardware/unit tests; no listening QA yet |
 | Decoders | ADS-B (1090) and UAT/FIS-B (978) are wired into Air Map / Air Data through their own receivers. ACARS, AIS, Morse, paging and FT8 exist in core with unit tests but **nothing in the app runs them** (no Decoder Hub). The embedded driver also has ISM-sensor, Meteor LRPT and RS41 radiosonde decoders with `rtlsdr-tool` commands and no app UI. **None has received a live signal** (driver's own `docs/DECODERS.md`) | Unit tests with synthetic signals and published messages |
-| AI Lab: Foundation Models / PCC probes | Probes run and both report available on the owner's Mac; **no feature calls them**. MLX model downloads work (tested; not exercised live in the UI, they are multi-GB). No MLX inference runtime. Core ML classifier package does not exist | Driven in the running app; `ModelDownloadTests` |
+| AI Lab: Foundation Models / PCC probes | Probes run and both report available on the owner's Mac. The first usable feature is **RF Coach via SignalHive Rules**, not Foundation/PCC. MLX model downloads work (tested; not exercised live in the UI, they are multi-GB). No MLX inference runtime. Core ML classifier package does not exist | Driven in the running app; `AIWorkbenchModelsTests`; `ModelDownloadTests` |
 | App icon asset | The asset art is an opaque full-bleed square; the Dock tile is drawn onto the macOS icon grid at runtime. Redraw the asset (or use an Icon Composer `.icon`) | Screenshot of the Dock; `sips` shows no alpha |
-| SF Symbol names | **Pass 2026-09-30**: 111 distinct names, 0 invalid, after fixing 5 that rendered blank | `script/check_sf_symbols.sh` |
+| SF Symbol names | **Pass 2026-09-30**: 112 distinct names, 0 invalid, after fixing 5 that rendered blank | `script/check_sf_symbols.sh` |
 | Radio programming (Baofeng, Uniden, CHIRP CSV) | Core code and CSV round-trip tests; not tested against hardware | |
 
 ## 5. Bugs found and fixed
@@ -148,6 +149,11 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
    instance was still exiting. The script now waits for it.
 9. **Blank icons**: `plus.memorychip`, `usb`, `satellite`, `shippingbox.and.arrow.down` and `turbulence` are not SF
    Symbols, and a wrong name compiles and renders nothing. Replaced; `script/check_sf_symbols.sh` catches the class.
+10. **USB access regressed because the rebuilt macOS targets were still sandboxed.** The project notes said the app is
+    deliberately unsandboxed, but `project.yml` still set `CODE_SIGN_ENTITLEMENTS` for both macOS targets and those
+    files enabled `com.apple.security.app-sandbox`. Fixed by removing those build settings, emptying the unused
+    entitlement files, regenerating the project, rebuilding, and verifying the signed app contains no sandbox
+    entitlement.
 
 5c. **Scanner spectrum wrong** (owner-visible): `FFTProcessor` ran a complex FFT but kept only the first N/2 bins, so
    everything below the centre frequency was invisible and the centre sat at the edge; `FrequencyFinder` (which
@@ -167,8 +173,8 @@ verdicts, 12 cross-cutting UI findings and the build spec. The remaining gaps, i
 
 - **Workshop tiles have no actions** (13 of ~35 navigate, none can fix a "needs setup"); the tile waveforms are fake
   data; the catalog lags the embedded driver (ISM, LRPT, radiosondes are not listed or are listed as planned).
-- **AI Lab has no invocable feature** except MLX downloads; no inference runtime; Core ML classifier package missing;
-  no session log to report on.
+- **AI Lab has only one invocable feature** so far: RF Coach with deterministic rules. Browse/Scanner/Trunked explain
+  sheets, Foundation/PCC provider routing, MLX inference runtime, Core ML classifier assets and session logs remain open.
 - **No Decoder Hub**: ACARS, AIS, Morse, paging, ISM, radiosondes, LRPT are not reachable from the app.
 - Air Map's demo sky has no UI entry (button removed in `80cdfc6`) while the Workshop text still promises it.
 - The USB error text in the upstream driver always blames a missing sandbox entitlement for `0xe00002e2`.
@@ -203,7 +209,8 @@ APIs to use and acceptance criteria, is section 7 of `docs/UI_AUDIT_2026-09-30.m
 
 1. Workshop action model (`WorkshopAction`), catalog fixes, quick actions, real readiness gauge.
 2. AI provider layer (`LanguageModelProvider`, `AIRouter`, rules + Foundation Models) and the Explain tool wired into
-   Browse detail, Scanner and Trunked; then Codeplug review and the Air Data briefing.
+   Browse detail, Scanner and Trunked; the AI Lab rules-only RF Coach seed is done, then Codeplug review and the Air
+   Data briefing.
 3. **Decoder Hub** (`DecoderSession`; Morse and ACARS first, then AIS, ISM, radiosondes, LRPT).
 4. One design language and grouped sidebar; the layout fixes in the audit (U1 to U10).
 5. Session log and report; MLX inference runtime and local assistant; signal ID; semantic FCC search.
