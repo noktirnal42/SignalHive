@@ -36,7 +36,7 @@ struct WorkshopCatalogTests {
     }
 
     @Test func whatNeedsNothingIsReadyOnABareMachine() throws {
-        for id in ["codeplug", "trunked", "ailab"] {
+        for id in ["codeplug", "trunked", "ailab", "decoderhub", "acars", "ais", "morse"] {
             let entry = try item(id, bare)
             #expect(entry.status == .ready, "\(id) needs neither data nor hardware")
             #expect(entry.setup == nil)
@@ -67,8 +67,8 @@ struct WorkshopCatalogTests {
         #expect(try item("adsb", remote).status == .needsSetup)
     }
 
-    @Test func decodersTheAppDoesNotUseAreNotCalledAvailable() throws {
-        for id in ["acars", "ais", "morse", "ism", "rs41", "lrpt", "dmr", "paging", "weak"] {
+    @Test func decodersTheAppDoesNotUseLiveAreNotCalledAvailable() throws {
+        for id in ["ism", "rs41", "lrpt", "dmr", "paging", "weak"] {
             #expect(try item(id, bench).status == .notConnected, "\(id) is in the library but not in the app")
         }
         #expect(try item("otherSDR", bench).status == .notConnected)
@@ -87,6 +87,10 @@ struct WorkshopCatalogTests {
         #expect(try item("trunked", bare).destination == .trunked)
         #expect(try item("codeplug", bare).destination == .codeplug)
         #expect(try item("ailab", bare).destination == .aiLab)
+        #expect(try item("decoderhub", bare).destination == .decoderHub)
+        #expect(try item("acars", bare).destination == .decoderHub)
+        #expect(try item("ais", bare).destination == .decoderHub)
+        #expect(try item("morse", bare).destination == .decoderHub)
         #expect(try item("satellites", bare).destination == .satellites)
         #expect(try item("apt", bare).destination == nil)
     }
@@ -96,7 +100,7 @@ struct WorkshopCatalogTests {
         let benchCount = WorkshopCatalog.readiness(for: bench)
         #expect(bareCount.implemented == benchCount.implemented)
         #expect(bareCount.ready < benchCount.ready)
-        #expect(WorkshopCatalog.workingDecoders(for: bare) == 2, "only ADS-B and UAT decode live in the app")
+        #expect(WorkshopCatalog.workingDecoders(for: bare) == 5, "ADS-B/UAT decode live; ACARS/AIS/Morse decode in the manual workbench")
     }
 
     @Test func statusesAllHaveLabels() {

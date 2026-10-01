@@ -31,6 +31,7 @@
 		5EDD2F8E5D23959EEFEA0882 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
 		5F0941B0551AFFDA62C216E4 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
 		61AE2650F85D34ED71310B15 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
+		625D686397EAC1E5E2E3AF84 /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		64C34FCE1C063EBF6009AD34 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
 		66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
 		676F3C60577208C3AC4DAD0E /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F502D1C78A459A663F809EF2 /* ModelLibrary.swift */; };
@@ -83,6 +84,7 @@
 		E34FCCA1229A6EC4ED204706 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
 		E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
 		E88231C1275B72A1DD82CE59 /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
+		E934D298BA9A3CAAA8FC6892 /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		EDE975B67368FB7F6A91BFDD /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
 		F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
@@ -90,6 +92,7 @@
 		F6FB10A584252396376E20CF /* MacPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE53DC740AEEAF549EF95771 /* MacPlatform.swift */; };
 		F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
+		FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 		FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
@@ -122,6 +125,7 @@
 		AA703C607A512C302E7AD1BD /* SignalHive-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "SignalHive-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAE596D83136B1E6E2479B3E /* SatelliteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteView.swift; sourceTree = "<group>"; };
 		AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequencyDetailView.swift; sourceTree = "<group>"; };
+		B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoderHubView.swift; sourceTree = "<group>"; };
 		B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		B4BE49843C1B12AB457B4085 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
@@ -284,6 +288,7 @@
 				40604D31962E11C73A08FD7C /* AirMapView.swift */,
 				B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */,
 				6281A33AE2902FAF37439A94 /* CodeplugView.swift */,
+				B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */,
 				AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */,
 				38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */,
 				E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */,
@@ -456,6 +461,7 @@
 				D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */,
 				107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */,
 				9C3F508B1F2B7B0F5DB46667 /* ContentView.swift in Sources */,
+				FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */,
 				D057BC4F5D009DFE69C73E63 /* FrequencyDetailView.swift in Sources */,
 				337F20F3FDE9408C4D61BA4E /* GetDataSheet.swift in Sources */,
 				5C53D8674F30077AA3463F8E /* MacAppDelegate.swift in Sources */,
@@ -489,6 +495,7 @@
 				CB9FC040DA006C27A37A9D56 /* BrowseView.swift in Sources */,
 				6C87C4AC101A3F9F75CA1A9E /* CodeplugView.swift in Sources */,
 				CD4CD3E59552109B2B834601 /* ContentView.swift in Sources */,
+				625D686397EAC1E5E2E3AF84 /* DecoderHubView.swift in Sources */,
 				7218F49A826B4803E7A7CBB4 /* FrequencyDetailView.swift in Sources */,
 				F6C3DE17BCE5E7A2E7498394 /* GetDataSheet.swift in Sources */,
 				70A8C5C5385B3D901AA7A933 /* MacAppDelegate.swift in Sources */,
@@ -523,6 +530,7 @@
 				271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */,
 				F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */,
 				BA60D6CE7801E55AC5E482E6 /* ContentView.swift in Sources */,
+				E934D298BA9A3CAAA8FC6892 /* DecoderHubView.swift in Sources */,
 				D25F44B6F0219F175958B25E /* FrequencyDetailView.swift in Sources */,
 				7BB50E45997B4B448891E932 /* GetDataSheet.swift in Sources */,
 				80327CF9EC8C59FF02DDDBA1 /* IOSPlatform.swift in Sources */,

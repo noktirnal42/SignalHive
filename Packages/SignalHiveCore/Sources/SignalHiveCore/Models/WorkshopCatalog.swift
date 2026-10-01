@@ -27,7 +27,7 @@ public enum WorkshopStatus: String, CaseIterable, Sendable {
 
 /// Where a tile leads.
 public enum WorkshopDestination: String, Sendable {
-    case browse, search, scanner, trunked, codeplug, aiLab, satellites, airMap, airData
+    case browse, search, scanner, decoderHub, trunked, codeplug, aiLab, satellites, airMap, airData
 }
 
 public enum WorkshopSection: String, CaseIterable, Sendable {
@@ -149,6 +149,10 @@ public enum WorkshopCatalog {
             "Fetches current weather-satellite elements, uses the antenna location, and schedules upcoming NOAA, Meteor and MetOp passes for RTL-SDR capture.",
             symbol: "globe.americas", status: .ready, destination: .satellites))
         items.append(WorkshopItem(
+            "decoderhub", .workflows, "Decoder Hub",
+            "Manual ACARS, AIS and Morse workbench decoding is live; SDR capture sessions for ISM, radiosondes, LRPT, paging and weak-signal decoders are next.",
+            symbol: "dot.radiowaves.forward", status: .ready, destination: .decoderHub))
+        items.append(WorkshopItem(
             "codeplug", .workflows, "Radio programming",
             env.codeplugChannels > 0
                 ? "The open codeplug has \(env.codeplugChannels) channel\(env.codeplugChannels == 1 ? "" : "s"). Checked against the radio; CHIRP CSV in and out; direct write for radios that support it."
@@ -185,23 +189,23 @@ public enum WorkshopCatalog {
         items.append(WorkshopItem(
             "ism", .decoders, "ISM sensors: rtl_433-style",
             "The embedded SwiftRTLSDR decoder library has an RTL-SDR receive chain and 11 weather-station, sensor and remote protocols. App capture UI is next.",
-            symbol: "sensor", status: .notConnected, destination: .scanner))
+            symbol: "sensor", status: .notConnected, destination: .decoderHub))
         items.append(WorkshopItem(
             "rs41", .decoders, "RS41 radiosondes",
             "The embedded SwiftRTLSDR decoder library has Vaisala RS41 frames, GPS position, temperature, battery and scan mode. App tracking UI is next.",
-            symbol: "balloon", status: .notConnected, destination: .satellites))
+            symbol: "balloon", status: .notConnected, destination: .decoderHub))
         items.append(WorkshopItem(
             "lrpt", .decoders, "Meteor LRPT satellite images",
             "The embedded SwiftRTLSDR decoder library has Meteor-M LRPT demodulation, deframing, MSU-MR image products and a SatDump-checked oracle path. App capture UI is next.",
-            symbol: "globe.europe.africa", status: .notConnected, destination: .satellites))
+            symbol: "globe.europe.africa", status: .notConnected, destination: .decoderHub))
         for (id, title, detail, symbol) in [
-            ("acars", "ACARS", "VHF aircraft text messages.", "teletype"),
-            ("ais", "AIS", "Ship positions and voyage data.", "ferry"),
-            ("morse", "Morse and CW", "Code decoding.", "dot.circle"),
+            ("acars", "ACARS", "Paste decoded ACARS text or frame bodies now; live 131 MHz VHF capture is the next DecoderSession step.", "teletype"),
+            ("ais", "AIS", "Paste !AIVDM and !AIVDO NMEA sentences now; live marine-channel capture is the next DecoderSession step.", "ferry"),
+            ("morse", "Morse and CW", "Encode text to Morse and decode dot/dash patterns immediately; live CW audio/IQ capture comes next.", "dot.circle"),
         ] {
             items.append(WorkshopItem(
-                id, .decoders, title, detail + " The decoder is in the core library but the scanner does not use it yet, so the app decodes nothing here.",
-                symbol: symbol, status: .notConnected, destination: .scanner))
+                id, .decoders, title, detail,
+                symbol: symbol, status: .ready, destination: .decoderHub))
         }
         items.append(WorkshopItem(
             "dmr", .decoders, "P25, DMR and NXDN metadata",
