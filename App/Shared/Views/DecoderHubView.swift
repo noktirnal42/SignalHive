@@ -456,15 +456,15 @@ private enum DecoderTool: String, CaseIterable, Identifiable {
     var pendingSummary: String {
         switch self {
         case .adsb:
-            return "Start 1090 MHz ADS-B from Air Map. Decoder Hub will gain a shared live session table after DecoderSession lands."
+            return "Start 1090 MHz ADS-B from Air Map. DecoderSession is now in core; this hub still needs shared live tables."
         case .uat:
-            return "Start 978 MHz UAT/FIS-B from Air Data or Air Map. Decoder Hub will gain a shared live session table after DecoderSession lands."
+            return "Start 978 MHz UAT/FIS-B from Air Data or Air Map. DecoderSession is now in core; this hub still needs shared live tables."
         case .ism:
-            return "SwiftRTLSDR has the ISM decoder family; SignalHive still needs source selection, gain, protocol filters and export."
+            return "SwiftRTLSDR has the ISM decoder family and SignalHive now has DecoderSession; source selection, gain, protocol filters and export are next."
         case .radiosonde:
-            return "SwiftRTLSDR has RS41 decoding; SignalHive still needs scan presets, map tracks and launch-site summaries."
+            return "SwiftRTLSDR has RS41 decoding and SignalHive now has DecoderSession; scan presets, map tracks and launch-site summaries are next."
         case .lrpt:
-            return "SwiftRTLSDR has Meteor LRPT pieces; SignalHive still needs pass scheduling handoff, Doppler assist, capture and image gallery."
+            return "SwiftRTLSDR has Meteor LRPT pieces and SignalHive now has DecoderSession; pass handoff, Doppler assist, capture and image gallery are next."
         case .paging:
             return "SignalHive currently parses adapter output only. Original Swift paging demodulation remains planned."
         case .weakSignal:

@@ -150,7 +150,7 @@ public enum WorkshopCatalog {
             symbol: "globe.americas", status: .ready, destination: .satellites))
         items.append(WorkshopItem(
             "decoderhub", .workflows, "Decoder Hub",
-            "Manual ACARS, AIS and Morse workbench decoding is live; SDR capture sessions for ISM, radiosondes, LRPT, paging and weak-signal decoders are next.",
+            "Manual ACARS, AIS and Morse workbench decoding is live; the core DecoderSession is ready for SDR capture wiring.",
             symbol: "dot.radiowaves.forward", status: .ready, destination: .decoderHub))
         items.append(WorkshopItem(
             "codeplug", .workflows, "Radio programming",
@@ -199,8 +199,8 @@ public enum WorkshopCatalog {
             "The embedded SwiftRTLSDR decoder library has Meteor-M LRPT demodulation, deframing, MSU-MR image products and a SatDump-checked oracle path. App capture UI is next.",
             symbol: "globe.europe.africa", status: .notConnected, destination: .decoderHub))
         for (id, title, detail, symbol) in [
-            ("acars", "ACARS", "Paste decoded ACARS text or frame bodies now; live 131 MHz VHF capture is the next DecoderSession step.", "teletype"),
-            ("ais", "AIS", "Paste !AIVDM and !AIVDO NMEA sentences now; live marine-channel capture is the next DecoderSession step.", "ferry"),
+            ("acars", "ACARS", "Paste decoded ACARS text or frame bodies now; live 131 MHz VHF capture can be wired through DecoderSession next.", "teletype"),
+            ("ais", "AIS", "Paste !AIVDM and !AIVDO NMEA sentences now; live marine-channel capture can be wired through DecoderSession next.", "ferry"),
             ("morse", "Morse and CW", "Encode text to Morse and decode dot/dash patterns immediately; live CW audio/IQ capture comes next.", "dot.circle"),
         ] {
             items.append(WorkshopItem(
