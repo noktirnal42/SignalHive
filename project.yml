@@ -46,6 +46,7 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
         INFOPLIST_KEY_LSMultipleInstancesProhibited: true
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: SignalHive uses your location as the receiver antenna position for ADS-B range and map placement.
+        INFOPLIST_KEY_NSLocationUsageDescription: SignalHive uses your Mac location as the receiver antenna position for ADS-B range and map placement.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         CODE_SIGN_STYLE: Automatic
         INFOPLIST_FILE: App/MenuBar/Info.plist

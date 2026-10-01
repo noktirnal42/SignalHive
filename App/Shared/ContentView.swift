@@ -6,7 +6,7 @@ struct ContentView: View {
     @State private var selection: Panel?
 
     enum Panel: String, CaseIterable, Identifiable {
-        case workshop, aiLab, browse, search, trunked, scanner, airMap, airData, codeplug
+        case workshop, aiLab, browse, search, trunked, scanner, satellites, airMap, airData, codeplug
         var id: String { rawValue }
 
         var title: String {
@@ -17,6 +17,7 @@ struct ContentView: View {
             case .search: return "Search"
             case .trunked: return "Trunked"
             case .scanner: return "Scanner"
+            case .satellites: return "Satellites"
             case .airMap: return "Air Map"
             case .airData: return "Air Data"
             case .codeplug: return "Codeplug"
@@ -31,6 +32,7 @@ struct ContentView: View {
             case .search: return "magnifyingglass"
             case .trunked: return "antenna.radiowaves.left.and.right"
             case .scanner: return "waveform.path.ecg"
+            case .satellites: return "globe.americas"
             case .airMap: return "airplane"
             case .airData: return "doc.text.magnifyingglass"
             case .codeplug: return "memorychip"
@@ -60,6 +62,7 @@ struct ContentView: View {
             case .search: SearchView()
             case .trunked: TrunkedView()
             case .scanner: ScannerView()
+            case .satellites: SatelliteView()
             case .airMap: AirMapView()
             case .airData: AirDataView()
             case .codeplug: CodeplugView()

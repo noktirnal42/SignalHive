@@ -87,6 +87,7 @@ struct TrunkedView: View {
     @State private var model = TrunkedModel()
     @State private var selectedTalkgroups: Set<String> = []
     @State private var addedNote: String?
+    @State private var rfCoachRequest: RFCoachRequest?
 
     var body: some View {
         NavigationSplitView {
@@ -96,6 +97,9 @@ struct TrunkedView: View {
         }
         .navigationTitle("Trunked")
         .task { if model.systems.isEmpty { await model.loadSystems() } }
+        .sheet(item: $rfCoachRequest) { request in
+            RFCoachSheet(request: request)
+        }
     }
 
     // MARK: Systems
@@ -226,13 +230,16 @@ struct TrunkedView: View {
                 ForEach(model.groups) { group in
                     Section {
                         ForEach(group.talkgroups) { talkgroup in
-                            TalkgroupRow(talkgroup: talkgroup)
+                            TalkgroupRow(talkgroup: talkgroup) {
+                                explain(talkgroup, on: system)
+                            }
                                 .tag(talkgroup.id)
                                 .swipeActions {
                                     Button { add([talkgroup], on: system) } label: { Label("Add", systemImage: "rectangle.stack.badge.plus") }
                                         .tint(.blue)
                                 }
                                 .contextMenu {
+                                    Button { explain(talkgroup, on: system) } label: { Label("Explain with RF Coach", systemImage: "sparkles") }
                                     Button { add([talkgroup], on: system) } label: { Label("Add to codeplug", systemImage: "rectangle.stack.badge.plus") }
                                 }
                         }
@@ -315,6 +322,27 @@ struct TrunkedView: View {
         addedNote = note
     }
 
+    private func explain(_ talkgroup: TrunkedTalkgroup, on system: TrunkedSystem) {
+        let serviceParts = [
+            talkgroup.category.displayName,
+            talkgroup.tag,
+            talkgroup.group
+        ].filter { !$0.isEmpty }
+        rfCoachRequest = RFCoachRequest(
+            title: "\(talkgroup.displayName) · TG \(talkgroup.code)",
+            subtitle: [system.name, system.typeLabel, system.location].filter { !$0.isEmpty }.joined(separator: " · "),
+            context: SignalDescriptionContext(
+                frequencyHz: 0,
+                licensee: system.name,
+                serviceName: serviceParts.joined(separator: " / "),
+                trunkedSystemName: system.name,
+                talkgroupCode: talkgroup.code,
+                contextNote: "OpenMHz talkgroup metadata does not include control-channel or voice-channel frequencies."
+            ),
+            operatorNote: "This explains the talkgroup role and codeplug impact. Use a control-channel/decoder workflow for live trunk following."
+        )
+    }
+
     private func offlineNote(savedAt: Date?, isSeeded: Bool, error: String?) -> String? {
         if isSeeded {
             return "Starter directory: OpenMHz live data is unavailable." + (error.map { " (\($0))" } ?? "")
@@ -355,6 +383,7 @@ private struct SystemRow: View {
 
 private struct TalkgroupRow: View {
     let talkgroup: TrunkedTalkgroup
+    var onExplain: () -> Void
 
     var body: some View {
         HStack {
@@ -366,6 +395,11 @@ private struct TalkgroupRow: View {
                 }
             }
             Spacer()
+            Button(action: onExplain) {
+                Image(systemName: "sparkles")
+            }
+            .buttonStyle(.borderless)
+            .help("Explain with RF Coach")
             Text("\(talkgroup.code)").font(.caption.monospaced()).foregroundStyle(.secondary)
         }
     }

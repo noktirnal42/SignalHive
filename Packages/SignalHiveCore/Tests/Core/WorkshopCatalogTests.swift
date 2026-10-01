@@ -52,6 +52,7 @@ struct WorkshopCatalogTests {
         #expect(try item("codeplug", bench).detail.contains("12 channels"))
         #expect(try item("ailab", bench).detail.contains("1 on-device model downloaded"))
         #expect(try item("demod", bench).detail.contains("AM, NFM"))
+        #expect(try item("satellites", bench).status == .ready)
     }
 
     @Test func aSingleDongleIsToldItCannotDoBothBands() throws {
@@ -67,7 +68,7 @@ struct WorkshopCatalogTests {
     }
 
     @Test func decodersTheAppDoesNotUseAreNotCalledAvailable() throws {
-        for id in ["acars", "ais", "morse", "dmr", "paging", "weak"] {
+        for id in ["acars", "ais", "morse", "ism", "rs41", "lrpt", "dmr", "paging", "weak"] {
             #expect(try item(id, bench).status == .notConnected, "\(id) is in the library but not in the app")
         }
         #expect(try item("otherSDR", bench).status == .notConnected)
@@ -86,6 +87,7 @@ struct WorkshopCatalogTests {
         #expect(try item("trunked", bare).destination == .trunked)
         #expect(try item("codeplug", bare).destination == .codeplug)
         #expect(try item("ailab", bare).destination == .aiLab)
+        #expect(try item("satellites", bare).destination == .satellites)
         #expect(try item("apt", bare).destination == nil)
     }
 
@@ -94,7 +96,7 @@ struct WorkshopCatalogTests {
         let benchCount = WorkshopCatalog.readiness(for: bench)
         #expect(bareCount.implemented == benchCount.implemented)
         #expect(bareCount.ready < benchCount.ready)
-        #expect(WorkshopCatalog.workingDecoders(for: bare) == 2, "only ADS-B and UAT decode anything in the app")
+        #expect(WorkshopCatalog.workingDecoders(for: bare) == 2, "only ADS-B and UAT decode live in the app")
     }
 
     @Test func statusesAllHaveLabels() {

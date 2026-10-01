@@ -28,6 +28,9 @@ public struct SignalDescriptionContext: Equatable, Sendable {
     public var callSign: String?
     public var serviceName: String?
     public var modeHints: [ModeHint]
+    public var trunkedSystemName: String?
+    public var talkgroupCode: Int?
+    public var contextNote: String?
 
     public init(
         frequencyHz: Double,
@@ -37,7 +40,10 @@ public struct SignalDescriptionContext: Equatable, Sendable {
         licensee: String? = nil,
         callSign: String? = nil,
         serviceName: String? = nil,
-        modeHints: [ModeHint] = []
+        modeHints: [ModeHint] = [],
+        trunkedSystemName: String? = nil,
+        talkgroupCode: Int? = nil,
+        contextNote: String? = nil
     ) {
         self.frequencyHz = frequencyHz
         self.mode = mode
@@ -47,6 +53,9 @@ public struct SignalDescriptionContext: Equatable, Sendable {
         self.callSign = callSign
         self.serviceName = serviceName
         self.modeHints = modeHints
+        self.trunkedSystemName = trunkedSystemName
+        self.talkgroupCode = talkgroupCode
+        self.contextNote = contextNote
     }
 }
 
@@ -68,6 +77,9 @@ public actor SignalDescriptionEngine {
             context.licensee ?? "",
             context.callSign ?? "",
             context.serviceName ?? "",
+            context.trunkedSystemName ?? "",
+            context.talkgroupCode.map(String.init) ?? "",
+            context.contextNote ?? "",
             context.modeHints.map(\.rawValue).sorted().joined(separator: ",")
         ].joined(separator: "|")
         if let cached = cache[cacheKey] { return cached }
@@ -146,6 +158,10 @@ public actor SignalDescriptionEngine {
     }
 
     private func fallbackDescription(context: SignalDescriptionContext) -> SignalDescription {
+        if let talkgroupCode = context.talkgroupCode {
+            return fallbackTalkgroupDescription(context: context, talkgroupCode: talkgroupCode)
+        }
+
         let profile = bandProfile(for: context.frequencyHz)
         let suggestedMode = context.mode ?? ChannelMode.suggested(
             frequencyHz: context.frequencyHz,
@@ -161,6 +177,20 @@ public actor SignalDescriptionEngine {
             explanation: "\(frequency) falls in \(profile.name). \(profile.likelyUse)\(licenseLine)\(rssiLine)",
             confidence: context.licensee == nil && context.callSign == nil ? "rules / medium" : "rules / high",
             recommendation: "\(modeLine) \(profile.nextAction)"
+        )
+    }
+
+    private func fallbackTalkgroupDescription(
+        context: SignalDescriptionContext,
+        talkgroupCode: Int
+    ) -> SignalDescription {
+        let system = context.trunkedSystemName ?? context.licensee ?? "this trunked system"
+        let service = context.serviceName ?? "unclassified service"
+        let note = context.contextNote.map { " \($0)" } ?? ""
+        return SignalDescription(
+            explanation: "Talkgroup \(talkgroupCode) on \(system) is trunked-system metadata, not a fixed receive frequency. It appears to be \(service).\(note)",
+            confidence: "rules / medium",
+            recommendation: "Use Trunked to save the talkgroup to a scanner-capable codeplug, then find the system control channel or import verified trunking-site frequencies before expecting live following."
         )
     }
 

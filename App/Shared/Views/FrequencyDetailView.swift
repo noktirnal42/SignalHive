@@ -9,6 +9,7 @@ struct FrequencyDetailView: View {
     @State private var loading = true
     @State private var loadError: String?
     @State private var addedToast = false
+    @State private var rfCoachRequest: RFCoachRequest?
 
     var body: some View {
         List {
@@ -25,6 +26,9 @@ struct FrequencyDetailView: View {
         }
         .navigationTitle(detail.map { $0.summary.licenseeName.isEmpty ? $0.summary.callSign : $0.summary.licenseeName } ?? "License")
         .task { await load() }
+        .sheet(item: $rfCoachRequest) { request in
+            RFCoachSheet(request: request)
+        }
         .overlay(alignment: .top) {
             if addedToast {
                 Text("Added to codeplug").font(.caption).padding(8)
@@ -53,6 +57,14 @@ struct FrequencyDetailView: View {
                             Text(hint.displayName).font(.caption2).padding(.horizontal, 4)
                                 .background(.quaternary, in: Capsule())
                         }
+                        Spacer(minLength: 8)
+                        Button {
+                            explain(frequency, detail)
+                        } label: {
+                            Label("Explain", systemImage: "sparkles")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
                     }
                     HStack(spacing: 8) {
                         if !frequency.classStationCode.isEmpty { Text("Class \(frequency.classStationCode)") }
@@ -62,6 +74,7 @@ struct FrequencyDetailView: View {
                     .font(.caption).foregroundStyle(.secondary)
                 }
                 .contextMenu {
+                    Button { explain(frequency, detail) } label: { Label("Explain with RF Coach", systemImage: "sparkles") }
                     Button { addToCodeplug(frequency, detail) } label: { Label("Add to Codeplug", systemImage: "rectangle.stack.badge.plus") }
                     Button { model.tuneInScanner(frequencyHz: frequency.frequencyHz) } label: {
                         Label("Tune in Scanner", systemImage: "dot.radiowaves.left.and.right")
@@ -94,6 +107,26 @@ struct FrequencyDetailView: View {
             Spacer()
             Text(value)
         }
+    }
+
+    private func explain(_ frequency: FrequencyRecord, _ detail: LicenseDetail) {
+        let licensee = detail.summary.licenseeName.isEmpty ? nil : detail.summary.licenseeName
+        rfCoachRequest = RFCoachRequest(
+            title: frequency.displayMHz,
+            subtitle: [detail.summary.callSign, detail.summary.serviceName, licensee].compactMap { value in
+                guard let value, !value.isEmpty else { return nil }
+                return value
+            }.joined(separator: " · "),
+            context: SignalDescriptionContext(
+                frequencyHz: frequency.frequencyHz,
+                mode: .suggested(frequencyHz: frequency.frequencyHz, hints: frequency.modeHints, bandwidthHz: frequency.bandwidthHz),
+                bandwidthHz: frequency.bandwidthHz,
+                licensee: licensee,
+                callSign: detail.summary.callSign.isEmpty ? nil : detail.summary.callSign,
+                serviceName: detail.summary.serviceName.isEmpty ? nil : detail.summary.serviceName,
+                modeHints: frequency.modeHints
+            )
+        )
     }
 
     private func addToCodeplug(_ frequency: FrequencyRecord, _ detail: LicenseDetail) {

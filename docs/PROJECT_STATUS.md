@@ -93,9 +93,9 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | Area | Status | Evidence |
 |---|---|---|
 | Package tests | **2026-09-30: SignalHiveCore 413 tests in 67 suites pass** (hardware tests skipped). SwiftRTLSDR also passes locally: 99 kit + 31 scan + 16 server + 87 decoder tests | `swift test --skip RTLSDRHardwareTests` in `Packages/SignalHiveCore`; `swift test` in `Packages/SwiftRTLSDR` |
-| Workshop and AI Lab screens | **Workshop mostly information only. AI Lab now has one real action**: RF Coach explains a frequency/mode/RSSI context through local deterministic rules and labels the provider honestly. Full audit and remaining build spec: `docs/UI_AUDIT_2026-09-30.md` | Driven in the running app; `AIWorkbenchModelsTests`; app-bound screenshot after pressing Explain |
+| Workshop and AI Lab screens | **Workshop is partly functional. AI Lab now has one real action**: RF Coach explains a frequency/mode/RSSI context through local deterministic rules and labels the provider honestly. Workshop now links the Satellite planner, reflects embedded ISM/LRPT/RS41/rtl_tcp/EEPROM capabilities honestly, and no longer lists Meteor LRPT as missing demod/deframe work. Full audit and remaining build spec: `docs/UI_AUDIT_2026-09-30.md` | Driven in the running app; `AIWorkbenchModelsTests`; `WorkshopCatalogTests`; app-bound screenshots after pressing Explain and opening Satellites |
 | Trunked (OpenMHz browser) | **Pass 2026-09-30** after a crash fix: live systems list, a 6,488-talkgroup system opens, category chips and inline search work. Add-to-codeplug not exercised | Driven in the running app |
-| Air Map / Air Data | UI renders and is complete (sources, layers, filters, receiver panel). Receivers not started in this pass (need an antenna); demo sky not reachable from the UI | Driven in the running app |
+| Air Map / Air Data | Air Map has Apple map controls, map modes (Dark, Map, Terrain, Satellite, Hybrid, Hybrid Terrain), traffic and POI toggles, and the macOS location usage key required for Location Services. Receivers not started in this pass (need an antenna); demo sky not reachable from the UI | Driven in the running app; `script/build_and_run.sh --verify` |
 | Dock icon | **Pass 2026-09-30**: painted icon in a rounded tile with the running indicator | Screenshot of the Dock |
 | macOS, menu-bar and iOS targets build | Pass | `xcodebuild` for all three schemes |
 | App launches without crashing | **Pass** after fix: 0 of 20 launches crashed (was 4 of 8) | `script/launch_stability_test.sh` |
@@ -106,7 +106,8 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | Scanner activity workflow | **Partial S3 built**: live passband activity detection now uses `RTLSDRScan.PeakDetector` with a local noise floor; UI shows activity hits, tune, hold/release, skip, lockout/unlock, save-to-codeplug, starter scan bank, decoder quick-tune presets, and a repaired source rail. True multi-hop scan-list sweeping and FCC identification are still next. | `swift test --skip RTLSDRHardwareTests`; macOS app build |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
 | Scanner audio from the RTL-SDR (end to end) | **Still needs ear/over-the-air QA**: native USB streaming and DSP tests pass, but reception quality, antenna-dependent signals, and user-facing scan-list workflows still need field verification. | hardware/unit tests; no listening QA yet |
-| Decoders | ADS-B (1090) and UAT/FIS-B (978) are wired into Air Map / Air Data through their own receivers. ACARS, AIS, Morse, paging and FT8 exist in core with unit tests but **nothing in the app runs them** (no Decoder Hub). The embedded driver also has ISM-sensor, Meteor LRPT and RS41 radiosonde decoders with `rtlsdr-tool` commands and no app UI. **None has received a live signal** (driver's own `docs/DECODERS.md`) | Unit tests with synthetic signals and published messages |
+| Decoders | ADS-B (1090) and UAT/FIS-B (978) are wired into Air Map / Air Data through their own receivers. ACARS, AIS, Morse, paging and FT8 exist in core with unit tests but **nothing in the app runs them** (no Decoder Hub). The embedded driver has ISM-sensor, Meteor LRPT and RS41 radiosonde decoders with `rtlsdr-tool` commands; Workshop now exposes them as not-yet-connected app capabilities. **None has received a live signal** (driver's own `docs/DECODERS.md`) | Unit tests with synthetic signals and published messages; `WorkshopCatalogTests` |
+| Satellite planning | **First native pass planner built**: the Satellites screen fetches current weather-satellite TLEs from CelesTrak, uses a manual/Air Map/device antenna location, and computes upcoming passes with peak elevation, azimuth and range. It is a scheduling foundation, not full SatDump capture yet | Running app visual QA: 9 weather elements fetched and 39 passes calculated for a manual test observer; `SatellitePassPlannerTests` |
 | AI Lab: Foundation Models / PCC probes | Probes run and both report available on the owner's Mac. The first usable feature is **RF Coach via SignalHive Rules**, not Foundation/PCC. MLX model downloads work (tested; not exercised live in the UI, they are multi-GB). No MLX inference runtime. Core ML classifier package does not exist | Driven in the running app; `AIWorkbenchModelsTests`; `ModelDownloadTests` |
 | App icon asset | The asset art is an opaque full-bleed square; the Dock tile is drawn onto the macOS icon grid at runtime. Redraw the asset (or use an Icon Composer `.icon`) | Screenshot of the Dock; `sips` shows no alpha |
 | SF Symbol names | **Pass 2026-09-30**: 112 distinct names, 0 invalid, after fixing 5 that rendered blank | `script/check_sf_symbols.sh` |
@@ -171,11 +172,13 @@ channels); trunking does not work. **2026-09-30 audit result** (`docs/UI_AUDIT_2
 are information screens, there is no Decoder Hub, and Trunked had a crash (fixed). The audit holds the per-screen
 verdicts, 12 cross-cutting UI findings and the build spec. The remaining gaps, in short:
 
-- **Workshop tiles have no actions** (13 of ~35 navigate, none can fix a "needs setup"); the tile waveforms are fake
-  data; the catalog lags the embedded driver (ISM, LRPT, radiosondes are not listed or are listed as planned).
+- **Workshop tiles are still not a full action system**, but the quick actions now include Satellites and the catalog no
+  longer lags the embedded driver for ISM, Meteor LRPT, RS41 radiosondes, rtl_tcp or EEPROM. Remaining gap: `WorkshopAction`
+  fixes/presets and truthful live metrics beyond navigation.
 - **AI Lab has only one invocable feature** so far: RF Coach with deterministic rules. Browse/Scanner/Trunked explain
   sheets, Foundation/PCC provider routing, MLX inference runtime, Core ML classifier assets and session logs remain open.
-- **No Decoder Hub**: ACARS, AIS, Morse, paging, ISM, radiosondes, LRPT are not reachable from the app.
+- **No Decoder Hub**: ACARS, AIS, Morse, paging, ISM, radiosondes and LRPT are listed truthfully, but only ADS-B/UAT run
+  live in-app. Satellites can schedule passes but cannot start an LRPT capture session yet.
 - Air Map's demo sky has no UI entry (button removed in `80cdfc6`) while the Workshop text still promises it.
 - The USB error text in the upstream driver always blames a missing sandbox entitlement for `0xe00002e2`.
 - Browse shows five columns at the default window and two "Select a County" placeholders: too cramped. It needs a
@@ -187,10 +190,10 @@ verdicts, 12 cross-cutting UI findings and the build spec. The remaining gaps, i
   (self-discovery by decoding control channels; optional OpenMHz was approved as an opt-in source).
 - `SDRDeviceManager.scan()` runs six providers; RTL-SDR has been exercised on real hardware through the native Swift
   driver. Other source types still need hardware/provider QA.
-- SwiftRTLSDR PR #1 is merged and embedded. Remaining integration work: wire host gain control, expose rtl_tcp
-  server/client controls, and build SignalHive's true multi-hop scan engine UI on top of `RTLSDRScan.BandScanner`.
-  Claude's follow-on dump1090 and dump978 work should be handled the same way: upstream first, then embedded-copy sync
-  and SignalHive integration.
+- SwiftRTLSDR PR #1 is merged upstream; SignalHive's embedded copy also matches the published decoder branch with
+  ADS-B, UAT/FIS-B, ISM, Meteor LRPT and RS41 work. Remaining integration work: wire host gain control, expose rtl_tcp
+  server/client and EEPROM controls, build SignalHive's true multi-hop scan engine UI on top of `RTLSDRScan.BandScanner`,
+  and add app capture sessions for ISM, radiosondes and LRPT.
 - App Sandbox and direct RTL-SDR USB access are not currently compatible in this build. Do not re-enable sandboxing
   for the macOS targets until IOUSBHost access is proven on real hardware inside the sandbox, or until the driver is
   moved behind a privileged helper / DriverKit path.
@@ -211,7 +214,8 @@ APIs to use and acceptance criteria, is section 7 of `docs/UI_AUDIT_2026-09-30.m
 2. AI provider layer (`LanguageModelProvider`, `AIRouter`, rules + Foundation Models) and the Explain tool wired into
    Browse detail, Scanner and Trunked; the AI Lab rules-only RF Coach seed is done, then Codeplug review and the Air
    Data briefing.
-3. **Decoder Hub** (`DecoderSession`; Morse and ACARS first, then AIS, ISM, radiosondes, LRPT).
+3. **Decoder Hub** (`DecoderSession`; Morse and ACARS first, then AIS, ISM, radiosondes, LRPT). Satellites now has pass
+   scheduling and should hand passes into LRPT capture when that session model exists.
 4. One design language and grouped sidebar; the layout fixes in the audit (U1 to U10).
 5. Session log and report; MLX inference runtime and local assistant; signal ID; semantic FCC search.
 
@@ -220,7 +224,8 @@ Still open from before, unchanged:
 6. Verify and fix **Scanner with the local RTL-SDR** over the air (antenna, tune, spectrum, waterfall,
    AM/NFM/WFM demod audio, scan lists), and true multi-hop scanning with FCC identification.
 7. Replace external adapters (`dsdccx`, `multimon-ng`) with original Swift decoders (paging first).
-8. Weather/satellite (NOAA APT, Meteor LRPT), radio programming against real hardware, GPS/serial hardware.
+8. Weather/satellite capture (NOAA APT audio/images, Meteor LRPT capture/image gallery/Doppler assist/SatDump-style
+   product browser), radio programming against real hardware, GPS/serial hardware.
 9. Hosted packs and weekly automation (needs a repository the owner creates).
 
 ## 8. How to build, run and test
@@ -251,6 +256,7 @@ Keep this list honest: add what a change needs checked, tick it when the owner c
 
 - [ ] Scanner: Start on the RTL-SDR, hear a known NFM/AM signal, squelch, scan bank, hold/skip/lockout, save.
 - [ ] Air Map / Air Data: 1090 MHz and 978 MHz receivers with an antenna; first position fix; FIS-B radar.
+- [ ] Satellites: refresh current TLEs from the owner's location, compare at least one pass time/elevation against a trusted tracker, then use a real antenna to capture a Meteor LRPT pass.
 - [ ] Foundation Models and Private Cloud Compute availability match what AI Lab reports.
 - [ ] MLX: download a 1B model, then (once the runtime exists) run it and check memory use on 18 GB.
 - [ ] Dock icon after a fresh install (not just a rebuild).

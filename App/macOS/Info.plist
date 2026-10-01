@@ -28,5 +28,7 @@
 	<string>Copyright © 2024. All rights reserved.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>SignalHive uses your location as the receiver antenna position for ADS-B range and map placement.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>SignalHive uses your Mac location as the receiver antenna position for ADS-B range and map placement.</string>
 </dict>
 </plist>

@@ -98,6 +98,7 @@ struct WorkshopView: View {
             action("Search", icon: "magnifyingglass", panel: .search)
             action("Trunked", icon: "antenna.radiowaves.left.and.right", panel: .trunked)
             action("Scanner", icon: "waveform.path.ecg", panel: .scanner)
+            action("Satellites", icon: "globe.americas", panel: .satellites)
             action("Codeplug", icon: "memorychip", panel: .codeplug)
             action("Air Map", icon: "airplane", panel: .airMap)
             action("Air Data", icon: "doc.text.magnifyingglass", panel: .airData)
@@ -215,6 +216,7 @@ struct WorkshopView: View {
         case .trunked: return .trunked
         case .codeplug: return .codeplug
         case .aiLab: return .aiLab
+        case .satellites: return .satellites
         case .airMap: return .airMap
         case .airData: return .airData
         }

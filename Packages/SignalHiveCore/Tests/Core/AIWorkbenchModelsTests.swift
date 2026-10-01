@@ -109,4 +109,21 @@ import Testing
         #expect(uat.explanation.contains("FIS-B"))
         #expect(uat.recommendation.contains("978 MHz"))
     }
+
+    @Test func rfCoachExplainsTalkgroupsWithoutInventingAFrequency() async {
+        let engine = SignalDescriptionEngine()
+
+        let description = await engine.describe(context: SignalDescriptionContext(
+            frequencyHz: 0,
+            serviceName: "Law Dispatch",
+            trunkedSystemName: "County P25",
+            talkgroupCode: 101,
+            contextNote: "OpenMHz does not include control-channel frequencies here."
+        ))
+
+        #expect(description.explanation.contains("Talkgroup 101"))
+        #expect(description.explanation.contains("not a fixed receive frequency"))
+        #expect(description.explanation.contains("OpenMHz"))
+        #expect(description.recommendation.contains("control channel"))
+    }
 }

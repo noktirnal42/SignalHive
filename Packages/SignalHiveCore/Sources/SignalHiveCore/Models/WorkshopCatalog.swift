@@ -27,7 +27,7 @@ public enum WorkshopStatus: String, CaseIterable, Sendable {
 
 /// Where a tile leads.
 public enum WorkshopDestination: String, Sendable {
-    case browse, search, scanner, trunked, codeplug, aiLab, airMap, airData
+    case browse, search, scanner, trunked, codeplug, aiLab, satellites, airMap, airData
 }
 
 public enum WorkshopSection: String, CaseIterable, Sendable {
@@ -145,6 +145,10 @@ public enum WorkshopCatalog {
             setup: env.rtlsdrDongles > 0 ? nil : "FIS-B is broadcast on 978 MHz and needs an RTL-SDR.",
             destination: .airData))
         items.append(WorkshopItem(
+            "satellites", .workflows, "Satellite pass planner",
+            "Fetches current weather-satellite elements, uses the antenna location, and schedules upcoming NOAA, Meteor and MetOp passes for RTL-SDR capture.",
+            symbol: "globe.americas", status: .ready, destination: .satellites))
+        items.append(WorkshopItem(
             "codeplug", .workflows, "Radio programming",
             env.codeplugChannels > 0
                 ? "The open codeplug has \(env.codeplugChannels) channel\(env.codeplugChannels == 1 ? "" : "s"). Checked against the radio; CHIRP CSV in and out; direct write for radios that support it."
@@ -178,6 +182,18 @@ public enum WorkshopCatalog {
             "Native UAT decoding: general-aviation aircraft, TIS-B traffic, NEXRAD radar and text products from ground stations. United States only.",
             symbol: "cloud.sun.rain", status: env.rtlsdrDongles > 0 ? .ready : .needsSetup,
             setup: env.rtlsdrDongles > 0 ? nil : "Needs an RTL-SDR and a 978 MHz antenna.", destination: .airData))
+        items.append(WorkshopItem(
+            "ism", .decoders, "ISM sensors: rtl_433-style",
+            "The embedded SwiftRTLSDR decoder library has an RTL-SDR receive chain and 11 weather-station, sensor and remote protocols. App capture UI is next.",
+            symbol: "sensor", status: .notConnected, destination: .scanner))
+        items.append(WorkshopItem(
+            "rs41", .decoders, "RS41 radiosondes",
+            "The embedded SwiftRTLSDR decoder library has Vaisala RS41 frames, GPS position, temperature, battery and scan mode. App tracking UI is next.",
+            symbol: "balloon", status: .notConnected, destination: .satellites))
+        items.append(WorkshopItem(
+            "lrpt", .decoders, "Meteor LRPT satellite images",
+            "The embedded SwiftRTLSDR decoder library has Meteor-M LRPT demodulation, deframing, MSU-MR image products and a SatDump-checked oracle path. App capture UI is next.",
+            symbol: "globe.europe.africa", status: .notConnected, destination: .satellites))
         for (id, title, detail, symbol) in [
             ("acars", "ACARS", "VHF aircraft text messages.", "teletype"),
             ("ais", "AIS", "Ship positions and voyage data.", "ferry"),
@@ -217,6 +233,14 @@ public enum WorkshopCatalog {
             symbol: "network", status: env.networkSources > 0 ? .ready : .needsSetup,
             setup: env.networkSources > 0 ? nil : "Add a host in Scanner.", destination: .scanner))
         items.append(WorkshopItem(
+            "rtltcp", .hardware, "rtl_tcp server",
+            "The embedded SwiftRTLSDR package can serve a local dongle over the rtl_tcp protocol for Raspberry Pi and field-station workflows. App controls are next.",
+            symbol: "point.3.connected.trianglepath.dotted", status: .notConnected, destination: .scanner))
+        items.append(WorkshopItem(
+            "eeprom", .hardware, "RTL-SDR serial provisioning",
+            "The embedded driver can read EEPROM and set unique serial numbers with backup and dry-run protections. App controls are next.",
+            symbol: "number.square", status: .notConnected))
+        items.append(WorkshopItem(
             "hackrf", .hardware, "HackRF One",
             "Receive through libhackrf when it is installed.",
             symbol: "cable.connector", status: env.hackRFPresent ? .ready : .needsSetup,
@@ -239,8 +263,9 @@ public enum WorkshopCatalog {
         // MARK: Planned
 
         for (id, title, detail, symbol) in [
-            ("apt", "NOAA APT weather satellite images", "Needs a pass planner, an audio capture chain and an image renderer.", "dot.radiowaves.up.forward"),
-            ("lrpt", "Meteor LRPT satellite images", "Needs QPSK demodulation, a deframer and an image renderer.", "globe.americas"),
+            ("apt", "NOAA APT weather satellite images", "Needs an audio capture chain and an image renderer; pass scheduling now has a Swift foundation.", "dot.radiowaves.up.forward"),
+            ("satdump", "SatDump-style product browser", "Needs capture sessions, Doppler assist, image gallery, calibration metadata and export around the Swift LRPT decoder.", "shippingbox"),
+            ("lora", "LoRa and Meshtastic", "Needs a Swift LoRa demodulator and packet decoder; no published SwiftRTLSDR branch is available yet.", "dot.radiowaves.forward"),
             ("dvb", "Satellite and terrestrial TV", "Needs hardware beyond a standard RTL-SDR.", "tv"),
             ("follow", "Trunk following", "Needs control-channel decoding, talkgroup following and audio recording.", "point.3.connected.trianglepath.dotted"),
             ("swift", "Swift-native voice and paging decoders", "Replace the outside-program wrappers.", "swift"),
