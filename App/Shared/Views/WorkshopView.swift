@@ -23,7 +23,7 @@ struct WorkshopView: View {
                     statusStrip
                     actionGrid
                     ForEach(WorkshopSection.allCases, id: \.self) { section in
-                        capabilitySection(section.title, items: WorkshopCatalog.items(in: section, for: environment))
+                        capabilitySection(section.title, items: WorkshopCatalog.items(in: section, for: workshopEnvironment))
                     }
                 }
                 .padding(24)
@@ -71,7 +71,7 @@ struct WorkshopView: View {
             metric("Data Packs", value: "\(installedPackCount)", icon: "externaldrive.fill", tint: HiveInk.amber)
             metric("Sources", value: "\(manager.availableDevices.count)", icon: "antenna.radiowaves.left.and.right", tint: HiveInk.cyan)
             metric("Demods", value: "\(DemodMode.allCases.count)", icon: "waveform", tint: HiveInk.mint)
-            metric("Decoders", value: "\(WorkshopCatalog.workingDecoders(for: environment))", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
+            metric("Decoders", value: "\(WorkshopCatalog.workingDecoders(for: workshopEnvironment))", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
         }
     }
 
@@ -184,7 +184,7 @@ struct WorkshopView: View {
     }
 
     /// What this machine has, from what the app can see.
-    private var environment: WorkshopEnvironment {
+    private var workshopEnvironment: WorkshopEnvironment {
         var dongles = 0
         if case let .found(list) = RTLSDRAvailability.current.state { dongles = list.count }
         var tools: Set<String> = []
@@ -202,8 +202,8 @@ struct WorkshopView: View {
             networkSources: manager.availableDevices.filter { $0 is NetworkSDRDevice || $0 is OpenWebRXDevice }.count,
             tools: tools,
             codeplugChannels: model.codeplug.channels.count,
-            aiModelsInstalled: model.models.installedCount,
             demodModes: DemodMode.allCases.filter { $0 != .raw }.map(\.rawValue),
+            aiModelsInstalled: model.models.installedCount,
             usesDemoData: AppConfiguration.usesMockData)
     }
 

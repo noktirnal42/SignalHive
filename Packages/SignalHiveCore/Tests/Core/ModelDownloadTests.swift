@@ -77,14 +77,19 @@ private final class FakeTransport: ModelFileTransport, @unchecked Sendable {
 
     var requested: [String] { lock.lock(); defer { lock.unlock() }; return requestedURLs }
 
+    /// Notes the request and says how it should be answered. Synchronous, because NSLock cannot be used across an await.
+    private func plan(for key: String) -> (data: Data?, mustCancel: Bool, mustFail: Bool) {
+        lock.lock()
+        defer { lock.unlock() }
+        requestedURLs.append(key)
+        return (served[key],
+                cancelling.contains { key.hasSuffix("/" + $0) },
+                failing.contains { key.hasSuffix("/" + $0) })
+    }
+
     func download(_ url: URL, progress: @escaping @Sendable (Int64) -> Void) async throws -> URL {
         let key = url.absoluteString
-        lock.lock()
-        requestedURLs.append(key)
-        let data = served[key]
-        let mustCancel = cancelling.contains { key.hasSuffix("/" + $0) }
-        let mustFail = failing.contains { key.hasSuffix("/" + $0) }
-        lock.unlock()
+        let (data, mustCancel, mustFail) = plan(for: key)
         if mustCancel { throw URLError(.cancelled) }
         if mustFail { throw URLError(.networkConnectionLost) }
         guard let data else { throw ModelDownloadError.downloadFailed(file: url.lastPathComponent, reason: "HTTP 404") }

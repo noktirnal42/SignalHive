@@ -1,6 +1,6 @@
 # SignalHive — Project Status and Handoff
 
-Last updated: 2026-09-30. This is a living document: update the "Verified status" table whenever something is
+Last updated: 2026-09-30 (later). This is a living document: update the "Verified status" table whenever something is
 tested, and add to "Bugs found and fixed" whenever a root cause is found.
 
 ## 1. What SignalHive is
@@ -39,6 +39,8 @@ Codex sessions):
 | SwiftRTLSDR PR #1 | Claude cloud session | Merged section 6 work: retune shortcuts, overload guard/AGC, scan loop, EEPROM serial provisioning, rtl_tcp server, and CLI/docs. SignalHive embedded copy was synced and SwiftRTLSDR tests pass locally. |
 | current | Codex (GPT) | Synced SwiftRTLSDR PR #1 into `Packages/SwiftRTLSDR`; added `RTLSDRScan` dependency, noise-floor-aware finder bridge, scan models/activity log, Scanner UI rail with live hits, hold/skip/lockout/save, starter scan bank, decoder quick-tune queue, and a research-backed radio workshop feature map. |
 
+| Claude cloud session, branch `claude/vibrant-einstein-ro06r5` (PR #1) | Claude Code (cloud) | **Air Map + Air Data** (ADS-B/UAT/FIS-B, see `docs/AVIATION.md`), embedded SwiftRTLSDR synced to upstream draft PR #2, codeplug editor/validator/CHIRP, Trunked browser (tolerant OpenMHz client, offline cache, talkgroup categories), Workshop computed from real facts, one-pass "Get FCC data" flow, real Hugging Face model downloader, CI on a macOS runner. **This sandbox has no Swift toolchain: nothing was compiled or run locally. Every "passes" below comes from GitHub Actions runs (macos-26).** |
+
 The Codex session (for reference): `~/.codex/sessions/2026/09/29/rollout-2026-09-29T17-17-28-01a0efac-*.jsonl`,
 thread "Fix and finish SignalHive".
 
@@ -48,10 +50,17 @@ thread "Fix and finish SignalHive".
 App/                          SwiftUI apps (macOS, menu bar, iOS); XcodeGen source of truth is project.yml
   Shared/Design/              Visual system (HiveInk palette, instrument panels, meters, spectrum ribbon)
   Shared/Views/               Workshop, AILab, Browse, Search, Trunked, Scanner, Codeplug, FrequencyDetail, Settings
-  Shared/Stores/AppModel      App state: packs, browse data source, user data, local build, codeplug
+  Shared/Stores/AppModel      App state: packs, browse data source, user data, local build, get-data job, codeplug
+  Shared/Stores/ModelLibrary  Downloaded AI models and downloads in flight (outlives the AI Lab screen)
+  Shared/Aviation/            AviationModel (sources, receivers) and the icon renderer for the map
 Packages/SignalHiveCore/      All logic, UI-free
   Data/ULS, Data/Packs        FCC ULS -> per-state SQLite packs (builder, store, manifest, county/emission parsing)
   Data/Browse                 BrowseDataSource protocol, real (pack) and mock implementations
+  Data/Packs/DataPlan         Which states come from hosted packs and which are built, in one FCC download pass
+  Data/ModelDownload          Hugging Face listing, verified resumable model downloads (AI Lab)
+  Data/OpenMHzClient          OpenMHz parser/client, on-disk cache, repository with offline fallback
+  Aviation/                   ADS-B/UAT/FIS-B model: aircraft, trails, radar, messages, METAR, receivers, demo scenario
+  Models/                     Codeplug + radio capabilities, trunked systems/talkgroups + browsing, WorkshopCatalog
   Data/User                   UserData.sqlite (codeplugs), migration from the legacy database
   HAL/                        SDR devices: native Swift RTL-SDR, HackRF, Lime, SDRplay, Airspy, Pluto, network, test
   DSP/                        FFT, demodulators, decoders, classifier, description engine
@@ -79,11 +88,15 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | Scanner activity workflow | **Partial S3 built**: live passband activity detection now uses `RTLSDRScan.PeakDetector` with a local noise floor; UI shows activity hits, tune, hold/release, skip, lockout/unlock, save-to-codeplug, starter scan bank, decoder quick-tune presets, and a repaired source rail. True multi-hop scan-list sweeping and FCC identification are still next. | `swift test --skip RTLSDRHardwareTests`; macOS app build |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
 | Scanner audio from the RTL-SDR (end to end) | **Still needs ear/over-the-air QA**: native USB streaming and DSP tests pass, but reception quality, antenna-dependent signals, and user-facing scan-list workflows still need field verification. | hardware/unit tests; no listening QA yet |
-| Decoders (ADS-B, UAT, ACARS, AIS, Morse, ...) | Code exists in core with unit tests; SwiftRTLSDR PR #2 ADS-B/Mode S decoder is synced as `RTLSDRDecoders` and exposed through `NativeModeSADSBDecoder`; **no full Decoder Hub UI yet** | UAT/FIS-B from SwiftRTLSDR PR #2 is still pending upstream. |
-| Trunked (OpenMHz browser) | Not verified; needs network | |
-| AI Lab (Foundation Models / PCC probes, MLX catalog) | Builds; catalog/compat logic unit-tested; runtime probes not verified; MLX inference and downloader are not implemented | GPT's own note |
+| Air Map / Air Data (ADS-B, UAT, FIS-B) | **Builds and core logic tested in CI; never run over the air.** 1090 MHz and 978 MHz pipelines decode published test frames to the expected values; map, trails, radar raster, message feed and METAR decoding have unit tests. The UI compiles for macOS and iOS but has not been looked at by a person. | GitHub Actions run of commit `19e5ed9`: core 363 tests, macOS + iOS app builds, committed-project build |
+| Decoders (ACARS, AIS, Morse, paging, P25/DMR metadata, FT8) | **Library only.** The decoder classes exist in core, but the Scanner never attaches any of them to the pipeline or shows decoded messages, so the app decodes none of these. Workshop now says so ("Not connected yet"). ADS-B and UAT are the only decoders wired into the app (through Air Map). | code reading: `DSPPipeline.attachDecoder` has no caller in `App/` |
+| Trunked (OpenMHz browser) | Parser, cache, repository fallback, categories and filters unit-tested against fixtures written from OpenMHz's own server code; **not run against the live service** (the sandbox cannot reach it). It lists systems and talkgroups; it does not follow calls. | CI core tests |
+| Codeplug | Validator, editing helpers, CHIRP CSV import/export, tone catalogs unit-tested; editor UI builds. Direct serial write exists only for the radios `supportsDirectWrite` allows and has not been tried on hardware. | CI core tests + app build |
+| Workshop | Tile statuses computed from facts about the machine (`WorkshopCatalog`, unit-tested); tiles navigate. | CI |
+| Get FCC data (Browse) | `DataPlan` (which states download, which build, one shared FCC pass) unit-tested; `GetDataSheet` and the job runner in `AppModel` compile but have not been run. | CI |
+| AI Lab (Foundation Models / PCC probes, MLX catalog) | Builds; catalog/compat logic unit-tested. **Model downloader now real** (list files, download, verify size + SHA-256, resume at file granularity, refuse unsafe paths), tested with a fake transport; **not exercised against Hugging Face** (unreachable from the sandbox). No inference runtime uses downloaded models. | CI core tests |
 | App icon | Built into the asset catalog; not visually reviewed by Claude | |
-| Radio programming (Baofeng, Uniden, CHIRP CSV) | Core code and CSV round-trip tests; not tested against hardware | |
+| Radio programming (Baofeng, Uniden serial) | Not tested against hardware. Uniden serial helpers have no UI. | |
 
 ## 5. Bugs found and fixed
 
@@ -139,7 +152,21 @@ is the next task after the channelizer; results go into a table below.
 - App Sandbox and direct RTL-SDR USB access are not currently compatible in this build. Do not re-enable sandboxing
   for the macOS targets until IOUSBHost access is proven on real hardware inside the sandbox, or until the driver is
   moved behind a privileged helper / DriverKit path.
-- No test target exists for the app layer (views/model); only the package is unit-tested.
+- No test target exists for the app layer (views/model); only the package is unit-tested. Everything in
+  `App/Shared/Views` from the aviation/trunking/codeplug/get-data/model-download work is compile-checked only.
+- **Dongle exclusivity.** Scanner and Air Map/Air Data each open an RTL-SDR; only one may hold a given dongle. There is no
+  arbiter yet: start one and stop the other by hand. Two dongles are needed to receive 1090 and 978 MHz together.
+- **Embedded SwiftRTLSDR is synced to a draft.** `Packages/SwiftRTLSDR` matches upstream PR #2's head (`6bf6398`), not
+  `main`. Re-sync when that PR changes or merges; the two driver timing tests that fail in CI (job is informational) are
+  upstream's.
+- METAR flags on the Air Map need an airport-coordinate dataset; Air Data lists the reports without positions.
+- Airspy, LimeSDR, SDRplay and PlutoSDR appear as sources, but their `startStreaming` throws "not yet product-proven".
+  OpenWebRX is a first-pass implementation. HackRF needs libhackrf. The Workshop states this.
+- ACARS/AIS/Morse/paging/P25-DMR-metadata/FT8 decoders are not connected to the Scanner (see status table).
+- Downloaded MLX models sit in Application Support; nothing runs them. Gated Hugging Face repositories are refused
+  (no sign-in). A partly downloaded file restarts (resume is per file, not per byte).
+- "Streamline browser downloads" was read as the Browse FCC data flow (plus the AI Lab model queue). If it meant
+  something else, say so.
 - Agency grouping and Census county names (planned in the data plan, Task 10) are not built.
 
 ## 7. Roadmap
@@ -151,11 +178,12 @@ Radio workshop feature map and research notes: `docs/superpowers/specs/2026-09-2
 
 1. Verify and fix **Scanner with the local RTL-SDR** over the air (antenna, tune, spectrum, waterfall,
    AM/NFM/WFM demod audio, scan lists).
-2. A **Decoder Hub** that puts the existing decoders behind a UI (ADS-B map first, then Morse, ACARS, AIS, ...).
+2. A **Decoder Hub** that puts the remaining decoders behind a UI (ADS-B/UAT map is done; Morse, ACARS, AIS, paging next:
+   attach them to the pipeline and show `DecodedMessage`s).
 3. Browse layout and detail polish; window sizing; mode/power display.
 4. Replace external adapters with original Swift decoders (paging first).
 5. Weather/satellite (NOAA APT, Meteor LRPT), radio programming against real hardware, GPS/serial hardware.
-6. AI: Foundation Models features, MLX downloader with compatibility annotations.
+6. AI: Foundation Models features; an MLX inference adapter for the downloaded models.
 7. Hosted packs and weekly automation (needs a repository the owner creates).
 
 ## 8. How to build, run and test
