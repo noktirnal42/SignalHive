@@ -725,6 +725,11 @@ struct ScannerView: View {
     }
 
     private func useDevice(_ device: any SDRDevice) async {
+        // The Decoder Hub or Air Map may hold the dongle; say so instead of showing a USB error.
+        if let holder = DongleRegistry.shared.holder(of: device), holder != DongleRegistry.scannerOwner {
+            statusMessage = DongleRegistry.Busy(deviceName: device.name, holder: holder).errorDescription ?? "In use by \(holder)."
+            return
+        }
         do {
             try await manager.activate(device)
             guard let pl = manager.pipeline(for: device) else {

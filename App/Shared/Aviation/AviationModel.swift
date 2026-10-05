@@ -209,6 +209,7 @@ final class AviationModel {
         if activeSources.contains(source) { statuses[source] = "Stopped" }
         activeSources.remove(source)
         deviceNames[source] = nil
+        DongleRegistry.shared.releaseAll(owner: Self.owner(of: source))
         if activeSources.isEmpty {
             maintenanceTask?.cancel()
             maintenanceTask = nil
@@ -272,6 +273,11 @@ final class AviationModel {
         rebuildCaches()
     }
 
+    /// The name this source claims a dongle under.
+    private static func owner(of source: Source) -> String {
+        "Air Map (\(source.rawValue))"
+    }
+
     // MARK: Live receivers
 
     private func startLive(_ source: Source) async {
@@ -287,14 +293,17 @@ final class AviationModel {
             statuses[source] = "No dongle"
             return
         }
-        // A dongle another source here is already using, or the Scanner has open, is not free.
-        let taken = Set(deviceNames.values)
-        let scannerSerials = Set(manager.activeDevices.map(\.serial))
-        guard let device = dongles.first(where: { !taken.contains($0.name + " " + $0.serial) && !scannerSerials.contains($0.serial) }) else {
-            let scannerHasOne = dongles.contains { scannerSerials.contains($0.serial) }
-            errors[source] = scannerHasOne
-                ? "The Scanner is using the dongle. Stop it there first; only one program can hold it."
-                : "Every dongle is already in use here. Stop the other source, or plug in a second RTL-SDR."
+        // A dongle another source (here, the Scanner or the Decoder Hub) holds is not free.
+        let registry = DongleRegistry.shared
+        guard let device = registry.firstFree(in: dongles, for: Self.owner(of: source)) else {
+            errors[source] = registry.busyExplanation(for: dongles)
+            statuses[source] = "No free dongle"
+            return
+        }
+        do {
+            try registry.claim(device, owner: Self.owner(of: source))
+        } catch {
+            errors[source] = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             statuses[source] = "No free dongle"
             return
         }
@@ -318,6 +327,7 @@ final class AviationModel {
                 return
             }
         } catch {
+            DongleRegistry.shared.release(device, owner: Self.owner(of: source))
             errors[source] = error.localizedDescription
             statuses[source] = "Could not start"
             return

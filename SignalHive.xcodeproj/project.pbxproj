@@ -104,6 +104,9 @@
 		56D05D694DF1F8E79224DDB3 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
 		72160C1A0FD6DA81A5EE09EE /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
 		7B6983A31D1EE7BC73821761 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
+		67AFC6453B98CF4651870925 /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
+		C89D98447134639BA9CDAB4B /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
+		E6B34C08C7AABDF2DC84F4AD /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -151,6 +154,7 @@
 		405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopSheets.swift; sourceTree = "<group>"; };
 		B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnswerSheet.swift; sourceTree = "<group>"; };
 		DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugFixSheet.swift; sourceTree = "<group>"; };
+		07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDecoderModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,6 +218,7 @@
 				49A6491476F78E7B4EB6E58C /* Design */,
 				1ACBAD8D417904F0271CD964 /* Stores */,
 				D7EA068CBA56C88CA6DB41E6 /* Views */,
+				5AADDAAE6516718BFF84F52A /* Decoders */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -325,6 +330,14 @@
 				33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */,
 			);
 			path = Aviation;
+			sourceTree = "<group>";
+		};
+		5AADDAAE6516718BFF84F52A /* Decoders */ = {
+			isa = PBXGroup;
+			children = (
+				07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */,
+			);
+			path = Decoders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -496,6 +509,7 @@
 				250168D0AA8A7795941F0F66 /* WorkshopSheets.swift in Sources */,
 				60D3C8F750903A0B08F3AF39 /* AIAnswerSheet.swift in Sources */,
 				56D05D694DF1F8E79224DDB3 /* CodeplugFixSheet.swift in Sources */,
+				67AFC6453B98CF4651870925 /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -533,6 +547,7 @@
 				22F4C74C33F547B9111F99C4 /* WorkshopSheets.swift in Sources */,
 				E17FCCEC52284D9E7A510440 /* AIAnswerSheet.swift in Sources */,
 				7B6983A31D1EE7BC73821761 /* CodeplugFixSheet.swift in Sources */,
+				C89D98447134639BA9CDAB4B /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -571,6 +586,7 @@
 				77D6DECEEB8B24B06E676092 /* WorkshopSheets.swift in Sources */,
 				672484E9130B7B0578BA4934 /* AIAnswerSheet.swift in Sources */,
 				72160C1A0FD6DA81A5EE09EE /* CodeplugFixSheet.swift in Sources */,
+				E6B34C08C7AABDF2DC84F4AD /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

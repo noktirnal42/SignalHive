@@ -3,6 +3,7 @@ import SignalHiveCore
 
 struct DecoderHubView: View {
     @Environment(AppModel.self) private var model
+    @State private var selectedPresetID: String?
     @State private var selectedDecoder: DecoderTool = .ais
     @State private var inputText = DecoderTool.ais.sampleInput
     @State private var results: [DecoderWorkbenchMessage] = DecoderWorkbench.decodeAISNMEA(DecoderTool.ais.sampleInput)
@@ -31,6 +32,144 @@ struct DecoderHubView: View {
             liveSession.stop(clearOutputs: true)
             inputText = decoder.sampleInput
             decode()
+            selectedPresetID = nil
+            if model.liveDecoder.isActive, model.liveDecoder.preset?.kind.rawValue != decoder.rawValue {
+                Task { await model.liveDecoder.stop() }
+            }
+        }
+        .onDisappear {
+            // A decoder nobody can see should not keep the only dongle.
+            if model.liveDecoder.isActive { Task { await model.liveDecoder.stop() } }
+        }
+    }
+
+    // MARK: Live session
+
+    private var liveKind: LiveDecoderKind? { LiveDecoderKind(rawValue: selectedDecoder.rawValue) }
+
+    private var livePresets: [DecoderLivePreset] {
+        liveKind.map(DecoderLivePreset.presets(for:)) ?? []
+    }
+
+    private var selectedPreset: DecoderLivePreset? {
+        livePresets.first { $0.id == selectedPresetID } ?? livePresets.first
+    }
+
+    @ViewBuilder
+    private var livePanel: some View {
+        if let kind = liveKind, let preset = selectedPreset {
+            let live = model.liveDecoder
+            HiveInstrumentPanel("Live from the dongle", status: liveStatusText(live)) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 12) {
+                        Picker("Channel", selection: Binding(get: { preset.id }, set: { selectedPresetID = $0 })) {
+                            ForEach(livePresets) { item in
+                                Text("\(item.name) · \(String(format: "%.3f", item.frequencyMHz)) MHz").tag(item.id)
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(maxWidth: 320)
+                        .disabled(live.isActive)
+
+                        HStack(spacing: 6) {
+                            Text("Gain").font(.caption).foregroundStyle(.white.opacity(0.6))
+                            Slider(value: Bindable(live).gainDB, in: 0...50, step: 1)
+                                .frame(width: 130)
+                                .disabled(live.isActive)
+                            Text("\(Int(live.gainDB)) dB").font(.caption.monospaced()).foregroundStyle(.white.opacity(0.7))
+                        }
+
+                        Spacer(minLength: 0)
+
+                        if live.isActive {
+                            Button {
+                                Task { await live.stop() }
+                            } label: {
+                                Label("Stop", systemImage: "stop.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(HiveInk.copper)
+                        } else {
+                            Button {
+                                Task { await live.start(preset) }
+                            } label: {
+                                Label("Start listening", systemImage: "play.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(HiveInk.cyan)
+                        }
+                    }
+
+                    if let failure = live.failure {
+                        Label(failure, systemImage: "exclamationmark.triangle.fill")
+                            .font(.callout)
+                            .foregroundStyle(HiveInk.amber)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    if let snapshot = live.snapshot, live.isActive || snapshot.totalBlocks > 0 {
+                        HStack(spacing: 18) {
+                            liveStat("Source", live.deviceName ?? "stopped")
+                            liveStat("Blocks", "\(snapshot.totalBlocks)")
+                            liveStat("Messages", "\(snapshot.totalMessageCount)")
+                            liveStat("Per minute", String(format: "%.1f", snapshot.messagesPerMinute))
+                            liveStat("Last heard", snapshot.lastHeardAt.map { $0.formatted(date: .omitted, time: .standard) } ?? "nothing yet")
+                        }
+                    }
+
+                    Text(kind.caveat)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.52))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func liveStatusText(_ live: LiveDecoderModel) -> String {
+        switch live.state {
+        case .idle: return "stopped"
+        case .starting: return "starting"
+        case .running: return "listening"
+        case .failed: return "could not start"
+        }
+    }
+
+    private func liveStat(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title.uppercased())
+                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.45))
+            Text(value)
+                .font(.caption.monospaced())
+                .foregroundStyle(.white.opacity(0.85))
+                .lineLimit(1)
+        }
+    }
+
+    @ViewBuilder
+    private var liveResultsPanel: some View {
+        let live = model.liveDecoder
+        if liveKind != nil, live.preset?.kind.rawValue == selectedDecoder.rawValue, live.isActive || !live.rows.isEmpty {
+            HiveInstrumentPanel("Heard on the air", status: "\(live.rows.count) messages") {
+                VStack(alignment: .leading, spacing: 12) {
+                    if live.rows.isEmpty {
+                        Text("Listening. Nothing decoded yet; this is normal until a signal on this channel is strong and clean enough.")
+                            .font(.callout)
+                            .foregroundStyle(.white.opacity(0.6))
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        HStack {
+                            Spacer()
+                            Button("Clear") { live.clear() }
+                                .buttonStyle(.bordered)
+                        }
+                        ForEach(live.rows) { message in
+                            messageCard(message)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -40,7 +179,7 @@ struct DecoderHubView: View {
                 Text("Decoder Hub")
                     .font(.system(.title2, design: .rounded).weight(.bold))
                     .foregroundStyle(.white)
-                Text("Manual tools plus DecoderSession-backed demo IQ for Morse and ACARS.")
+                Text("Live decoding from the dongle for ACARS, AIS and Morse, a demo signal for trying them without one, and manual decode tools.")
                     .font(.callout)
                     .foregroundStyle(.white.opacity(0.62))
                     .fixedSize(horizontal: false, vertical: true)
@@ -55,10 +194,11 @@ struct DecoderHubView: View {
                     .accessibilityLabel("Open \(decoder.title) decoder")
                 }
 
-                HiveInstrumentPanel("Live session path", status: "next") {
+                HiveInstrumentPanel("Live sessions", status: "ACARS, AIS, Morse") {
                     VStack(alignment: .leading, spacing: 10) {
-                        decoderStatus("Morse / CW", state: "Demo IQ live", tint: HiveInk.mint)
-                        decoderStatus("ACARS", state: "Demo IQ live", tint: HiveInk.mint)
+                        decoderStatus("Morse / CW", state: "Dongle (not yet checked on air) + demo", tint: HiveInk.amber)
+                        decoderStatus("ACARS", state: "Dongle (not yet checked on air) + demo", tint: HiveInk.amber)
+                        decoderStatus("AIS", state: "Dongle (not yet checked on air)", tint: HiveInk.amber)
                         decoderStatus("ADS-B / UAT", state: "Live in Air Map", tint: HiveInk.mint)
                         decoderStatus("ISM sensors", state: "SwiftRTLSDR ready", tint: HiveInk.amber)
                         decoderStatus("RS41 radiosondes", state: "SwiftRTLSDR ready", tint: HiveInk.amber)
@@ -120,6 +260,8 @@ struct DecoderHubView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 hero
+                livePanel
+                liveResultsPanel
                 liveSessionPanel
                 inputPanel
                 resultsPanel
@@ -130,7 +272,7 @@ struct DecoderHubView: View {
     }
 
     private var liveSessionPanel: some View {
-        HiveInstrumentPanel("Live Session", status: liveSession.statusBadge(for: selectedDecoder)) {
+        HiveInstrumentPanel("Demo signal (no dongle)", status: liveSession.statusBadge(for: selectedDecoder)) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
@@ -454,7 +596,7 @@ private enum DecoderTool: String, CaseIterable, Identifiable {
 
     var status: String {
         switch self {
-        case .ais, .morse, .acars: return "Manual decode"
+        case .ais, .morse, .acars: return "Live + manual"
         case .adsb, .uat: return "Live elsewhere"
         case .ism, .radiosonde, .lrpt: return "Driver ready"
         case .paging, .weakSignal: return "Adapter pending"
@@ -463,7 +605,7 @@ private enum DecoderTool: String, CaseIterable, Identifiable {
 
     var badge: String {
         switch self {
-        case .ais, .morse, .acars: return "manual"
+        case .ais, .morse, .acars: return "live"
         case .adsb, .uat: return "air"
         case .ism, .radiosonde, .lrpt: return "driver"
         case .paging, .weakSignal: return "adapter"
@@ -655,7 +797,7 @@ private final class DecoderHubLiveSession {
     }
 
     func title(for decoder: DecoderTool) -> String {
-        decoder.supportsDemoSession ? "DecoderSession demo IQ" : "Live capture not exposed here yet"
+        decoder.supportsDemoSession ? "Synthetic IQ through DecoderSession" : "No demo signal for this decoder"
     }
 
     func subtitle(for decoder: DecoderTool) -> String {
