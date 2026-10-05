@@ -26,6 +26,17 @@ struct AirMapView: View {
         case hybridTerrain = "Hybrid Terrain"
         var id: String { rawValue }
 
+        var shortTitle: String {
+            switch self {
+            case .dark: "Dark"
+            case .standard: "Map"
+            case .terrain: "Topo"
+            case .satellite: "Sat"
+            case .hybrid: "Hyb"
+            case .hybridTerrain: "3D"
+            }
+        }
+
         var symbol: String {
             switch self {
             case .dark: "moon.stars"
@@ -160,6 +171,13 @@ struct AirMapView: View {
             }
             .overlay(alignment: .topLeading) {
                 AirStatusPill(model: model).padding(12)
+            }
+            .overlay(alignment: .topTrailing) {
+                VStack(alignment: .trailing, spacing: 8) {
+                    AirMapModeStrip(styleChoice: $styleChoice)
+                    AirMapGestureHint()
+                }
+                .padding(12)
             }
             .overlay(alignment: .bottomLeading) {
                 AirLegend(model: model).padding(12)
@@ -414,6 +432,54 @@ private struct AirStatusPill: View {
         .padding(.vertical, 7)
         .background(.ultraThinMaterial, in: Capsule())
         .overlay(Capsule().stroke(.white.opacity(0.12), lineWidth: 1))
+    }
+}
+
+private struct AirMapModeStrip: View {
+    @Binding var styleChoice: AirMapView.MapStyleChoice
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(AirMapView.MapStyleChoice.allCases) { choice in
+                Button {
+                    styleChoice = choice
+                } label: {
+                    Label(choice.shortTitle, systemImage: choice.symbol)
+                        .labelStyle(.iconOnly)
+                        .help(choice.rawValue)
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(styleChoice == choice ? HiveInk.graphite : .white.opacity(0.82))
+                .frame(width: 30, height: 28)
+                .background(styleChoice == choice ? HiveInk.cyan : .white.opacity(0.08),
+                            in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .stroke(styleChoice == choice ? HiveInk.cyan.opacity(0.7) : .white.opacity(0.12), lineWidth: 1)
+                }
+                .accessibilityLabel("Use \(choice.rawValue) map")
+            }
+        }
+        .padding(5)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(.white.opacity(0.12), lineWidth: 1))
+    }
+}
+
+private struct AirMapGestureHint: View {
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "hand.point.up.left")
+            Text("Trackpad: pan, pinch, rotate, pitch")
+        }
+        .font(.system(size: 11, weight: .semibold, design: .rounded))
+        .foregroundStyle(.white.opacity(0.72))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().stroke(.white.opacity(0.1), lineWidth: 1))
+        .allowsHitTesting(false)
     }
 }
 
