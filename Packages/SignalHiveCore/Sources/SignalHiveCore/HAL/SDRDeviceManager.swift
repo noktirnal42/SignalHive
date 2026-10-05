@@ -90,6 +90,13 @@ public final class SDRDeviceManager: ObservableObject {
         await d.close()
     }
 
+    /// The active device that is the same hardware as `device`. A rescan makes new device objects (each with a new `id`) for
+    /// hardware that is already open, so matching on `id` would offer a dongle the Scanner holds as free again.
+    public func activeInstance(matching device: any SDRDevice) -> (any SDRDevice)? {
+        let key = DongleRegistry.key(for: device)
+        return activeDevices.first { DongleRegistry.key(for: $0) == key }
+    }
+
     public func pipeline(for device: any SDRDevice) -> DSPPipeline? {
         activePipelines[device.id]
     }

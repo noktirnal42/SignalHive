@@ -107,3 +107,24 @@ struct DongleRegistryTests {
         #expect(DongleRegistry.key(for: StubDongle(name: "Nooelec", serial: "00000001")) != DongleRegistry.key(for: StubDongle(serial: "00000001")))
     }
 }
+
+@MainActor
+struct ActiveInstanceTests {
+    /// A rescan makes new device objects for hardware that is already open, so the Scanner has to recognise its own dongle
+    /// by name and serial, not by object identity, or it offers it as free and fails to open it a second time.
+    @Test func aRescannedDongleIsRecognisedAsTheOneInUse() async throws {
+        let manager = SDRDeviceManager.shared
+        await manager.deactivateAll()
+        let held = StubDongle(serial: "SCAN-1")
+        try await manager.activate(held)
+
+        let rescanned = StubDongle(serial: "SCAN-1")
+        #expect(rescanned.id != held.id)
+        #expect(manager.activeInstance(matching: rescanned)?.id == held.id)
+        #expect(manager.activeInstance(matching: StubDongle(serial: "OTHER")) == nil)
+        #expect(manager.activeInstance(matching: StubDongle(name: "Another model", serial: "SCAN-1")) == nil)
+
+        await manager.deactivateAll()
+        #expect(manager.activeInstance(matching: rescanned) == nil)
+    }
+}

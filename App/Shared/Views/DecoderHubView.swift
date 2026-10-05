@@ -262,7 +262,8 @@ struct DecoderHubView: View {
                 hero
                 livePanel
                 liveResultsPanel
-                liveSessionPanel
+                // The demo signal only where there is one; a decoder with a dongle panel and no demo does not need a "not wired" box.
+                if selectedDecoder.supportsDemoSession || liveKind == nil { liveSessionPanel }
                 inputPanel
                 resultsPanel
             }
@@ -272,7 +273,7 @@ struct DecoderHubView: View {
     }
 
     private var liveSessionPanel: some View {
-        HiveInstrumentPanel("Demo signal (no dongle)", status: liveSession.statusBadge(for: selectedDecoder)) {
+        HiveInstrumentPanel(selectedDecoder.supportsDemoSession ? "Demo signal (no dongle)" : "Live session", status: liveSession.statusBadge(for: selectedDecoder)) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {

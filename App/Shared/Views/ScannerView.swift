@@ -563,7 +563,7 @@ struct ScannerView: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 0)
-            if manager.activeDevices.contains(where: { $0.id == device.id }) {
+            if manager.activeInstance(matching: device) != nil {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(HiveInk.mint)
             } else {
@@ -724,7 +724,9 @@ struct ScannerView: View {
         await useDevice(device)
     }
 
-    private func useDevice(_ device: any SDRDevice) async {
+    private func useDevice(_ requested: any SDRDevice) async {
+        // A rescan lists a dongle this Scanner already holds as a new object; use the one that is open.
+        let device = manager.activeInstance(matching: requested) ?? requested
         // The Decoder Hub or Air Map may hold the dongle; say so instead of showing a USB error.
         if let holder = DongleRegistry.shared.holder(of: device), holder != DongleRegistry.scannerOwner {
             statusMessage = DongleRegistry.Busy(deviceName: device.name, holder: holder).errorDescription ?? "In use by \(holder)."
