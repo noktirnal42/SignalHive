@@ -2,6 +2,7 @@ import SwiftUI
 import SignalHiveCore
 
 struct DecoderHubView: View {
+    @Environment(AppModel.self) private var model
     @State private var selectedDecoder: DecoderTool = .ais
     @State private var inputText = DecoderTool.ais.sampleInput
     @State private var results: [DecoderWorkbenchMessage] = DecoderWorkbench.decodeAISNMEA(DecoderTool.ais.sampleInput)
@@ -19,6 +20,13 @@ struct DecoderHubView: View {
             }
         }
         .navigationTitle("Decoder Hub")
+        .task {
+            // The Workshop opens a specific decoder by id ("acars", "ais", "morse").
+            if case let .decoder(id)? = model.pendingPreset, let tool = DecoderTool(rawValue: id) {
+                model.pendingPreset = nil
+                selectedDecoder = tool
+            }
+        }
         .onChange(of: selectedDecoder) { _, decoder in
             liveSession.stop(clearOutputs: true)
             inputText = decoder.sampleInput

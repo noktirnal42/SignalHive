@@ -37,6 +37,10 @@ final class AppModel: ObservableObject {
 
     // Cross-view navigation intent
     var pendingScanFrequency: Double?
+    /// What the Workshop asked the next screen to start (a tuned frequency, a decoder); that screen takes it on appear.
+    var pendingPreset: WorkshopPreset?
+    /// The Workshop's "Add source" fix: open the Scanner with its rtl_tcp host field showing.
+    var pendingAddNetworkSource = false
 
     @ObservationIgnored private var didBootstrap = false
 

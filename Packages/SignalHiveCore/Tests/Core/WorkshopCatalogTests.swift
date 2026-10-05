@@ -81,9 +81,10 @@ struct WorkshopCatalogTests {
     }
 
     @Test func tilesLeadToScreensThatExist() throws {
-        #expect(try item("fcc", bare).destination == .browse)
-        #expect(try item("airmap", bare).destination == .airMap)
-        #expect(try item("airdata", bare).destination == .airData)
+        // On a machine where they work. Where they do not, the tile offers its fix instead (WorkshopActionTests).
+        #expect(try item("fcc", bench).destination == .browse)
+        #expect(try item("airmap", bench).destination == .airMap)
+        #expect(try item("airdata", bench).destination == .airData)
         #expect(try item("trunked", bare).destination == .trunked)
         #expect(try item("codeplug", bare).destination == .codeplug)
         #expect(try item("ailab", bare).destination == .aiLab)
