@@ -95,6 +95,9 @@
 		FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 		FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
+		67AFC6453B98CF4651870925 /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
+		C89D98447134639BA9CDAB4B /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
+		E6B34C08C7AABDF2DC84F4AD /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -139,6 +142,7 @@
 		F6884868AC2561809B1890F7 /* MenuBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarApp.swift; sourceTree = "<group>"; };
 		FE53DC740AEEAF549EF95771 /* MacPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPlatform.swift; sourceTree = "<group>"; };
 		FE79022937FEAE9AAA3DBFBD /* SignalHiveMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHiveMenuBar.entitlements; sourceTree = "<group>"; };
+		07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDecoderModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +206,7 @@
 				49A6491476F78E7B4EB6E58C /* Design */,
 				1ACBAD8D417904F0271CD964 /* Stores */,
 				D7EA068CBA56C88CA6DB41E6 /* Views */,
+				5AADDAAE6516718BFF84F52A /* Decoders */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -310,6 +315,14 @@
 				33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */,
 			);
 			path = Aviation;
+			sourceTree = "<group>";
+		};
+		5AADDAAE6516718BFF84F52A /* Decoders */ = {
+			isa = PBXGroup;
+			children = (
+				07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */,
+			);
+			path = Decoders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -478,6 +491,7 @@
 				4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */,
 				66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */,
 				193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */,
+				67AFC6453B98CF4651870925 /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -512,6 +526,7 @@
 				A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */,
 				73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */,
 				C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */,
+				C89D98447134639BA9CDAB4B /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,6 +562,7 @@
 				A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */,
 				36812FF465737730CC288846 /* TrunkedView.swift in Sources */,
 				E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */,
+				E6B34C08C7AABDF2DC84F4AD /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

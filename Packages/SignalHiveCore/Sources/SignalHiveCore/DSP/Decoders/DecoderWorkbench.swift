@@ -134,7 +134,7 @@ public enum DecoderWorkbench {
         }
     }
 
-    private static func aisSummary(_ message: AISMessage, raw: String, index: Int) -> DecoderWorkbenchMessage {
+    static func aisSummary(_ message: AISMessage, raw: String, index: Int) -> DecoderWorkbenchMessage {
         var details = ["MMSI \(message.mmsi)", "Type \(message.messageType)"]
         let title: String
         let summary: String
