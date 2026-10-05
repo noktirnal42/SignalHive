@@ -12,6 +12,8 @@ final class AppModel: ObservableObject {
     @ObservationIgnored let browse: any BrowseDataSource
     /// On-device language models downloaded from Hugging Face (AI Lab).
     let models = ModelLibrary()
+    /// The Decoder Hub's live session (one dongle, one decoder).
+    let liveDecoder = LiveDecoderModel()
     @ObservationIgnored private var userData: UserDatabase?
     var states: [StateAvailability] = []
     /// Live progress for installs in flight (the pack store only reports milestones).

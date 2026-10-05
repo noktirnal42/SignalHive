@@ -10,6 +10,10 @@ for AI-assisted RF work.
 - The macOS scanner path uses a native Swift RTL-SDR driver in `Packages/SwiftRTLSDR`; local USB RTL-SDR on the Mac
   is the primary hardware path.
 - Network sources such as `rtl_tcp` and OpenWebRX remain optional source types for later Raspberry Pi field boxes.
+- **Air Map** and **Air Data**: ADS-B (1090 MHz), UAT and FIS-B (978 MHz) with painted aircraft icons colored by
+  altitude, altitude-gradient trails, NEXRAD radar and decoded weather/NOTAM text. See `docs/AVIATION.md`.
+- Codeplug editor with radio-aware validation and CHIRP CSV in/out; Trunked browser (OpenMHz) with offline cache and
+  talkgroup categories; one "Get FCC data" flow for many states; a verified, resumable Hugging Face model downloader.
 - DSP, demodulator, decoder, codeplug, and AI workbench modules live in `Packages/SignalHiveCore`.
 - The UI is SwiftUI with an instrument-style visual system; it still needs a deeper UX pass before it should be
   called polished.
