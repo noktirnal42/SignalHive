@@ -49,7 +49,8 @@ public struct PrivateCloudProvider: LanguageModelProvider {
     public init() {}
 
     public func availability() async -> ProviderAvailability {
-        #if canImport(FoundationModels)
+        // PrivateCloudComputeLanguageModel is in the macOS 27 SDK only; a build with an older SDK (Swift before 6.4) leaves it out.
+        #if canImport(FoundationModels) && compiler(>=6.4)
         if #available(macOS 27.0, iOS 27.0, *) {
             switch PrivateCloudComputeLanguageModel().availability {
             case .available:
@@ -63,11 +64,11 @@ public struct PrivateCloudProvider: LanguageModelProvider {
             }
         }
         #endif
-        return .unavailable("Needs macOS 27 or later.")
+        return .unavailable("Needs macOS 27 or later (and an app built with the macOS 27 SDK).")
     }
 
     public func respond(to request: AIRequest) -> AsyncThrowingStream<AIChunk, Error> {
-        #if canImport(FoundationModels)
+        #if canImport(FoundationModels) && compiler(>=6.4)
         if #available(macOS 27.0, iOS 27.0, *) {
             return FoundationModelsStreaming.stream(kind: kind, request: request) {
                 LanguageModelSession(model: PrivateCloudComputeLanguageModel())
