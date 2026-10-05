@@ -210,9 +210,9 @@ per-screen verdicts, 12 cross-cutting UI findings and the build spec. The remain
   (self-discovery by decoding control channels; optional OpenMHz was approved as an opt-in source).
 - `SDRDeviceManager.scan()` runs six providers; RTL-SDR has been exercised on real hardware through the native Swift
   driver. Other source types still need hardware/provider QA.
-- SwiftRTLSDR PR #1 and PR #2 are merged upstream; SignalHive's embedded copy is `main` at `23cf19e` (2026-10-05) with
+- SwiftRTLSDR PR #1 and PR #2 are merged upstream; SignalHive's embedded copy is `main` at `23cf19e` (2026-10-05) **plus one patch pending upstream** (noktirnal42/SwiftRTLSDR PR #4: `Meshtastic.swift` read the packed fixed32 words with a one-line `reduce` that Swift 6.3.3 on the `macos-26` CI runner cannot type-check; Swift 6.4 accepts it; the package has no CI of its own to catch this; once PR #4 merges the copy is plain upstream again) with
   ADS-B, UAT/FIS-B, ISM, Meteor LRPT (72k and 80k), RS41, Meshtastic/LoRa, EEPROM calibration and the hydrogen-line
-  spectrometer. An agent is still working upstream: check `gh api repos/noktirnal42/SwiftRTLSDR/branches` before building on
+  spectrometer. An agent is still working upstream (branch `claude/determined-davinci-n2dt0t` has an unmerged ACARS decoder, not synced): check `gh api repos/noktirnal42/SwiftRTLSDR/branches` before building on
   the driver, and sync only merged work. Meshtastic, LoRa, calibration and hydrogen line have no app UI yet.
   `rtlsdr-tool capture` writes an odd byte count (`Int(actualRate * 2 * seconds)` with a rate of 2000000.05 gives
   40000001 bytes), which splits an I/Q pair at the end and breaks tools that read pairs; a driver issue to fix upstream.
