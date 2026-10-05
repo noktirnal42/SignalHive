@@ -166,7 +166,9 @@ public final class AISDecoder: SignalDecoder, @unchecked Sendable {
         var messages: [DecodedMessage] = []
 
         for bits in frameBits {
-            guard let nmea = makeAIVDMSentence(fromFrameBits: bits),
+            // Only a frame whose check passes is a message; between two flag patterns noise is not.
+            guard let payload = AISFrameCheck.payload(fromFrame: bits),
+                  let nmea = makeAIVDMSentence(fromFrameBits: payload),
                   let message = parseNMEA(nmea) else { continue }
             messages.append(DecodedMessage(
                 timestamp: message.timestamp,
@@ -593,6 +595,36 @@ public struct AISPositionRecord: Sendable {
     public var courseOverGround: Float
     public var heading: Int
     public var navigationStatus: Int
+}
+
+// MARK: - Frame check
+
+/// What makes a run of bits between two HDLC flags an AIS message: its 16-bit frame check sequence (CRC-16/X.25, sent low bit
+/// first) must come out right, and its message type must be one AIS defines (1 to 27). Without this, the noise between any two
+/// flag patterns (which turn up every few hundred bits) was reported as a vessel.
+enum AISFrameCheck {
+    /// The CRC register after the bits, in the order they were sent (the reflected form of the 0x1021 polynomial).
+    static func register(_ bits: [Int]) -> UInt16 {
+        var crc: UInt16 = 0xFFFF
+        for bit in bits {
+            let mix = (crc ^ UInt16(bit & 1)) & 1
+            crc >>= 1
+            if mix == 1 { crc ^= 0x8408 }
+        }
+        return crc
+    }
+
+    /// The frame check sequence for a message: the register, inverted.
+    static func checksum(_ bits: [Int]) -> UInt16 { ~register(bits) }
+
+    /// The message (without its check) if the frame passes: run over message and check together, the register ends at 0xF0B8.
+    static func payload(fromFrame bits: [Int]) -> [Int]? {
+        let checkBits = 16
+        guard bits.count >= checkBits + 38, register(bits) == 0xF0B8 else { return nil }
+        let message = Array(bits.dropLast(checkBits))
+        let type = message.prefix(6).reduce(0) { $0 << 1 | ($1 & 1) }
+        return (1...27).contains(type) ? message : nil
+    }
 }
 
 // MARK: - HDLC Decoder stub

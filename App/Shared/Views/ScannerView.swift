@@ -7,6 +7,9 @@ struct ScannerView: View {
 
     @State private var pipeline: DSPPipeline?
     @State private var running = false
+    /// A device being opened. Leaving the Scanner waits for it before releasing, or the open would finish after the release and
+    /// leave the dongle held with nothing on screen to stop it.
+    @State private var activation: Task<Void, Never>?
     @State private var frequencyMHz = 155.475
     @State private var gain: Double = 30
     @State private var squelchDB: Float = -80
@@ -68,6 +71,17 @@ struct ScannerView: View {
             }
         }
         .navigationTitle("Scanner")
+        .onDisappear {
+            // A scanner nobody can see should not keep the only dongle, or leave a stream running with no Stop button: this
+            // view's state (pipeline, running) goes with it, but the manager's open device would not.
+            running = false
+            pipeline = nil
+            let pending = activation
+            Task {
+                await pending?.value
+                await manager.deactivateAll()
+            }
+        }
         .task {
             await manager.scan()
             if let pending = model.pendingScanFrequency {
@@ -725,6 +739,12 @@ struct ScannerView: View {
     }
 
     private func useDevice(_ requested: any SDRDevice) async {
+        let task = Task { await activateAndStart(requested) }
+        activation = task
+        await task.value
+    }
+
+    private func activateAndStart(_ requested: any SDRDevice) async {
         // A rescan lists a dongle this Scanner already holds as a new object; use the one that is open.
         let device = manager.activeInstance(matching: requested) ?? requested
         // The Decoder Hub or Air Map may hold the dongle; say so instead of showing a USB error.
