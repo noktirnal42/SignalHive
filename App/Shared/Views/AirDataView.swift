@@ -5,6 +5,7 @@ import SignalHiveCore
 /// alerts, and receiver information. The map shows where things are; this shows what was said.
 struct AirDataView: View {
     @Environment(AviationModel.self) private var model
+    @State private var briefing: BriefingSnapshot?
 
     var body: some View {
         ZStack {
@@ -18,6 +19,16 @@ struct AirDataView: View {
         }
         .preferredColorScheme(.dark)
         .navigationTitle("Air Data")
+        .sheet(item: $briefing) { snapshot in
+            AIAnswerSheet(
+                navigationTitle: "Air briefing",
+                title: snapshot.briefing.headline,
+                subtitle: "Snapshot at \(snapshot.briefing.generatedAt.formatted(date: .omitted, time: .standard))",
+                note: snapshot.briefing.traffic.bySource["Demo"] != nil ? "This picture includes demo aircraft." : nil,
+                inputs: AIContext(aviation: snapshot.briefing).inputs,
+                makeRequest: { .brief(snapshot.briefing, preferred: $0) },
+                identity: snapshot.id)
+        }
     }
 
     // MARK: Feed
@@ -54,12 +65,59 @@ struct AirDataView: View {
     private var infoColumn: some View {
         ScrollView {
             VStack(spacing: 12) {
+                AirBriefingPanel(model: model) { briefing = BriefingSnapshot(briefing: $0) }
                 if !model.picture.emergencyAircraft.isEmpty {
                     AirAlertsPanel(aircraft: model.picture.emergencyAircraft)
                 }
                 AirWeatherBoard(model: model)
                 AirReceiverPanel(model: model)
             }
+        }
+    }
+}
+
+// MARK: - Briefing
+
+private struct BriefingSnapshot: Identifiable {
+    let id = UUID()
+    let briefing: AviationBriefing
+}
+
+/// The deterministic headline, kept current, and the button that asks the AI layer for a plain-language briefing.
+private struct AirBriefingPanel: View {
+    let model: AviationModel
+    var brief: (AviationBriefing) -> Void
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 5)) { timeline in
+            let briefing = AviationBriefing.make(from: model.picture, now: timeline.date)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Label("Air briefing", systemImage: "text.badge.checkmark")
+                        .font(.system(.caption, design: .rounded).weight(.bold))
+                        .foregroundStyle(HiveInk.cyan)
+                    Spacer()
+                    Text("SignalHive Rules")
+                        .font(.caption2.monospaced())
+                        .foregroundStyle(.white.opacity(0.45))
+                }
+                Text(briefing.headline)
+                    .font(.system(.callout, design: .rounded).weight(.semibold))
+                    .foregroundStyle(briefing.emergencies.isEmpty ? .white.opacity(0.9) : Color.red)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    brief(briefing)
+                } label: {
+                    Label("Brief me", systemImage: "sparkles")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(HiveInk.cyan)
+                .disabled(briefing.isEmpty)
+                .help(briefing.isEmpty ? "Nothing has been heard yet." : "Explain this air picture in plain language")
+            }
+            .padding(12)
+            .background(HiveInk.panel.opacity(0.8), in: RoundedRectangle(cornerRadius: 8))
         }
     }
 }
