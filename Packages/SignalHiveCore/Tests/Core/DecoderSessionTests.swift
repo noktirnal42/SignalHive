@@ -103,6 +103,54 @@ struct DecoderSessionTests {
         #expect(snapshot.lastHeardAt != nil)
     }
 
+    @Test func morseDemoSignalRunsThroughSession() async throws {
+        let session = DecoderSession(
+            decoder: MorseDecoder(),
+            config: DecoderSessionConfig(sampleRateHz: 48_000, maxRetainedMessages: 10)
+        )
+        let iq = DecoderDemoSignal.morseIQ(text: "TEST", sampleRate: 48_000, wordsPerMinute: 22)
+        var decoded: [DecodedMessage] = []
+
+        for start in stride(from: 0, to: iq.count, by: 4_096) {
+            let end = min(iq.count, start + 4_096)
+            decoded += await session.ingest(samples: Array(iq[start..<end]))
+        }
+
+        let message = try #require(decoded.first)
+        guard case .morse(let morse) = message.payload else {
+            Issue.record("Expected Morse payload")
+            return
+        }
+        #expect(morse.text == "TEST")
+    }
+
+    @Test func acarsDemoSignalRunsThroughSession() async throws {
+        let session = DecoderSession(
+            decoder: ACARSDecoder(),
+            config: DecoderSessionConfig(sampleRateHz: 48_000, maxRetainedMessages: 10)
+        )
+        let iq = DecoderDemoSignal.acarsIQ(
+            text: "Q0 N123AB DAL123 POS 37.62 -122.38",
+            sampleRate: 48_000
+        )
+        var decoded: [DecodedMessage] = []
+
+        for start in stride(from: 0, to: iq.count, by: 1_024) {
+            let end = min(iq.count, start + 1_024)
+            decoded += await session.ingest(samples: Array(iq[start..<end]))
+        }
+
+        let message = try #require(decoded.first)
+        guard case .acars(let acars) = message.payload else {
+            Issue.record("Expected ACARS payload")
+            return
+        }
+        #expect(acars.label == "Q0")
+        #expect(acars.registration == "N123AB")
+        #expect(acars.flightId == "DAL123")
+        #expect(acars.kind == .position)
+    }
+
     @Test func sessionPublishesDecodedMessagesOnAsyncStream() async throws {
         let session = DecoderSession(decoder: OneShotTextDecoder())
         let stream = await session.messageStream()

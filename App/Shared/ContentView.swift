@@ -3,11 +3,27 @@ import SignalHiveCore
 
 struct ContentView: View {
     @Environment(AppModel.self) private var model
+    @Environment(AviationModel.self) private var aviation
     @State private var selection: Panel?
 
     enum Panel: String, CaseIterable, Identifiable {
         case workshop, aiLab, browse, search, trunked, scanner, decoderHub, satellites, airMap, airData, codeplug
         var id: String { rawValue }
+
+        init(_ destination: WorkshopDestination) {
+            switch destination {
+            case .browse: self = .browse
+            case .search: self = .search
+            case .scanner: self = .scanner
+            case .decoderHub: self = .decoderHub
+            case .trunked: self = .trunked
+            case .codeplug: self = .codeplug
+            case .aiLab: self = .aiLab
+            case .satellites: self = .satellites
+            case .airMap: self = .airMap
+            case .airData: self = .airData
+            }
+        }
 
         var title: String {
             switch self {
@@ -56,9 +72,7 @@ struct ContentView: View {
         } detail: {
             switch selection ?? .workshop {
             case .workshop:
-                WorkshopView { panel in
-                    selection = panel
-                }
+                WorkshopView(perform: perform)
             case .aiLab: AILabView()
             case .browse: BrowseView()
             case .search: SearchView()
@@ -77,6 +91,33 @@ struct ContentView: View {
                     model.cancelImport()
                 }
             }
+        }
+    }
+}
+
+extension ContentView {
+    /// The Workshop's open and launch actions. (Fixes and explanations are sheets the Workshop shows itself.)
+    private func perform(_ action: WorkshopAction) {
+        switch action {
+        case let .open(destination):
+            selection = Panel(destination)
+        case let .launch(destination, preset):
+            selection = Panel(destination)
+            switch preset {
+            case .scannerTune, .decoder:
+                // Taken by the Scanner or the Decoder Hub when it appears.
+                model.pendingPreset = preset
+            case .listenADSB1090:
+                #if os(macOS)
+                Task { await aviation.start(.adsb1090) }
+                #endif
+            case .listenUAT978:
+                #if os(macOS)
+                Task { await aviation.start(.uat978) }
+                #endif
+            }
+        case .fix, .learn:
+            break
         }
     }
 }

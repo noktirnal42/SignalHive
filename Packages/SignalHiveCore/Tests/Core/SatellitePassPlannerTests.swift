@@ -41,4 +41,91 @@ struct SatellitePassPlannerTests {
                                             from: Date(), through: Date().addingTimeInterval(3600))
         #expect(passes.isEmpty)
     }
+
+    @Test func captureRecipePadsThePassAndChoosesMeteorLRPT() throws {
+        var satellite = try #require(TLEParser.parseMany(iss).first)
+        satellite.name = "METEOR-M 2-3"
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let pass = SatellitePass(satellite: satellite, start: start, peak: start.addingTimeInterval(300),
+                                 end: start.addingTimeInterval(620), maxElevationDegrees: 44,
+                                 peakAzimuthDegrees: 210, peakRangeKM: 980,
+                                 peakSubsatellite: GeoCoordinate(latitude: 32, longitude: -118))
+
+        let recipe = try #require(SatelliteCaptureRecipe.make(for: pass, padding: 90))
+
+        #expect(recipe.mode == .meteorLRPT)
+        #expect(recipe.downlinkFrequencyHz == 137_900_000)
+        #expect(recipe.sampleRateHz == 288_000)
+        #expect(recipe.captureStart == start.addingTimeInterval(-90))
+        #expect(recipe.captureEnd == start.addingTimeInterval(710))
+        #expect(recipe.dopplerCorrectionEnabled)
+    }
+
+    @Test func meteorDownlinkFollowsTheSatelliteWhateverTheCatalogSpellsIt() throws {
+        // CelesTrak says "METEOR-M2 4"; older element sets say "METEOR-M N2-4". M2-4 is on 137.1 MHz, M2-3 on 137.9.
+        for (name, hz) in [("METEOR-M2 4", 137_100_000.0), ("METEOR-M 2-4", 137_100_000), ("METEOR-M N2-4", 137_100_000),
+                           ("METEOR-M2 3", 137_900_000), ("METEOR-M 2-3", 137_900_000)] {
+            var satellite = try #require(TLEParser.parseMany(iss).first)
+            satellite.name = name
+            let start = Date(timeIntervalSince1970: 1_800_000_000)
+            let pass = SatellitePass(satellite: satellite, start: start, peak: start.addingTimeInterval(300),
+                                     end: start.addingTimeInterval(600), maxElevationDegrees: 40,
+                                     peakAzimuthDegrees: 90, peakRangeKM: 900,
+                                     peakSubsatellite: GeoCoordinate(latitude: 0, longitude: 0))
+            #expect(SatelliteCaptureRecipe.make(for: pass)?.downlinkFrequencyHz == hz, "\(name)")
+        }
+    }
+
+    @Test func satellitesAnRTLSDRCannotReceiveGetNoCaptureRecipe() throws {
+        // X-band polar orbiters, geostationary relays and a dead Meteor are in CelesTrak's weather group but are not
+        // 137 MHz downlinks; the planner must not offer to capture them.
+        for name in ["SUOMI NPP", "NOAA 20", "NOAA 21", "GOES 18", "FENGYUN 3D", "ISS (ZARYA)", "METEOR-M2 2"] {
+            var satellite = try #require(TLEParser.parseMany(iss).first)
+            satellite.name = name
+            let start = Date(timeIntervalSince1970: 1_800_000_000)
+            let pass = SatellitePass(satellite: satellite, start: start, peak: start.addingTimeInterval(300),
+                                     end: start.addingTimeInterval(600), maxElevationDegrees: 60,
+                                     peakAzimuthDegrees: 90, peakRangeKM: 900,
+                                     peakSubsatellite: GeoCoordinate(latitude: 0, longitude: 0))
+            #expect(SatelliteCaptureRecipe.make(for: pass) == nil, "\(name)")
+        }
+    }
+
+    @Test func noaaCaptureRecipeUsesAptDefaults() throws {
+        var satellite = try #require(TLEParser.parseMany(iss).first)
+        satellite.name = "NOAA 18"
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let pass = SatellitePass(satellite: satellite, start: start, peak: start.addingTimeInterval(400),
+                                 end: start.addingTimeInterval(800), maxElevationDegrees: 20,
+                                 peakAzimuthDegrees: 180, peakRangeKM: 1_400,
+                                 peakSubsatellite: GeoCoordinate(latitude: 12, longitude: -80))
+
+        let recipe = try #require(SatelliteCaptureRecipe.make(for: pass))
+
+        #expect(recipe.mode == .noaaAPT)
+        #expect(recipe.downlinkFrequencyHz == 137_912_500)
+        #expect(recipe.sampleRateHz == 48_000)
+    }
+
+    @Test func simulatedImageProductReflectsPassQuality() throws {
+        var satellite = try #require(TLEParser.parseMany(iss).first)
+        satellite.name = "METEOR-M 2-4"
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let lowPass = SatellitePass(satellite: satellite, start: start, peak: start.addingTimeInterval(400),
+                                    end: start.addingTimeInterval(800), maxElevationDegrees: 12,
+                                    peakAzimuthDegrees: 180, peakRangeKM: 1_900,
+                                    peakSubsatellite: GeoCoordinate(latitude: 12, longitude: -80))
+        let highPass = SatellitePass(satellite: satellite, start: start, peak: start.addingTimeInterval(400),
+                                     end: start.addingTimeInterval(800), maxElevationDegrees: 72,
+                                     peakAzimuthDegrees: 180, peakRangeKM: 620,
+                                     peakSubsatellite: GeoCoordinate(latitude: 12, longitude: -80))
+
+        let low = SatelliteImageProduct.simulated(from: try #require(.make(for: lowPass)), capturedAt: start)
+        let high = SatelliteImageProduct.simulated(from: try #require(.make(for: highPass)), capturedAt: start)
+
+        #expect(high.qualityScore > low.qualityScore)
+        #expect(high.decodedLineCount > low.decodedLineCount)
+        #expect(high.productName == "MSU-MR composite")
+        #expect(high.isSimulated)
+    }
 }

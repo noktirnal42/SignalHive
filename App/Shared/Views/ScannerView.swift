@@ -75,6 +75,14 @@ struct ScannerView: View {
                 model.pendingScanFrequency = nil
                 if running { await retune() }
             }
+            if model.pendingAddNetworkSource {
+                model.pendingAddNetworkSource = false
+                showingRTLTCPField = true
+            }
+            if case let .scannerTune(mhz, tuneMode)? = model.pendingPreset {
+                model.pendingPreset = nil
+                await listen(mhz: mhz, mode: tuneMode)
+            }
         }
         .onChange(of: model.pendingScanFrequency) { _, pending in
             guard let pending else { return }
@@ -702,6 +710,18 @@ struct ScannerView: View {
                        bytesPerRow: buffer.width * 4, space: space,
                        bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
                        provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+    }
+
+    /// The Workshop's "Start listening": tune, then start on the first real receiver (never the test generator).
+    private func listen(mhz: Double, mode tuneMode: DemodMode) async {
+        mode = tuneMode
+        frequencyMHz = max(0.1, mhz)
+        frequencyText = Self.format(frequencyMHz)
+        guard let device = manager.availableDevices.first(where: { !($0 is TestSignalDevice) }) else {
+            statusMessage = "No receiver found. Plug in an RTL-SDR or add a network source."
+            return
+        }
+        await useDevice(device)
     }
 
     private func useDevice(_ device: any SDRDevice) async {

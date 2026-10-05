@@ -32,6 +32,11 @@ struct SearchView: View {
                             NavigationLink(value: hit.uid) { row(hit) }
                         }
                     }
+                } else if query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Section {
+                        emptySearchState
+                    }
+                    .listRowBackground(Color.clear)
                 } else if !query.trimmingCharacters(in: .whitespaces).isEmpty {
                     Text("No matches").foregroundStyle(.secondary)
                 }
@@ -40,6 +45,37 @@ struct SearchView: View {
             .navigationDestination(for: Int64.self) { uid in FrequencyDetailView(uid: uid) }
             .task(id: query) { await runSearch() }
         }
+    }
+
+    private var emptySearchState: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 12) {
+                Image(systemName: "magnifyingglass.circle")
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundStyle(.cyan)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Search FCC packs")
+                        .font(.title3.weight(.semibold))
+                    Text("Use a call sign, licensee name, county, service, or frequency.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            HStack(spacing: 8) {
+                ForEach(exampleQueries, id: \.self) { example in
+                    Button(example) {
+                        query = example
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+        }
+        .padding(.vertical, 18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var exampleQueries: [String] {
+        ["155.475", "NOAA", "Sheriff", "Aviation"]
     }
 
     private func row(_ hit: SearchHit) -> some View {

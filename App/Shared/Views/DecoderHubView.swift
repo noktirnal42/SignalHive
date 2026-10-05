@@ -2,9 +2,11 @@ import SwiftUI
 import SignalHiveCore
 
 struct DecoderHubView: View {
+    @Environment(AppModel.self) private var model
     @State private var selectedDecoder: DecoderTool = .ais
     @State private var inputText = DecoderTool.ais.sampleInput
     @State private var results: [DecoderWorkbenchMessage] = DecoderWorkbench.decodeAISNMEA(DecoderTool.ais.sampleInput)
+    @State private var liveSession = DecoderHubLiveSession()
 
     var body: some View {
         ZStack {
@@ -18,7 +20,15 @@ struct DecoderHubView: View {
             }
         }
         .navigationTitle("Decoder Hub")
+        .task {
+            // The Workshop opens a specific decoder by id ("acars", "ais", "morse").
+            if case let .decoder(id)? = model.pendingPreset, let tool = DecoderTool(rawValue: id) {
+                model.pendingPreset = nil
+                selectedDecoder = tool
+            }
+        }
         .onChange(of: selectedDecoder) { _, decoder in
+            liveSession.stop(clearOutputs: true)
             inputText = decoder.sampleInput
             decode()
         }
@@ -30,7 +40,7 @@ struct DecoderHubView: View {
                 Text("Decoder Hub")
                     .font(.system(.title2, design: .rounded).weight(.bold))
                     .foregroundStyle(.white)
-                Text("Manual decode tools now, live SDR sessions next.")
+                Text("Manual tools plus DecoderSession-backed demo IQ for Morse and ACARS.")
                     .font(.callout)
                     .foregroundStyle(.white.opacity(0.62))
                     .fixedSize(horizontal: false, vertical: true)
@@ -47,6 +57,8 @@ struct DecoderHubView: View {
 
                 HiveInstrumentPanel("Live session path", status: "next") {
                     VStack(alignment: .leading, spacing: 10) {
+                        decoderStatus("Morse / CW", state: "Demo IQ live", tint: HiveInk.mint)
+                        decoderStatus("ACARS", state: "Demo IQ live", tint: HiveInk.mint)
                         decoderStatus("ADS-B / UAT", state: "Live in Air Map", tint: HiveInk.mint)
                         decoderStatus("ISM sensors", state: "SwiftRTLSDR ready", tint: HiveInk.amber)
                         decoderStatus("RS41 radiosondes", state: "SwiftRTLSDR ready", tint: HiveInk.amber)
@@ -108,11 +120,111 @@ struct DecoderHubView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 hero
+                liveSessionPanel
                 inputPanel
                 resultsPanel
             }
             .padding(24)
             .frame(maxWidth: 1080, alignment: .leading)
+        }
+    }
+
+    private var liveSessionPanel: some View {
+        HiveInstrumentPanel("Live Session", status: liveSession.statusBadge(for: selectedDecoder)) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(liveSession.title(for: selectedDecoder))
+                            .font(.system(.headline, design: .rounded).weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.92))
+                        Text(liveSession.subtitle(for: selectedDecoder))
+                            .font(.callout)
+                            .foregroundStyle(.white.opacity(0.6))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    liveSessionControl
+                }
+
+                if let snapshot = liveSession.snapshot {
+                    sessionStats(snapshot)
+                }
+
+                if let error = liveSession.lastError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(HiveInk.amber)
+                }
+
+                if !liveSession.messages.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Session Messages")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.white.opacity(0.62))
+                        ForEach(liveSession.messages) { message in
+                            messageCard(message)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var liveSessionControl: some View {
+        if selectedDecoder.supportsDemoSession {
+            Button {
+                if liveSession.isRunning {
+                    liveSession.stop()
+                } else {
+                    liveSession.start(decoder: selectedDecoder, inputText: inputText)
+                }
+            } label: {
+                Label(liveSession.buttonTitle, systemImage: liveSession.buttonSymbol)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(liveSession.isRunning ? HiveInk.amber : HiveInk.cyan)
+            .accessibilityLabel(liveSession.isRunning ? "Stop decoder session" : "Start decoder demo session")
+        } else {
+            Label("No hub session yet", systemImage: "point.3.connected.trianglepath.dotted")
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.46))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.08), lineWidth: 1)
+                }
+                .accessibilityLabel("No Decoder Hub live session is available for \(selectedDecoder.title)")
+        }
+    }
+
+    private func sessionStats(_ snapshot: DecoderSessionSnapshot) -> some View {
+        HStack(spacing: 8) {
+            statPill("State", snapshot.state.rawValue)
+            statPill("Blocks", "\(snapshot.totalBlocks)")
+            statPill("Samples", snapshot.totalSamples.formatted())
+            statPill("Messages", "\(snapshot.totalMessageCount)")
+            statPill("Rate", String(format: "%.1f/min", snapshot.messagesPerMinute))
+        }
+    }
+
+    private func statPill(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label.uppercased())
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(.white.opacity(0.42))
+            Text(value)
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.white.opacity(0.78))
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.white.opacity(0.07), lineWidth: 1)
         }
     }
 
@@ -434,8 +546,8 @@ private enum DecoderTool: String, CaseIterable, Identifiable {
     var inputHelp: String {
         switch self {
         case .ais: return "One NMEA sentence per line"
-        case .morse: return "Use / between words"
-        case .acars: return "One decoded message per line"
+        case .morse: return "Use / between words; demo IQ replays decoded text through DecoderSession"
+        case .acars: return "One decoded message per line; demo IQ wraps it as a clean ACARS frame"
         default: return "Live RTL-SDR session wiring comes next"
         }
     }
@@ -450,6 +562,51 @@ private enum DecoderTool: String, CaseIterable, Identifiable {
             return "Q0 N123AB DAL123 POS 37.62 -122.38"
         default:
             return pendingSummary
+        }
+    }
+
+    var supportsDemoSession: Bool {
+        switch self {
+        case .morse, .acars: return true
+        default: return false
+        }
+    }
+
+    var demoFrequencyHz: Double {
+        switch self {
+        case .morse: return 7_030_000
+        case .acars: return 131_550_000
+        default: return 0
+        }
+    }
+
+    func makeDecoder() -> (any SignalDecoder)? {
+        switch self {
+        case .morse: return MorseDecoder()
+        case .acars: return ACARSDecoder()
+        default: return nil
+        }
+    }
+
+    func demoIQ(from input: String, sampleRate: Double) -> [ComplexFloat] {
+        switch self {
+        case .morse:
+            let message = DecoderWorkbench.decodeMorsePatterns(input)
+            let text = message.status == .decoded ? message.summary : input
+            let firstWord = text
+                .split(whereSeparator: \.isWhitespace)
+                .map(String.init)
+                .first ?? "TEST"
+            return DecoderDemoSignal.morseIQ(text: firstWord, sampleRate: sampleRate, wordsPerMinute: 22)
+        case .acars:
+            let text = input
+                .split(whereSeparator: \.isNewline)
+                .map(String.init)
+                .first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                ?? sampleInput
+            return DecoderDemoSignal.acarsIQ(text: text, sampleRate: sampleRate)
+        default:
+            return []
         }
     }
 
@@ -471,6 +628,205 @@ private enum DecoderTool: String, CaseIterable, Identifiable {
             return "Weak-signal message parsing exists, but there is no live audio/IQ timing path into it yet."
         default:
             return sampleInput
+        }
+    }
+}
+
+@MainActor
+@Observable
+private final class DecoderHubLiveSession {
+    var isRunning = false
+    var statusText = "Idle"
+    var snapshot: DecoderSessionSnapshot?
+    var messages: [DecoderWorkbenchMessage] = []
+    var lastError: String?
+
+    @ObservationIgnored private var task: Task<Void, Never>?
+    @ObservationIgnored private var currentSession: DecoderSession?
+
+    var buttonTitle: String {
+        if isRunning { return "Stop" }
+        if statusText == "Demo complete" { return "Replay demo IQ" }
+        return "Start demo IQ"
+    }
+
+    var buttonSymbol: String {
+        isRunning ? "stop.fill" : "dot.radiowaves.forward"
+    }
+
+    func title(for decoder: DecoderTool) -> String {
+        decoder.supportsDemoSession ? "DecoderSession demo IQ" : "Live capture not exposed here yet"
+    }
+
+    func subtitle(for decoder: DecoderTool) -> String {
+        switch decoder {
+        case .morse:
+            return "Generates clean CW IQ from the text input, feeds it into MorseDecoder through DecoderSession, and reports live stats."
+        case .acars:
+            return "Wraps the first ACARS text line as a clean frame, generates FM/MSK-like IQ, and decodes it through DecoderSession."
+        case .adsb:
+            return "1090 MHz ADS-B already runs from Air Map and Air Data; shared hub tables are still pending."
+        case .uat:
+            return "978 MHz UAT/FIS-B already runs from Air Map and Air Data; shared hub tables are still pending."
+        default:
+            return "Core or driver pieces exist, but source selection, gain, capture presets and over-the-air QA are still required."
+        }
+    }
+
+    func statusBadge(for decoder: DecoderTool) -> String {
+        if isRunning { return "running" }
+        if !decoder.supportsDemoSession { return "not wired" }
+        return statusText.lowercased()
+    }
+
+    func start(decoder tool: DecoderTool, inputText: String) {
+        stop()
+        guard tool.supportsDemoSession, let signalDecoder = tool.makeDecoder() else {
+            statusText = "Not wired"
+            lastError = "This decoder does not have an app-owned live session control yet."
+            return
+        }
+
+        let sampleRate = 48_000.0
+        let iq = tool.demoIQ(from: inputText, sampleRate: sampleRate)
+        guard !iq.isEmpty else {
+            statusText = "No signal"
+            lastError = "No demo IQ could be generated for this decoder."
+            return
+        }
+
+        let session = DecoderSession(
+            decoder: signalDecoder,
+            config: DecoderSessionConfig(
+                centerFrequencyHz: tool.demoFrequencyHz,
+                sampleRateHz: sampleRate,
+                gainDB: 0,
+                channelBandwidthHz: signalDecoder.requiredBandwidth,
+                maxRetainedMessages: 50
+            )
+        )
+        currentSession = session
+        isRunning = true
+        statusText = "Running"
+        lastError = nil
+        messages.removeAll(keepingCapacity: true)
+        snapshot = nil
+
+        task = Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                try await session.start()
+                self.snapshot = await session.snapshot
+                for start in stride(from: 0, to: iq.count, by: tool.demoChunkSize) {
+                    if Task.isCancelled { break }
+                    let end = min(iq.count, start + tool.demoChunkSize)
+                    let decoded = await session.ingest(samples: Array(iq[start..<end]))
+                    if !decoded.isEmpty {
+                        self.prepend(messages: decoded.map(Self.message(from:)))
+                    }
+                    self.snapshot = await session.snapshot
+                    try await Task.sleep(for: .milliseconds(70))
+                }
+                await session.stop()
+                self.snapshot = await session.snapshot
+                if !Task.isCancelled {
+                    self.isRunning = false
+                    self.statusText = self.messages.isEmpty ? "No messages" : "Demo complete"
+                }
+            } catch is CancellationError {
+                await session.stop()
+                self.snapshot = await session.snapshot
+                self.isRunning = false
+                self.statusText = "Stopped"
+            } catch {
+                await session.stop()
+                self.snapshot = await session.snapshot
+                self.isRunning = false
+                self.statusText = "Failed"
+                self.lastError = error.localizedDescription
+            }
+        }
+    }
+
+    func stop(clearOutputs: Bool = false) {
+        task?.cancel()
+        task = nil
+        let session = currentSession
+        currentSession = nil
+        if isRunning {
+            statusText = "Stopped"
+        }
+        isRunning = false
+        if let session {
+            Task { await session.stop() }
+        }
+        if clearOutputs {
+            statusText = "Idle"
+            snapshot = nil
+            messages.removeAll(keepingCapacity: true)
+            lastError = nil
+        }
+    }
+
+    private func prepend(messages newMessages: [DecoderWorkbenchMessage]) {
+        messages.insert(contentsOf: newMessages, at: 0)
+        if messages.count > 12 {
+            messages.removeLast(messages.count - 12)
+        }
+    }
+
+    private static func message(from decoded: DecodedMessage) -> DecoderWorkbenchMessage {
+        switch decoded.payload {
+        case .morse(let morse):
+            return DecoderWorkbenchMessage(
+                decoder: "Morse",
+                title: "CW message",
+                summary: morse.text,
+                details: [
+                    String(format: "%.0f WPM", morse.wordsPerMinute),
+                    String(format: "%.0f%% confidence", morse.confidence * 100)
+                ],
+                raw: "DecoderSession \(decoded.mode)",
+                status: .decoded
+            )
+        case .acars(let acars):
+            var details = ["Label \(acars.label)", acars.kind.displayName]
+            if let registration = acars.registration { details.append("Registration \(registration)") }
+            if let flight = acars.flightId { details.append("Flight \(flight)") }
+            return DecoderWorkbenchMessage(
+                decoder: "ACARS",
+                title: acars.flightId ?? acars.registration ?? "ACARS frame",
+                summary: acars.text,
+                details: details,
+                raw: "DecoderSession \(decoded.mode)",
+                status: .decoded
+            )
+        case .text(let text):
+            return DecoderWorkbenchMessage(
+                decoder: decoded.mode,
+                title: "Text",
+                summary: text,
+                raw: text,
+                status: .decoded
+            )
+        default:
+            return DecoderWorkbenchMessage(
+                decoder: decoded.mode,
+                title: "Decoded message",
+                summary: "Payload \(String(describing: decoded.payload))",
+                raw: "DecoderSession \(decoded.mode)",
+                status: .decoded
+            )
+        }
+    }
+}
+
+private extension DecoderTool {
+    var demoChunkSize: Int {
+        switch self {
+        case .acars: return 1_024
+        case .morse: return 4_096
+        default: return 2_048
         }
     }
 }

@@ -5,7 +5,10 @@ struct WorkshopView: View {
     @Environment(AppModel.self) private var model
     @ObservedObject private var manager = SDRDeviceManager.shared
 
-    var openPanel: (ContentView.Panel) -> Void
+    /// Open and launch actions go to `ContentView`; fixes and explanations are the sheets below.
+    var perform: (WorkshopAction) -> Void
+    @State private var sheet: WorkshopSheet?
+    @State private var showRoadmap = false
 
     private var installedPackCount: Int {
         model.states.filter {
@@ -21,10 +24,12 @@ struct WorkshopView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     hero
                     statusStrip
-                    actionGrid
+                    quickActions
                     ForEach(WorkshopSection.allCases, id: \.self) { section in
-                        capabilitySection(section.title, items: WorkshopCatalog.items(in: section, for: environment))
+                        let items = WorkshopCatalog.homeItems(for: environment).filter { $0.section == section }
+                        if !items.isEmpty { capabilitySection(section.title, items: items) }
                     }
+                    roadmap
                 }
                 .padding(24)
                 .frame(maxWidth: 1180, alignment: .leading)
@@ -32,6 +37,7 @@ struct WorkshopView: View {
         }
         .navigationTitle("Workshop")
         .task { await manager.scan() }
+        .sheet(item: $sheet) { sheet in sheetContent(sheet) }
     }
 
     private var hero: some View {
@@ -50,15 +56,15 @@ struct WorkshopView: View {
                         .font(.system(.title3, design: .rounded))
                         .foregroundStyle(.white.opacity(0.68))
                         .fixedSize(horizontal: false, vertical: true)
-                    HiveSpectrumRibbon(samples: heroSamples, tint: HiveInk.cyan)
-                        .frame(height: 78)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
+                // Capabilities that work on this machine now, of the ones that are written.
+                let readiness = WorkshopCatalog.readiness(for: environment)
                 HiveSignalMeter(
-                    value: min(1, Double(installedPackCount + manager.availableDevices.count) / 6.0),
-                    label: "BENCH",
-                    unit: "\(installedPackCount) / \(manager.availableDevices.count)",
+                    value: readiness.implemented == 0 ? 0 : Double(readiness.ready) / Double(readiness.implemented),
+                    label: "READY",
+                    unit: "\(readiness.ready) / \(readiness.implemented)",
                     tint: HiveInk.amber
                 )
                 .frame(width: 260, height: 180)
@@ -69,8 +75,8 @@ struct WorkshopView: View {
     private var statusStrip: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 10)], spacing: 10) {
             metric("Data Packs", value: "\(installedPackCount)", icon: "externaldrive.fill", tint: HiveInk.amber)
-            metric("Sources", value: "\(manager.availableDevices.count)", icon: "antenna.radiowaves.left.and.right", tint: HiveInk.cyan)
-            metric("Demods", value: "\(DemodMode.allCases.count)", icon: "waveform", tint: HiveInk.mint)
+            metric("Sources", value: "\(realSources.count)", icon: "antenna.radiowaves.left.and.right", tint: HiveInk.cyan)
+            metric("Demods", value: "\(DemodMode.allCases.filter { $0 != .raw }.count)", icon: "waveform", tint: HiveInk.mint)
             metric("Decoders", value: "\(WorkshopCatalog.workingDecoders(for: environment))", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
         }
     }
@@ -91,31 +97,75 @@ struct WorkshopView: View {
         .frame(minHeight: 88)
     }
 
-    private var actionGrid: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 10)], spacing: 10) {
-            action("Browse FCC", icon: "list.bullet.indent", panel: .browse)
-            action("AI Lab", icon: "brain.head.profile", panel: .aiLab)
-            action("Search", icon: "magnifyingglass", panel: .search)
-            action("Trunked", icon: "antenna.radiowaves.left.and.right", panel: .trunked)
-            action("Scanner", icon: "waveform.path.ecg", panel: .scanner)
-            action("Decoder Hub", icon: "dot.radiowaves.forward", panel: .decoderHub)
-            action("Satellites", icon: "globe.americas", panel: .satellites)
-            action("Codeplug", icon: "memorychip", panel: .codeplug)
-            action("Air Map", icon: "airplane", panel: .airMap)
-            action("Air Data", icon: "doc.text.magnifyingglass", panel: .airData)
+    private var quickActions: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Quick actions")
+                .font(.system(.headline, design: .rounded).weight(.semibold))
+                .foregroundStyle(.white.opacity(0.9))
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 10)], spacing: 10) {
+                ForEach(WorkshopCatalog.quickActions(for: environment)) { quick in
+                    quickActionButton(quick)
+                }
+            }
         }
     }
 
-    private func action(_ title: String, icon: String, panel: ContentView.Panel) -> some View {
-        Button {
-            openPanel(panel)
+    private func quickActionButton(_ quick: WorkshopQuickAction) -> some View {
+        let tint = quick.needsSetup ? HiveInk.amber : HiveInk.cyan
+        return Button {
+            handle(quick.action, title: quick.title)
         } label: {
-            Label(title, systemImage: icon)
-                .font(.system(.callout, design: .rounded).weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 42)
+            HStack(spacing: 10) {
+                Image(systemName: quick.symbol)
+                    .font(.title3)
+                    .foregroundStyle(tint)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(quick.title)
+                        .font(.system(.callout, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.94))
+                    Text(quick.needsSetup ? "Needs setup · \(quick.action.label)" : quick.detail)
+                        .font(.caption)
+                        .foregroundStyle(quick.needsSetup ? HiveInk.amber : .white.opacity(0.56))
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 62, alignment: .leading)
+            .background(HiveInk.panel.opacity(0.78), in: RoundedRectangle(cornerRadius: 8))
+            .overlay { RoundedRectangle(cornerRadius: 8).stroke(tint.opacity(0.28), lineWidth: 1) }
         }
-        .buttonStyle(.bordered)
-        .tint(HiveInk.cyan)
+        .buttonStyle(.plain)
+        .accessibilityLabel(quick.needsSetup ? "\(quick.title). Needs setup: \(quick.action.label)" : quick.title)
+    }
+
+    private var roadmap: some View {
+        let items = WorkshopCatalog.roadmapItems(for: environment)
+        return DisclosureGroup(isExpanded: $showRoadmap) {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(items) { item in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: item.symbol)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 22)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.title)
+                                .font(.system(.callout, design: .rounded).weight(.semibold))
+                                .foregroundStyle(.white.opacity(0.8))
+                            Text(item.detail)
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.5))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+            .padding(.top, 8)
+        } label: {
+            Text("Roadmap: \(items.count) things not built yet")
+                .font(.system(.headline, design: .rounded).weight(.semibold))
+                .foregroundStyle(.white.opacity(0.9))
+        }
     }
 
     private func capabilitySection(_ title: String, items: [WorkshopItem]) -> some View {
@@ -133,7 +183,7 @@ struct WorkshopView: View {
 
     private func capabilityTile(_ item: WorkshopItem) -> some View {
         let color = Self.color(for: item.status)
-        let content = VStack(alignment: .leading, spacing: 10) {
+        return VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: item.symbol)
                     .foregroundStyle(color)
@@ -148,11 +198,6 @@ struct WorkshopView: View {
                         .foregroundStyle(color)
                 }
                 Spacer(minLength: 0)
-                if item.destination != nil {
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.35))
-                }
             }
             Text(item.detail)
                 .font(.caption)
@@ -164,25 +209,64 @@ struct WorkshopView: View {
                     .foregroundStyle(HiveInk.amber)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            HiveSpectrumRibbon(samples: Self.samples(for: item.id), tint: color)
-                .frame(height: 28)
+            Spacer(minLength: 0)
+            if let action = item.action, let label = item.actionLabel {
+                Button {
+                    handle(action, title: item.title)
+                } label: {
+                    Text(label).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(color)
+                .accessibilityLabel("\(label): \(item.title)")
+            }
         }
         .padding(12)
-        .frame(maxWidth: .infinity, minHeight: 144, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 196, alignment: .topLeading)
         .background(HiveInk.panel.opacity(0.78), in: RoundedRectangle(cornerRadius: 8))
         .overlay {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(color.opacity(0.22), lineWidth: 1)
         }
+    }
 
-        return Group {
-            if let destination = item.destination {
-                Button { openPanel(Self.panel(for: destination)) } label: { content }
-                    .buttonStyle(.plain)
-            } else {
-                content
-            }
+    private func handle(_ action: WorkshopAction, title: String) {
+        switch action {
+        case .open, .launch:
+            perform(action)
+        case .fix(.getFCCData):
+            sheet = .getData
+        case .fix(.addNetworkSource):
+            model.pendingAddNetworkSource = true
+            perform(.open(.scanner))
+        case .fix(.usbHelp):
+            sheet = .usbHelp
+        case let .fix(.installTool(name)):
+            sheet = .install(name)
+        case let .learn(text):
+            sheet = .learn(title: title, text: text)
         }
+    }
+
+    @ViewBuilder
+    private func sheetContent(_ sheet: WorkshopSheet) -> some View {
+        switch sheet {
+        case .getData:
+            GetDataSheet()
+        case .usbHelp:
+            WorkshopInfoSheet.usbHelp(
+                checkAgain: { Task { await manager.scan() } },
+                addNetworkSource: { handle(.fix(.addNetworkSource), title: "") })
+        case let .install(name):
+            WorkshopInfoSheet.install(name) { Task { await manager.scan() } }
+        case let .learn(title, text):
+            WorkshopInfoSheet(title: title, message: text)
+        }
+    }
+
+    /// Receivers that can deliver samples: the built-in test generator is not one.
+    private var realSources: [any SDRDevice] {
+        manager.availableDevices.filter { !($0 is TestSignalDevice) }
     }
 
     /// What this machine has, from what the app can see.
@@ -209,21 +293,6 @@ struct WorkshopView: View {
             usesDemoData: AppConfiguration.usesMockData)
     }
 
-    private static func panel(for destination: WorkshopDestination) -> ContentView.Panel {
-        switch destination {
-        case .browse: return .browse
-        case .search: return .search
-        case .scanner: return .scanner
-        case .decoderHub: return .decoderHub
-        case .trunked: return .trunked
-        case .codeplug: return .codeplug
-        case .aiLab: return .aiLab
-        case .satellites: return .satellites
-        case .airMap: return .airMap
-        case .airData: return .airData
-        }
-    }
-
     private static func color(for status: WorkshopStatus) -> Color {
         switch status {
         case .ready: return .green
@@ -231,21 +300,5 @@ struct WorkshopView: View {
         case .notConnected: return .yellow.opacity(0.8)
         case .planned: return .secondary
         }
-    }
-
-    /// The little ribbon on each tile: decoration, but the same every launch (`hashValue` is different every run).
-    private static func samples(for id: String) -> [Double] {
-        var hash: UInt32 = 2_166_136_261
-        for byte in id.utf8 { hash = (hash ^ UInt32(byte)) &* 16_777_619 }
-        let seed = Double(hash % 17) / 30.0
-        return [
-            0.12 + seed, 0.18, 0.22 + seed / 2, 0.15, 0.34,
-            0.20, 0.68 - seed / 2, 0.24, 0.17, 0.42 + seed,
-            0.23, 0.19, 0.78 - seed / 3, 0.28, 0.16
-        ].map { min(0.95, max(0.08, $0)) }
-    }
-
-    private var heroSamples: [Double] {
-        [0.16, 0.20, 0.18, 0.24, 0.42, 0.23, 0.19, 0.31, 0.82, 0.27, 0.21, 0.34, 0.53, 0.29, 0.24, 0.91, 0.46, 0.28, 0.22, 0.38, 0.74, 0.33, 0.26, 0.20]
     }
 }
