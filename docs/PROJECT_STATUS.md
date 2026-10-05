@@ -1,10 +1,10 @@
 # SignalHive — Project Status and Handoff
 
-Last updated: 2026-10-01 (after the DecoderSession pass). This is a living document: update the "Verified status" table whenever
+Last updated: 2026-10-04 (Workshop action model and rework, satellite capture recipes, AI provider layer, RF Coach and the Air Data briefing on it, upstream SwiftRTLSDR check). This is a living document: update the "Verified status" table whenever
 something is tested, and add to "Bugs found and fixed" whenever a root cause is found.
 
-**Start here:** the current state, in one line: the data, scanner, aviation and trunking screens work; **AI Lab now has
-one usable local RF Coach action**, while Workshop is still mostly an information screen. The findings, the build spec and
+**Start here:** the current state, in one line: the data, scanner, aviation and trunking screens work; **Workshop is now a
+launchpad** (every tile ends in a button that opens, starts, fixes or explains), and **AI Lab has one usable local RF Coach action**. The findings, the build spec and
 the suggested order are in [`UI_AUDIT_2026-09-30.md`](UI_AUDIT_2026-09-30.md); screenshots of every screen are in
 `docs/screenshots/2026-09-30/`. Working rules for any agent (Claude, Codex, cloud) are in the repo-root `CLAUDE.md`.
 
@@ -51,6 +51,9 @@ Codex sessions):
 | `beda3c3` | Codex (GPT) | Added Air Map map modes and Apple map controls, macOS location usage strings, and the Satellites pass planner fed by CelesTrak weather TLEs. |
 | 2026-10-01 | Codex (GPT) | Added Decoder Hub as a real app panel and Workshop destination. ACARS, AIS and Morse now have manual workbench decode paths with tests; live SDR sessions for ACARS/AIS/ISM/RS41/LRPT/paging remain the next decoder integration step. |
 | 2026-10-01 | Codex (GPT) | Added `DecoderSession` in `SignalHiveCore`: a tested actor that runs a `SignalDecoder` on direct or channelized IQ, retains messages, publishes an async message stream, and tracks live session statistics. |
+| 2026-10-01 | Codex (GPT) | Added `DecoderDemoSignal` and Decoder Hub live-session controls for Morse and ACARS demo IQ. The app now drives `DecoderSession` from the Decoder Hub and shows blocks/samples/messages/rate plus decoded rows; real RTL-SDR capture sessions remain owner QA / next integration work. |
+| 2026-10-04 | Codex (GPT) | Ran a visual walkthrough of the running macOS app with mock data. Fixed the Search screen's blank first-run state with a native empty state and example queries; tightened Decoder Hub live-session UI so unsupported decoders no longer show a misleading disabled demo-IQ button and decoder switches clear stale session output. ACARS demo IQ was visually rechecked after the patch. |
+| 2026-10-04 | Claude Code (local) | Picked up Codex's uncommitted Decoder Hub demo-IQ and satellite work and verified it (431 tests green, then 449). Fixed the satellite capture recipe before anything used it: Meteor-M2 4 is on 137.1 MHz and M2 3 on 137.9 (CelesTrak spells the names differently from the old code's match), and satellites an RTL-SDR cannot receive (NOAA 20/21, Suomi NPP, GOES, Fengyun, ISS, Meteor-M2 2) now get no recipe instead of defaulting to "Meteor LRPT". Built the **Workshop action model** (`WorkshopAction` / `WorkshopFix` / `WorkshopPreset`, quick actions, home grid vs roadmap) with tests, and reworked `WorkshopView` onto it: tile buttons, fix and explanation sheets, presets handed to Scanner and Decoder Hub, real readiness gauge, fake ribbons removed. Checked upstream SwiftRTLSDR: `main` is still `a6d9e67`; draft PR #2 head `c95bc33` equals the embedded copy. Then built the **AI provider layer** (`LanguageModelProvider`, `AIRouter`, rules + on-device + Private Cloud Compute providers) test-first, rebuilt the RF Coach sheet on it with a provider picker and provenance, and verified the on-device model live. Then built the **Air Data briefing**: `AviationBriefing` (a deterministic digest of traffic, emergencies, weather and hazard products, counted from the picture) plus an `AITask.briefAviation` the router answers from it, an "Air briefing" panel with a "Brief me" button in Air Data, and a reusable `AIAnswerSheet`. Verified live with the on-device model and the demo sky. |
 
 The Codex session (for reference): `~/.codex/sessions/2026/09/29/rollout-2026-09-29T17-17-28-01a0efac-*.jsonl`,
 thread "Fix and finish SignalHive". Its last two requests ("work on AI workshop", "app icon missing from the taskbar")
@@ -91,12 +94,12 @@ Data flow: FCC weekly archives -> `PackBuilder` (active licenses only, streamed)
 state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, atomic install) ->
 `PackBrowseDataSource` -> views. The app can also build packs itself ("Build from FCC on this Mac").
 
-## 4. Verified status (2026-09-29 and 2026-09-30, macOS 27.0.1 / Xcode 27.0 / Swift 6.4)
+## 4. Verified status (2026-09-29 to 2026-10-04, macOS 27.0.1 / Xcode 27.0 / Swift 6.4)
 
 | Area | Status | Evidence |
 |---|---|---|
-| Package tests | **2026-09-30: SignalHiveCore 413 tests in 67 suites pass** (hardware tests skipped). SwiftRTLSDR also passes locally: 99 kit + 31 scan + 16 server + 87 decoder tests | `swift test --skip RTLSDRHardwareTests` in `Packages/SignalHiveCore`; `swift test` in `Packages/SwiftRTLSDR` |
-| Workshop and AI Lab screens | **Workshop is partly functional. AI Lab now has one real action**: RF Coach explains a frequency/mode/RSSI context through local deterministic rules and labels the provider honestly. Workshop now links the Satellite planner and Decoder Hub, reflects embedded ISM/LRPT/RS41/rtl_tcp/EEPROM capabilities honestly, and no longer lists Meteor LRPT as missing demod/deframe work. Full audit and remaining build spec: `docs/UI_AUDIT_2026-09-30.md` | Driven in the running app; `AIWorkbenchModelsTests`; `WorkshopCatalogTests`; `DecoderWorkbenchTests`; app-bound screenshots after pressing Explain and opening Satellites |
+| Package tests | **2026-10-04: SignalHiveCore 493 tests in 75 suites pass (two opt-in live-model tests skipped)** (hardware tests skipped). SwiftRTLSDR passed on 2026-09-30 (99 kit + 31 scan + 16 server + 87 decoder tests); its source has not changed since, so it was not rerun | `swift test --skip RTLSDRHardwareTests` in `Packages/SignalHiveCore`; `swift test` in `Packages/SwiftRTLSDR` |
+| Workshop and AI Lab screens | **Workshop is a working launchpad (2026-10-04)**: every ready or needs-setup tile has a button (Open, Start listening, Open decoder, Get data, Add source, Connect a dongle, How to install) and every not-connected tile has Details; quick actions (NOAA weather, aircraft guard, Track aircraft, Get state data, Open codeplug); the hero gauge is `WorkshopCatalog.readiness`; planned items sit behind a collapsed Roadmap. Driven in the running app with mock data and a real dongle attached: Get state data opened the FCC sheet, ISM Details explained itself, ACARS Open decoder landed on ACARS, Add source landed on Scanner with the rtl_tcp field open, AI Lab Open navigated. **Not exercised:** the Start listening / Track aircraft launches (they start the dongle; see the Owner QA list). **AI Lab now has one real action**: RF Coach explains a frequency/mode/RSSI context through local deterministic rules and labels the provider honestly. Workshop now links the Satellite planner and Decoder Hub, reflects embedded ISM/LRPT/RS41/rtl_tcp/EEPROM capabilities honestly, and no longer lists Meteor LRPT as missing demod/deframe work. Full audit and remaining build spec: `docs/UI_AUDIT_2026-09-30.md` | Driven in the running app; `AIWorkbenchModelsTests`; `WorkshopCatalogTests`; `WorkshopActionTests`; `DecoderWorkbenchTests`; app-bound screenshots after pressing Explain and opening Satellites; 2026-10-04 screenshots of the reworked Workshop |
 | Trunked (OpenMHz browser) | **Pass 2026-09-30** after a crash fix: live systems list, a 6,488-talkgroup system opens, category chips and inline search work. Add-to-codeplug not exercised | Driven in the running app |
 | Air Map / Air Data | Air Map has Apple map controls, map modes (Dark, Map, Terrain, Satellite, Hybrid, Hybrid Terrain), traffic and POI toggles, and the macOS location usage key required for Location Services. Receivers not started in this pass (need an antenna); demo sky not reachable from the UI | Driven in the running app; `script/build_and_run.sh --verify` |
 | Dock icon | **Pass 2026-09-30**: painted icon in a rounded tile with the running indicator | Screenshot of the Dock |
@@ -109,9 +112,10 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
 | Scanner activity workflow | **Partial S3 built**: live passband activity detection now uses `RTLSDRScan.PeakDetector` with a local noise floor; UI shows activity hits, tune, hold/release, skip, lockout/unlock, save-to-codeplug, starter scan bank, decoder quick-tune presets, and a repaired source rail. True multi-hop scan-list sweeping and FCC identification are still next. | `swift test --skip RTLSDRHardwareTests`; macOS app build |
 | Channelizer (select one channel out of the capture) | **Built and tested (S2a)**: `ChannelDownconverter` (mix to baseband, two-stage filter, decimate to ~48 kHz), wired into `DSPPipeline` via `channelOffsetHz`; squelch measures the channel, not the band. Tests: >60 dB rejection of other signals incl. a 20 dB-stronger neighbouring channel, block-size independence, FM recovered next to a strong interferer, offset selects which of two signals is heard | 113 tests |
 | Scanner audio from the RTL-SDR (end to end) | **Still needs ear/over-the-air QA**: native USB streaming and DSP tests pass, but reception quality, antenna-dependent signals, and user-facing scan-list workflows still need field verification. | hardware/unit tests; no listening QA yet |
-| Decoders | ADS-B (1090) and UAT/FIS-B (978) are wired into Air Map / Air Data through their own receivers. **Decoder Hub exists now**: ACARS text, AIS NMEA and Morse dot/dash inputs can be decoded manually in-app. **DecoderSession exists in core** for direct/channelized IQ, async output, retained messages and live stats; app source pickers/start controls still need wiring. The embedded driver has ISM-sensor, Meteor LRPT and RS41 radiosonde decoders with `rtlsdr-tool` commands; Workshop exposes them as driver-ready but not-yet-connected app capabilities. **None has received a live signal** (driver's own `docs/DECODERS.md`) | Unit tests with synthetic/generated messages; `DecoderWorkbenchTests`; `DecoderSessionTests`; `WorkshopCatalogTests` |
-| Satellite planning | **First native pass planner built**: the Satellites screen fetches current weather-satellite TLEs from CelesTrak, uses a manual/Air Map/device antenna location, and computes upcoming passes with peak elevation, azimuth and range. It is a scheduling foundation, not full SatDump capture yet | Running app visual QA: 9 weather elements fetched and 39 passes calculated for a manual test observer; `SatellitePassPlannerTests` |
-| AI Lab: Foundation Models / PCC probes | Probes run and both report available on the owner's Mac. The first usable feature is **RF Coach via SignalHive Rules**, not Foundation/PCC. MLX model downloads work (tested; not exercised live in the UI, they are multi-GB). No MLX inference runtime. Core ML classifier package does not exist | Driven in the running app; `AIWorkbenchModelsTests`; `ModelDownloadTests` |
+| Search | **First-pass UI fix 2026-10-04**: Search no longer opens as a blank black page when no query is entered. It now has a native empty state with example queries. Recents, semantic search and FTS-backed ranking are still open. | Running app visual QA with mock data; screenshots in `/tmp/signalhive-visual/09-search-fixed.png` |
+| Decoders | ADS-B (1090) and UAT/FIS-B (978) are wired into Air Map / Air Data through their own receivers. **Decoder Hub exists now**: ACARS text, AIS NMEA and Morse dot/dash inputs can be decoded manually in-app. **DecoderSession exists in core** for direct/channelized IQ, async output, retained messages and live stats; the Decoder Hub now has Start/Stop demo-IQ controls for Morse and ACARS that run through `DecoderSession` and display live stats/messages. Unsupported decoders now show a quiet unavailable live-session state instead of a misleading disabled start button, and switching decoders clears stale session output. Real app source pickers and RTL-SDR capture for ACARS/AIS/ISM/RS41/LRPT/paging are still pending. The embedded driver has ISM-sensor, Meteor LRPT and RS41 radiosonde decoders with `rtlsdr-tool` commands; Workshop exposes them as driver-ready but not-yet-connected app capabilities. **None has received a live over-the-air signal** (driver's own `docs/DECODERS.md`) | Unit tests with synthetic/generated messages; `DecoderWorkbenchTests`; `DecoderSessionTests`; `WorkshopCatalogTests`; `script/build_and_run.sh --verify`; `script/check_sf_symbols.sh`; running app visual QA with ACARS demo IQ |
+| Satellite planning | **First native pass planner built**: the Satellites screen fetches current weather-satellite TLEs from CelesTrak, uses a manual/Air Map/device antenna location, and computes upcoming passes with peak elevation, azimuth and range. It is a scheduling foundation, not full SatDump capture yet. `SatelliteCaptureRecipe` (core, tested, **not shown in the UI yet**) turns a pass into a capture plan (padded window, downlink, sample rate) and returns nothing for satellites an RTL-SDR cannot receive. `SatelliteImageProduct.simulated` exists in the same file: it is invented data and must never be shown as a real product | Running app visual QA: 9 weather elements fetched and 39 passes calculated for a manual test observer; `SatellitePassPlannerTests` |
+| AI Lab: providers, router, RF Coach | **2026-10-04: `AIRouter` built** (`AI/AIRouting.swift`, `AI/FoundationModelsProviders.swift`; `AIRouterTests`, 21 tests through fake providers). Providers: `RulesProvider` (always on, deterministic), `FoundationOnDeviceProvider`, `PrivateCloudProvider`. Automatic order is on-device then rules; **Private Cloud Compute is never in the automatic order**, only when the user picks it and presses "Ask Private Cloud Compute" (a test fails if it is added to the order). The rules answer is computed first and handed to every model as facts it must not contradict, and it is shown under the model's answer. Each answer says who answered, from which inputs, why any provider was skipped or failed, and how long it took. The RF Coach sheet (Browse detail, Scanner, Trunked, AI Lab) runs on the router with a provider picker. **Verified live on the owner's Mac:** the on-device model streamed an answer in AI Lab (3.3 s) consistent with the rules facts, Rules only answered instantly, Private Cloud showed its consent panel. **Not exercised:** an actual Private Cloud Compute request (it sends the context off the Mac), and the MLX provider (no runtime). Models are prompted with plain text and a three-line reply format, not `@Generable`, because the package cannot use the macro. Core ML classifier package does not exist; MLX model downloads work (tested; multi-GB, not exercised live in the UI), no MLX inference runtime | Driven in the running app; `AIRouterTests`; `AIWorkbenchModelsTests`; `ModelDownloadTests`; opt-in `SIGNALHIVE_LIVE_AI=1 swift test --filter FoundationModelsLiveTests` |
 | App icon asset | The asset art is an opaque full-bleed square; the Dock tile is drawn onto the macOS icon grid at runtime. Redraw the asset (or use an Icon Composer `.icon`) | Screenshot of the Dock; `sips` shows no alpha |
 | SF Symbol names | **Pass 2026-09-30**: 112 distinct names, 0 invalid, after fixing 5 that rendered blank | `script/check_sf_symbols.sh` |
 | Radio programming (Baofeng, Uniden, CHIRP CSV) | Core code and CSV round-trip tests; not tested against hardware | |
@@ -159,6 +163,8 @@ state + `manifest.json` -> `PackStore` (download, SHA-256 verify, decompress, at
     entitlement files, regenerating the project, rebuilding, and verifying the signed app contains no sandbox
     entitlement.
 
+11. **Satellite capture recipe guessed wrong** (found 2026-10-04 in Codex's uncommitted `SatelliteAutomation.swift`, before any UI used it). The Meteor-M2 4 frequency matched the string "N2-4", which CelesTrak's "METEOR-M2 4" does not contain, so it fell through to 137.9 MHz; and `bestGuess` defaulted every unknown satellite (Suomi NPP, GOES, NOAA 20, the ISS) to "Meteor LRPT". Now `SatelliteCaptureMode.downlink(for:)` matches on letters and digits only and returns nil for anything an RTL-SDR cannot receive; `make(for:)` returns an optional. Covered by `SatellitePassPlannerTests`.
+
 5c. **Scanner spectrum wrong** (owner-visible): `FFTProcessor` ran a complex FFT but kept only the first N/2 bins, so
    everything below the centre frequency was invisible and the centre sat at the edge; `FrequencyFinder` (which
    assumed the correct layout) therefore reported wrong frequencies; the waterfall state was never fed. Fixed with
@@ -175,15 +181,20 @@ channels); trunking does not work. **2026-09-30 audit result** (`docs/UI_AUDIT_2
 were information screens, Decoder Hub did not exist yet, and Trunked had a crash (fixed). The audit holds the
 per-screen verdicts, 12 cross-cutting UI findings and the build spec. The remaining gaps, in short:
 
-- **Workshop tiles are still not a full action system**, but the quick actions now include Satellites and the catalog no
-  longer lags the embedded driver for ISM, Meteor LRPT, RS41 radiosondes, rtl_tcp or EEPROM. Remaining gap: `WorkshopAction`
-  fixes/presets and truthful live metrics beyond navigation.
-- **AI Lab has only one invocable feature** so far: RF Coach with deterministic rules. Browse/Scanner/Trunked explain
-  sheets, Foundation/PCC provider routing, MLX inference runtime, Core ML classifier assets and session logs remain open.
+- **Workshop** now has the action model (done 2026-10-04). Remaining gaps: a **Recent** row (last tuned frequency, last
+  codeplug, last system; nothing records these yet), live per-tile metrics beyond readiness, and the Air Map demo-sky
+  decision (U6).
+- **AI Lab has one invocable tool**: RF Coach (Explain), now routed through `AIRouter` (rules, on-device model, Private
+  Cloud Compute on request). The Explain sheet is wired into Browse detail, Scanner, Trunked and AI Lab. Still open:
+  Codeplug review, session log and report, an MLX provider and inference runtime, Core ML classifier assets, the
+  rules-based signal ID, semantic FCC search. The **Air Data briefing is done** (2026-10-04): `AviationBriefing` plus
+  `AITask.briefAviation`. `AITask` has `explainSignal` and `briefAviation`; add cases as
+  those tools are built.
 - **Decoder Hub is started, not finished**: ACARS text, AIS NMEA and Morse pattern decoding work manually in-app, and
-  `DecoderSession` now provides the tested direct/channelized-IQ session core. App controls for live ACARS, AIS, ISM,
-  radiosondes, LRPT, paging and weak-signal sessions are still open. Satellites can schedule passes but cannot start
-  an LRPT capture session yet.
+  `DecoderSession` now provides the tested direct/channelized-IQ session core. The hub can start/stop Morse and ACARS
+  demo-IQ sessions through `DecoderSession`; real RTL-SDR source selection/capture for ACARS, AIS, ISM, radiosondes,
+  LRPT, paging and weak-signal sessions is still open. Satellites can schedule passes but cannot start an LRPT capture
+  session yet.
 - Air Map's demo sky has no UI entry (button removed in `80cdfc6`) while the Workshop text still promises it.
 - The USB error text in the upstream driver always blames a missing sandbox entitlement for `0xe00002e2`.
 - Browse shows five columns at the default window and two "Select a County" placeholders: too cramped. It needs a
@@ -215,13 +226,14 @@ Radio workshop feature map and research notes: `docs/superpowers/specs/2026-09-2
 **Next (owner priority, 2026-09-30): make Workshop and AI Lab function.** The ordered build list, with file names,
 APIs to use and acceptance criteria, is section 7 of `docs/UI_AUDIT_2026-09-30.md`:
 
-1. Workshop action model (`WorkshopAction`), catalog fixes, quick actions, real readiness gauge.
-2. AI provider layer (`LanguageModelProvider`, `AIRouter`, rules + Foundation Models) and the Explain tool wired into
-   Browse detail, Scanner and Trunked; the AI Lab rules-only RF Coach seed is done, then Codeplug review and the Air
-   Data briefing.
-3. **Decoder Hub live sessions** (`DecoderSession` core is done; ACARS/AIS/Morse manual workbench is started, next is
-   app source/start controls for Morse and ACARS, then AIS, ISM, radiosondes, LRPT). Satellites now has pass scheduling
-   and should hand passes into LRPT capture when that session model is surfaced in the app.
+1. ~~Workshop action model (`WorkshopAction`), catalog fixes, quick actions, real readiness gauge.~~ **Done 2026-10-04** (Recent row still open).
+2. ~~AI provider layer (`LanguageModelProvider`, `AIRouter`, rules + Foundation Models)~~ **Done 2026-10-04**, and the Explain tool wired into
+   Browse detail, Scanner and Trunked; the AI Lab rules-only RF Coach seed is done, the Air Data briefing is done
+   (2026-10-04), then Codeplug review.
+3. **Decoder Hub live sessions** (`DecoderSession` core is done; ACARS/AIS/Morse manual workbench is started; Morse
+   and ACARS now have app start/stop controls for demo IQ through `DecoderSession`, next is real RTL-SDR source
+   selection/capture, then AIS, ISM, radiosondes, LRPT). Satellites now has pass scheduling and should hand passes into
+   LRPT capture when that session model is surfaced in the app.
 4. One design language and grouped sidebar; the layout fixes in the audit (U1 to U10).
 5. Session log and report; MLX inference runtime and local assistant; signal ID; semantic FCC search.
 
@@ -242,7 +254,7 @@ python3 script/register_app_sources.py              # register new App/ files in
 script/build_and_run.sh --verify                    # build and launch the macOS app
 script/build_and_run.sh --mock-data                 # launch with the built-in demo dataset
 script/build_and_run.sh --support-directory DIR     # keep app data isolated (also: -supportDirectory DIR)
-cd Packages/SignalHiveCore && swift test --skip RTLSDRHardwareTests   # 410 tests; hardware tests need the dongle free
+cd Packages/SignalHiveCore && swift test --skip RTLSDRHardwareTests   # 493 tests; hardware tests need the dongle free
 script/check_sf_symbols.sh                          # every SF Symbol name in the code resolves (macOS)
 script/launch_stability_test.sh 20                  # launch the built app N times and count crashes
 ```
@@ -250,7 +262,10 @@ script/launch_stability_test.sh 20                  # launch the built app N tim
 Only one program can hold the dongle: quit the app before running `RTLSDRHardwareTests`.
 
 Tips: builds on the external volume are slow; use `swift test --scratch-path <internal dir>` and
-`xcodebuild -derivedDataPath <internal dir>`. Crash reports land in `~/Library/Logs/DiagnosticReports/`.
+`xcodebuild -derivedDataPath <internal dir>`, **but check `df -h /System/Volumes/Data` first**: on 2026-10-04 the internal
+disk hit 100% (about 1.8 GB of that was build caches) and builds failed with "no space left on device". That session
+kept its caches on the external volume in `/Volumes/Artificial_Intelligence_Machine_Learning/claude-build-cache/`, which is
+safe to delete. Crash reports land in `~/Library/Logs/DiagnosticReports/`.
 Real-archive tests are opt-in via `SIGNALHIVE_REAL_ARCHIVES`.
 
 Owner's real Arizona pack (read-only reference):
@@ -261,9 +276,13 @@ Owner's real Arizona pack (read-only reference):
 Keep this list honest: add what a change needs checked, tick it when the owner confirms.
 
 - [ ] Scanner: Start on the RTL-SDR, hear a known NFM/AM signal, squelch, scan bank, hold/skip/lockout, save.
+- [ ] Workshop launches: "Listen: NOAA weather" (162.550 NFM) and "Listen: aircraft guard" (121.500 AM) open Scanner, tune, and start on the dongle (audio plays; keep the volume down); "Track aircraft" and the ADS-B / UAT tiles start the 1090 / 978 MHz receiver on the Air Map / Air Data.
+- [ ] Satellite downlinks: confirm 137.100 MHz (Meteor-M2 4), 137.900 MHz (Meteor-M2 3) and the NOAA APT frequencies against a current source before the capture recipe is shown in the UI; operators have moved them before, and NOAA 15/18 may no longer be transmitting.
 - [ ] Air Map / Air Data: 1090 MHz and 978 MHz receivers with an antenna; first position fix; FIS-B radar.
 - [ ] Satellites: refresh current TLEs from the owner's location, compare at least one pass time/elevation against a trusted tracker, then use a real antenna to capture a Meteor LRPT pass.
 - [ ] Foundation Models and Private Cloud Compute availability match what AI Lab reports.
+- [ ] Air Data "Brief me" with a real picture from the receivers (it was verified with the demo sky): the briefing's numbers match the facts underneath it.
+- [ ] RF Coach "Ask Private Cloud Compute": press it once on a harmless frequency; the answer should be labelled Private Cloud Compute, or the fallback note should say why not (quota, network, entitlement). The on-device path was verified on 2026-10-04.
 - [ ] MLX: download a 1B model, then (once the runtime exists) run it and check memory use on 18 GB.
 - [ ] Dock icon after a fresh install (not just a rebuild).
 - [ ] Trunked: add a talkgroup to a codeplug and see it in Codeplug.
