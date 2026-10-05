@@ -8,22 +8,52 @@ import SignalHiveCore
 /// how high it was, and NEXRAD weather radar. The text side of the same data lives in Air Data.
 struct AirMapView: View {
     @Environment(AviationModel.self) private var model
+    @Namespace private var mapScope
     @State private var camera: MapCameraPosition = .region(AirMapView.startRegion)
     @State private var styleChoice = MapStyleChoice.dark
+    @State private var showTraffic = false
+    @State private var showPointsOfInterest = false
+    @State private var showAppleMapControls = true
     @State private var showSidebar = true
     @State private var placedCamera = false
 
     enum MapStyleChoice: String, CaseIterable, Identifiable {
         case dark = "Dark"
-        case standard = "Standard"
+        case standard = "Map"
+        case terrain = "Terrain"
         case satellite = "Satellite"
+        case hybrid = "Hybrid"
+        case hybridTerrain = "Hybrid Terrain"
         var id: String { rawValue }
 
-        var style: MapStyle {
+        var symbol: String {
             switch self {
-            case .dark: return .standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .excludingAll, showsTraffic: false)
-            case .standard: return .standard(elevation: .flat, pointsOfInterest: .excludingAll, showsTraffic: false)
-            case .satellite: return .hybrid(elevation: .flat, pointsOfInterest: .excludingAll, showsTraffic: false)
+            case .dark: "moon.stars"
+            case .standard: "map"
+            case .terrain: "mountain.2"
+            case .satellite: "globe.americas"
+            case .hybrid: "map.fill"
+            case .hybridTerrain: "mountain.2.fill"
+            }
+        }
+
+        var supportsRoadOverlays: Bool { self != .satellite }
+
+        func style(showTraffic: Bool, showPointsOfInterest: Bool) -> MapStyle {
+            let pointsOfInterest: PointOfInterestCategories = showPointsOfInterest ? .all : .excludingAll
+            switch self {
+            case .dark:
+                return .standard(elevation: .flat, emphasis: .muted, pointsOfInterest: pointsOfInterest, showsTraffic: showTraffic)
+            case .standard:
+                return .standard(elevation: .flat, emphasis: .automatic, pointsOfInterest: pointsOfInterest, showsTraffic: showTraffic)
+            case .terrain:
+                return .standard(elevation: .realistic, emphasis: .automatic, pointsOfInterest: pointsOfInterest, showsTraffic: showTraffic)
+            case .satellite:
+                return .imagery(elevation: .realistic)
+            case .hybrid:
+                return .hybrid(elevation: .flat, pointsOfInterest: pointsOfInterest, showsTraffic: showTraffic)
+            case .hybridTerrain:
+                return .hybrid(elevation: .realistic, pointsOfInterest: pointsOfInterest, showsTraffic: showTraffic)
             }
         }
     }
@@ -46,10 +76,22 @@ struct AirMapView: View {
         .navigationTitle("Air Map")
         .toolbar {
             ToolbarItemGroup {
-                Picker("Map style", selection: $styleChoice) {
-                    ForEach(MapStyleChoice.allCases) { choice in Text(choice.rawValue).tag(choice) }
+                Menu {
+                    Picker("Map mode", selection: $styleChoice) {
+                        ForEach(MapStyleChoice.allCases) { choice in
+                            Label(choice.rawValue, systemImage: choice.symbol).tag(choice)
+                        }
+                    }
+                    Divider()
+                    Toggle("Show traffic", isOn: $showTraffic)
+                        .disabled(!styleChoice.supportsRoadOverlays)
+                    Toggle("Show points of interest", isOn: $showPointsOfInterest)
+                        .disabled(!styleChoice.supportsRoadOverlays)
+                    Divider()
+                    Toggle("Apple map controls", isOn: $showAppleMapControls)
+                } label: {
+                    Label(styleChoice.rawValue, systemImage: styleChoice.symbol)
                 }
-                .pickerStyle(.menu)
                 Button {
                     fitToTraffic()
                 } label: {
@@ -64,12 +106,16 @@ struct AirMapView: View {
         }
         .onAppear { placeCameraOnce() }
         .onChange(of: model.activeSources) { _, _ in fitToTraffic() }
+        .onChange(of: model.receiverLocation) { _, location in
+            guard let location, model.picture.aircraft.isEmpty else { return }
+            centerOn(location)
+        }
     }
 
     private var mapArea: some View {
         GeometryReader { geometry in
             MapReader { proxy in
-                Map(position: $camera, interactionModes: [.pan, .zoom]) {
+                Map(position: $camera, interactionModes: .all, scope: mapScope) {
                     if let receiver = model.receiverLocation {
                         Annotation("Antenna", coordinate: CLLocationCoordinate2D(latitude: receiver.latitude, longitude: receiver.longitude),
                                    anchor: .center) {
@@ -86,7 +132,18 @@ struct AirMapView: View {
                         }
                     }
                 }
-                .mapStyle(styleChoice.style)
+                .mapStyle(styleChoice.style(showTraffic: showTraffic, showPointsOfInterest: showPointsOfInterest))
+                .mapControls {
+                    if showAppleMapControls {
+                        MapUserLocationButton(scope: mapScope)
+                        MapCompass(scope: mapScope)
+                        MapPitchToggle(scope: mapScope)
+                        #if os(macOS)
+                        MapPitchSlider(scope: mapScope)
+                        #endif
+                        MapScaleView(scope: mapScope)
+                    }
+                }
                 .overlay {
                     TimelineView(.animation(minimumInterval: 1.0 / 12.0)) { timeline in
                         if let viewport = MapViewport(proxy: proxy, size: geometry.size) {
@@ -427,19 +484,12 @@ private struct AirEmptyState: View {
                 .foregroundStyle(HiveInk.cyan)
             Text("No aircraft yet")
                 .font(.system(.title3, design: .rounded).weight(.semibold))
-            Text("Listen for real traffic with an RTL-SDR (1090 MHz for airliners, 978 MHz for US general aviation and weather radar), or start the demo sky to see the map, icons, altitude colors, trails and radar working.")
+            Text("Listen for real traffic with an RTL-SDR. Use 1090 MHz for airliners and most aircraft; use 978 MHz for US general aviation, TIS-B and FIS-B weather. Set the antenna position first for faster ADS-B position fixes.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 380)
             HStack {
-                Button {
-                    Task { await model.start(.demo) }
-                } label: {
-                    Label("Start demo sky", systemImage: "sparkles")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(HiveInk.amber)
                 #if os(macOS)
                 Button {
                     Task { await model.start(.adsb1090) }
@@ -495,7 +545,7 @@ private struct SourcePanel: View {
     var body: some View {
         HiveInstrumentPanel("Sources", status: model.isRunning ? "running" : "idle") {
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(AviationModel.Source.allCases) { source in
+                ForEach(model.liveSources) { source in
                     sourceRow(source)
                 }
                 HStack {
@@ -517,10 +567,29 @@ private struct SourcePanel: View {
                             .onSubmit { applyPosition() }
                         Button("Set") { applyPosition() }
                     }
+                    HStack(spacing: 8) {
+                        Button {
+                            model.requestLocationServices()
+                        } label: {
+                            Label("Use device location", systemImage: "location")
+                        }
+                        .buttonStyle(.borderless)
+                        .font(.caption)
+                        if model.receiverLocation != nil {
+                            Button("Clear") {
+                                positionText = ""
+                                model.setReceiverLocation(nil)
+                            }
+                            .buttonStyle(.borderless)
+                            .font(.caption)
+                        }
+                    }
                     if positionError {
                         Text("Type latitude and longitude, like 40.1234, -100.5678.").font(.caption2).foregroundStyle(.red)
+                    } else if let error = model.locationError {
+                        Text(error).font(.caption2).foregroundStyle(.red)
                     } else if let location = model.receiverLocation {
-                        Text(AviationFormat.coordinate(location)).font(.caption2).foregroundStyle(.white.opacity(0.6))
+                        Text("\(model.locationStatus): \(AviationFormat.coordinate(location))").font(.caption2).foregroundStyle(.white.opacity(0.6))
                     } else {
                         Text("Unset: ranges are hidden, and a first 1090 MHz position needs an even and an odd report.")
                             .font(.caption2).foregroundStyle(.white.opacity(0.5))

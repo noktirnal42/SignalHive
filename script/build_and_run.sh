@@ -59,6 +59,11 @@ if [[ ! -d "$APP_PATH" ]]; then
 fi
 
 /usr/bin/pkill -x "$APP_NAME" >/dev/null 2>&1 || true
+# `open` right after the kill fails with LaunchServices -600 while the old process is still exiting.
+for _ in {1..50}; do
+  /usr/bin/pgrep -x "$APP_NAME" >/dev/null 2>&1 || break
+  sleep 0.1
+done
 
 ARGS=()
 if [[ -n "$SUPPORT_DIR" ]]; then
@@ -70,9 +75,9 @@ if [[ "$MOCK_DATA" -eq 1 ]]; then
 fi
 
 if [[ "${#ARGS[@]}" -gt 0 ]]; then
-  /usr/bin/open -n "$APP_PATH" --args "${ARGS[@]}"
+  /usr/bin/open "$APP_PATH" --args "${ARGS[@]}"
 else
-  /usr/bin/open -n "$APP_PATH"
+  /usr/bin/open "$APP_PATH"
 fi
 
 if [[ "$VERIFY" -eq 1 ]]; then

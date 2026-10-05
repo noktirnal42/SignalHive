@@ -7,36 +7,61 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		005512CC6DA1AEB4A8B054EA /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
 		08F503600DFFB11F25E306BD /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
 		0BDE5FE62A614B9D09D614C6 /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
+		0DA3EB9A496C39B77E557A38 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE596D83136B1E6E2479B3E /* SatelliteView.swift */; };
 		107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
+		1247E6FB1820F3CB65B9C48B /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F502D1C78A459A663F809EF2 /* ModelLibrary.swift */; };
 		14834E128153021E5B9F2770 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
+		176A92185F753F60101D0C40 /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
 		193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
+		1D04CEFFC046BB1FB22685C8 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
 		2418D316E1312AF0973268AB /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 37F3717AC3E08F594D491B33 /* SignalHiveCore */; };
 		271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */; };
 		2734480FB21FA65258BDAF8B /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
+		337F20F3FDE9408C4D61BA4E /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */; };
 		36812FF465737730CC288846 /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
 		4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
 		41C77ABBF61E8AFDF6A260AC /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
 		42B6525233723D525A63AEF8 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
 		4B3FC808ADC54710A9907B1A /* MenuBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6884868AC2561809B1890F7 /* MenuBarApp.swift */; };
+		5934FCA2E190AE36E0A4E581 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
+		5C53D8674F30077AA3463F8E /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
 		5EDD2F8E5D23959EEFEA0882 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
+		5F0941B0551AFFDA62C216E4 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
 		61AE2650F85D34ED71310B15 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
+		625D686397EAC1E5E2E3AF84 /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
+		64C34FCE1C063EBF6009AD34 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
 		66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
+		676F3C60577208C3AC4DAD0E /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F502D1C78A459A663F809EF2 /* ModelLibrary.swift */; };
 		67E62303ACEDDAD564B36707 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
 		68132DB5283FAB5FE025A120 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		6C87C4AC101A3F9F75CA1A9E /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
 		70777A10BEE917F32185C0D7 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
+		70A8C5C5385B3D901AA7A933 /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
 		7218F49A826B4803E7A7CBB4 /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
 		73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
+		768D7B39B9964719999CBCE8 /* ReceiverLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */; };
+		7AAA95935596DC0C14E7C32B /* ReceiverLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */; };
+		7B11AD7964D24A0A86A4672F /* ReceiverLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */; };
+		7BB50E45997B4B448891E932 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */; };
+		7D10EE04FD1B04E2409B5F73 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23ED14F82291986C7D32CA20 /* AirDataView.swift */; };
 		7F1CED761D15B67B09F5A795 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
+		7FD434A80FD6BB548DF1E11B /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23ED14F82291986C7D32CA20 /* AirDataView.swift */; };
 		80327CF9EC8C59FF02DDDBA1 /* IOSPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F281C2E5409DFA34E2603A8 /* IOSPlatform.swift */; };
 		84C954774CD570C1022B68F5 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
+		889A3D764037802240935017 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE596D83136B1E6E2479B3E /* SatelliteView.swift */; };
 		8B86E737807DED9676F18485 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
+		8FA4307472FE812D02CEF0FA /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
+		8FD05DF7E0E8BA9D16072DB7 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
 		9BCA6FE1F34D9C80DC77B3DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		9C3F508B1F2B7B0F5DB46667 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
+		9D71F72E33E6D0A3F7DFE01C /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
+		A376EC0225E7277F8261F167 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23ED14F82291986C7D32CA20 /* AirDataView.swift */; };
 		A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
 		A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
+		AB66B586AFC79C38B4E7E2E0 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
 		AE6D5B5A9C5E8F61BEB60CAF /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B7AE917721E446C187D13B0 /* SignalHiveCore */; };
 		BA60D6CE7801E55AC5E482E6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
 		C1D608EC968BC097430BC9E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
@@ -50,74 +75,70 @@
 		D1AD43EDC6BA8E39F6DAA82E /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
 		D25F44B6F0219F175958B25E /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
 		D44019462AF3B5702FD37246 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
+		D5CA1E196A592815FC8DCEA6 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE596D83136B1E6E2479B3E /* SatelliteView.swift */; };
 		D8FCE62A61494CC02D6CA682 /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = E37025EDFFB2492E594A896D /* SignalHiveCore */; };
 		D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
 		D96607A4DD6949BC6B193C59 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
+		DB294E3DED99AF40BFCEC54D /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F502D1C78A459A663F809EF2 /* ModelLibrary.swift */; };
 		E11480BC31DF356B5C63A99C /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
+		E34FCCA1229A6EC4ED204706 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
 		E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
+		E88231C1275B72A1DD82CE59 /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
+		E934D298BA9A3CAAA8FC6892 /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
+		EDE975B67368FB7F6A91BFDD /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
 		F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
+		F6C3DE17BCE5E7A2E7498394 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */; };
 		F6FB10A584252396376E20CF /* MacPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE53DC740AEEAF549EF95771 /* MacPlatform.swift */; };
 		F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
+		FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
 		FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
-		1B37A98EF15EE1223885E9BB /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2BC0CA485DB24AB480B634 /* AirMapView.swift */; };
-		2E90BBE82E96AB256AB379EE /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA91A5667F7441B4B8B0330 /* AviationModel.swift */; };
-		3C0EE6A59049B87691DD4216 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
-		3E015259BE7896D15ADBEB43 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2BC0CA485DB24AB480B634 /* AirMapView.swift */; };
-		4CD015D69D4CC2B5B0ECB13F /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
-		6092FCE97E98B0A5016AE03D /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
-		6626B1459BA96E72DAA86410 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2BC0CA485DB24AB480B634 /* AirMapView.swift */; };
-		727363CBE0C66A5F71007BFB /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA91A5667F7441B4B8B0330 /* AviationModel.swift */; };
-		74F59E9D4EF82AF6653A0CFE /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA91A5667F7441B4B8B0330 /* AviationModel.swift */; };
-		7B3D33B30519F190831AB3E8 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A956D185F00F09375E48A2B1 /* AirDataView.swift */; };
-		CD43E56250E2C6A8D6056817 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
-		D56493188259778AD195197E /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */; };
-		3330E7965A9684316200F118 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2698DF12554B4121EB1136CE /* GetDataSheet.swift */; };
-		5E28B5B830FD184E3F9937A4 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2698DF12554B4121EB1136CE /* GetDataSheet.swift */; };
-		A4D3EEEF421D20D4A12B5A0A /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2698DF12554B4121EB1136CE /* GetDataSheet.swift */; };
-		17D83261857FEA79B25C8990 /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */; };
-		1E019CAB3446467B7410EB4C /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */; };
-		E1E6F6C594878DF70DC12C93 /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrunkedView.swift; sourceTree = "<group>"; };
+		0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppDelegate.swift; sourceTree = "<group>"; };
 		0F281C2E5409DFA34E2603A8 /* IOSPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSPlatform.swift; sourceTree = "<group>"; };
 		113EAD5193D1C4434B5297AB /* SignalHive-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SignalHive-iOS.entitlements"; sourceTree = "<group>"; };
 		1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		1D015468B43A518A1B8917F1 /* AviationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationModel.swift; sourceTree = "<group>"; };
+		23ED14F82291986C7D32CA20 /* AirDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDataView.swift; sourceTree = "<group>"; };
 		27373345F1C7E36527757CDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverLocationService.swift; sourceTree = "<group>"; };
+		38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDataSheet.swift; sourceTree = "<group>"; };
+		40604D31962E11C73A08FD7C /* AirMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMapView.swift; sourceTree = "<group>"; };
 		55F95B8F4A3ED4CB3F199908 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5FFDD44E7F1F8E48B6AAC698 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6281A33AE2902FAF37439A94 /* CodeplugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugView.swift; sourceTree = "<group>"; };
 		62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		675AB467A347E9E1FBF670C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		69AFB203A996B9F769878976 /* WorkshopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopView.swift; sourceTree = "<group>"; };
 		6ABF61028C20628FB5F4E497 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveVisualSystem.swift; sourceTree = "<group>"; };
+		780305D8A47251654E026F16 /* AircraftIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftIconRenderer.swift; sourceTree = "<group>"; };
 		8A7BC3463759467EC305C361 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8D5CFBBD77118015D765AA70 /* SignalHive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignalHive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveIntents.swift; sourceTree = "<group>"; };
 		A63FDAFF97C413E63C669034 /* SignalHiveMenuBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignalHiveMenuBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA703C607A512C302E7AD1BD /* SignalHive-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "SignalHive-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAE596D83136B1E6E2479B3E /* SatelliteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteView.swift; sourceTree = "<group>"; };
 		AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequencyDetailView.swift; sourceTree = "<group>"; };
+		B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoderHubView.swift; sourceTree = "<group>"; };
 		B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		B4BE49843C1B12AB457B4085 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
 		D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILabView.swift; sourceTree = "<group>"; };
 		E5579AEB9B0CB0704D1AC011 /* SignalHiveCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SignalHiveCore; path = Packages/SignalHiveCore; sourceTree = SOURCE_ROOT; };
 		E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveApp.swift; sourceTree = "<group>"; };
+		E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RFCoachSheet.swift; sourceTree = "<group>"; };
 		EDAF074463E07B618C6565DE /* SignalHive.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHive.entitlements; sourceTree = "<group>"; };
+		F502D1C78A459A663F809EF2 /* ModelLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLibrary.swift; sourceTree = "<group>"; };
 		F685913ED57BC8289A8B578E /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		F6884868AC2561809B1890F7 /* MenuBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarApp.swift; sourceTree = "<group>"; };
 		FE53DC740AEEAF549EF95771 /* MacPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPlatform.swift; sourceTree = "<group>"; };
 		FE79022937FEAE9AAA3DBFBD /* SignalHiveMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHiveMenuBar.entitlements; sourceTree = "<group>"; };
-		35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftIconRenderer.swift; sourceTree = "<group>"; };
-		9FA91A5667F7441B4B8B0330 /* AviationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationModel.swift; sourceTree = "<group>"; };
-		A956D185F00F09375E48A2B1 /* AirDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDataView.swift; sourceTree = "<group>"; };
-		FD2BC0CA485DB24AB480B634 /* AirMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMapView.swift; sourceTree = "<group>"; };
-		2698DF12554B4121EB1136CE /* GetDataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDataSheet.swift; sourceTree = "<group>"; };
-		AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLibrary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,7 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */,
-				AC56B6796DC18DE5CF9F76E8 /* ModelLibrary.swift */,
+				F502D1C78A459A663F809EF2 /* ModelLibrary.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -174,12 +195,13 @@
 				62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */,
 				27373345F1C7E36527757CDF /* Assets.xcassets */,
 				6ABF61028C20628FB5F4E497 /* ContentView.swift */,
+				0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */,
 				E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */,
 				C4F39A45E6239B581A7464C0 /* AppIntents */,
+				E78F880FE717CE2FA367A189 /* Aviation */,
 				49A6491476F78E7B4EB6E58C /* Design */,
 				1ACBAD8D417904F0271CD964 /* Stores */,
 				D7EA068CBA56C88CA6DB41E6 /* Views */,
-				56BCBB987E54C58AA256453E /* Aviation */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -195,6 +217,7 @@
 		63ECABEB271F13F29FEADCBA /* macOS */ = {
 			isa = PBXGroup;
 			children = (
+				675AB467A347E9E1FBF670C0 /* Info.plist */,
 				FE53DC740AEEAF549EF95771 /* MacPlatform.swift */,
 				EDAF074463E07B618C6565DE /* SignalHive.entitlements */,
 			);
@@ -261,26 +284,30 @@
 			isa = PBXGroup;
 			children = (
 				D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */,
+				23ED14F82291986C7D32CA20 /* AirDataView.swift */,
+				40604D31962E11C73A08FD7C /* AirMapView.swift */,
 				B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */,
 				6281A33AE2902FAF37439A94 /* CodeplugView.swift */,
+				B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */,
 				AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */,
+				38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */,
+				E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */,
+				AAE596D83136B1E6E2479B3E /* SatelliteView.swift */,
 				B4BE49843C1B12AB457B4085 /* ScannerView.swift */,
 				F685913ED57BC8289A8B578E /* SearchView.swift */,
 				8A7BC3463759467EC305C361 /* SettingsView.swift */,
 				0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */,
 				69AFB203A996B9F769878976 /* WorkshopView.swift */,
-				A956D185F00F09375E48A2B1 /* AirDataView.swift */,
-				FD2BC0CA485DB24AB480B634 /* AirMapView.swift */,
-				2698DF12554B4121EB1136CE /* GetDataSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
-		56BCBB987E54C58AA256453E /* Aviation */ = {
+		E78F880FE717CE2FA367A189 /* Aviation */ = {
 			isa = PBXGroup;
 			children = (
-				35FD74F41517FE325B8B7F55 /* AircraftIconRenderer.swift */,
-				9FA91A5667F7441B4B8B0330 /* AviationModel.swift */,
+				780305D8A47251654E026F16 /* AircraftIconRenderer.swift */,
+				1D015468B43A518A1B8917F1 /* AviationModel.swift */,
+				33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */,
 			);
 			path = Aviation;
 			sourceTree = "<group>";
@@ -425,13 +452,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B86E737807DED9676F18485 /* AILabView.swift in Sources */,
+				A376EC0225E7277F8261F167 /* AirDataView.swift in Sources */,
+				9D71F72E33E6D0A3F7DFE01C /* AirMapView.swift in Sources */,
+				8FA4307472FE812D02CEF0FA /* AircraftIconRenderer.swift in Sources */,
 				D1AD43EDC6BA8E39F6DAA82E /* AppConfiguration.swift in Sources */,
 				70777A10BEE917F32185C0D7 /* AppModel.swift in Sources */,
+				176A92185F753F60101D0C40 /* AviationModel.swift in Sources */,
 				D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */,
 				107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */,
 				9C3F508B1F2B7B0F5DB46667 /* ContentView.swift in Sources */,
+				FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */,
 				D057BC4F5D009DFE69C73E63 /* FrequencyDetailView.swift in Sources */,
+				337F20F3FDE9408C4D61BA4E /* GetDataSheet.swift in Sources */,
+				5C53D8674F30077AA3463F8E /* MacAppDelegate.swift in Sources */,
 				4B3FC808ADC54710A9907B1A /* MenuBarApp.swift in Sources */,
+				DB294E3DED99AF40BFCEC54D /* ModelLibrary.swift in Sources */,
+				1D04CEFFC046BB1FB22685C8 /* RFCoachSheet.swift in Sources */,
+				7B11AD7964D24A0A86A4672F /* ReceiverLocationService.swift in Sources */,
+				D5CA1E196A592815FC8DCEA6 /* SatelliteView.swift in Sources */,
 				CC937FB5565D9FE0DC3D86A5 /* ScannerView.swift in Sources */,
 				08F503600DFFB11F25E306BD /* SearchView.swift in Sources */,
 				D96607A4DD6949BC6B193C59 /* SettingsView.swift in Sources */,
@@ -440,12 +478,6 @@
 				4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */,
 				66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */,
 				193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */,
-				6626B1459BA96E72DAA86410 /* AirMapView.swift in Sources */,
-				74F59E9D4EF82AF6653A0CFE /* AviationModel.swift in Sources */,
-				7B3D33B30519F190831AB3E8 /* AirDataView.swift in Sources */,
-				D56493188259778AD195197E /* AircraftIconRenderer.swift in Sources */,
-				5E28B5B830FD184E3F9937A4 /* GetDataSheet.swift in Sources */,
-				17D83261857FEA79B25C8990 /* ModelLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -454,13 +486,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */,
+				7FD434A80FD6BB548DF1E11B /* AirDataView.swift in Sources */,
+				8FD05DF7E0E8BA9D16072DB7 /* AirMapView.swift in Sources */,
+				5934FCA2E190AE36E0A4E581 /* AircraftIconRenderer.swift in Sources */,
 				C9AF7621627797C098DBB7FF /* AppConfiguration.swift in Sources */,
 				D44019462AF3B5702FD37246 /* AppModel.swift in Sources */,
+				005512CC6DA1AEB4A8B054EA /* AviationModel.swift in Sources */,
 				CB9FC040DA006C27A37A9D56 /* BrowseView.swift in Sources */,
 				6C87C4AC101A3F9F75CA1A9E /* CodeplugView.swift in Sources */,
 				CD4CD3E59552109B2B834601 /* ContentView.swift in Sources */,
+				625D686397EAC1E5E2E3AF84 /* DecoderHubView.swift in Sources */,
 				7218F49A826B4803E7A7CBB4 /* FrequencyDetailView.swift in Sources */,
+				F6C3DE17BCE5E7A2E7498394 /* GetDataSheet.swift in Sources */,
+				70A8C5C5385B3D901AA7A933 /* MacAppDelegate.swift in Sources */,
 				F6FB10A584252396376E20CF /* MacPlatform.swift in Sources */,
+				676F3C60577208C3AC4DAD0E /* ModelLibrary.swift in Sources */,
+				AB66B586AFC79C38B4E7E2E0 /* RFCoachSheet.swift in Sources */,
+				768D7B39B9964719999CBCE8 /* ReceiverLocationService.swift in Sources */,
+				889A3D764037802240935017 /* SatelliteView.swift in Sources */,
 				14834E128153021E5B9F2770 /* ScannerView.swift in Sources */,
 				67E62303ACEDDAD564B36707 /* SearchView.swift in Sources */,
 				FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */,
@@ -469,12 +512,6 @@
 				A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */,
 				73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */,
 				C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */,
-				3E015259BE7896D15ADBEB43 /* AirMapView.swift in Sources */,
-				6092FCE97E98B0A5016AE03D /* AirDataView.swift in Sources */,
-				727363CBE0C66A5F71007BFB /* AviationModel.swift in Sources */,
-				CD43E56250E2C6A8D6056817 /* AircraftIconRenderer.swift in Sources */,
-				3330E7965A9684316200F118 /* GetDataSheet.swift in Sources */,
-				1E019CAB3446467B7410EB4C /* ModelLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,14 +520,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */,
+				7D10EE04FD1B04E2409B5F73 /* AirDataView.swift in Sources */,
+				64C34FCE1C063EBF6009AD34 /* AirMapView.swift in Sources */,
+				E34FCCA1229A6EC4ED204706 /* AircraftIconRenderer.swift in Sources */,
 				2734480FB21FA65258BDAF8B /* AppConfiguration.swift in Sources */,
 				5EDD2F8E5D23959EEFEA0882 /* AppModel.swift in Sources */,
+				E88231C1275B72A1DD82CE59 /* AviationModel.swift in Sources */,
 				7F1CED761D15B67B09F5A795 /* BrowseView.swift in Sources */,
 				271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */,
 				F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */,
 				BA60D6CE7801E55AC5E482E6 /* ContentView.swift in Sources */,
+				E934D298BA9A3CAAA8FC6892 /* DecoderHubView.swift in Sources */,
 				D25F44B6F0219F175958B25E /* FrequencyDetailView.swift in Sources */,
+				7BB50E45997B4B448891E932 /* GetDataSheet.swift in Sources */,
 				80327CF9EC8C59FF02DDDBA1 /* IOSPlatform.swift in Sources */,
+				EDE975B67368FB7F6A91BFDD /* MacAppDelegate.swift in Sources */,
+				1247E6FB1820F3CB65B9C48B /* ModelLibrary.swift in Sources */,
+				5F0941B0551AFFDA62C216E4 /* RFCoachSheet.swift in Sources */,
+				7AAA95935596DC0C14E7C32B /* ReceiverLocationService.swift in Sources */,
+				0DA3EB9A496C39B77E557A38 /* SatelliteView.swift in Sources */,
 				42B6525233723D525A63AEF8 /* ScannerView.swift in Sources */,
 				FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */,
 				FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */,
@@ -499,12 +547,6 @@
 				A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */,
 				36812FF465737730CC288846 /* TrunkedView.swift in Sources */,
 				E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */,
-				1B37A98EF15EE1223885E9BB /* AirMapView.swift in Sources */,
-				2E90BBE82E96AB256AB379EE /* AviationModel.swift in Sources */,
-				3C0EE6A59049B87691DD4216 /* AirDataView.swift in Sources */,
-				4CD015D69D4CC2B5B0ECB13F /* AircraftIconRenderer.swift in Sources */,
-				A4D3EEEF421D20D4A12B5A0A /* GetDataSheet.swift in Sources */,
-				E1E6F6C594878DF70DC12C93 /* ModelLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -520,6 +562,9 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = App/MenuBar/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSMultipleInstancesProhibited = YES;
+				INFOPLIST_KEY_NSLocationUsageDescription = "SignalHive uses your Mac location as the receiver antenna position for ADS-B range and map placement.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SignalHive uses your location as the receiver antenna position for ADS-B range and map placement.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -559,8 +604,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/macOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -580,6 +625,9 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = App/MenuBar/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSMultipleInstancesProhibited = YES;
+				INFOPLIST_KEY_NSLocationUsageDescription = "SignalHive uses your Mac location as the receiver antenna position for ADS-B range and map placement.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "SignalHive uses your location as the receiver antenna position for ADS-B range and map placement.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -662,8 +710,8 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/macOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

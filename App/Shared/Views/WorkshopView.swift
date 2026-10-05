@@ -23,7 +23,7 @@ struct WorkshopView: View {
                     statusStrip
                     actionGrid
                     ForEach(WorkshopSection.allCases, id: \.self) { section in
-                        capabilitySection(section.title, items: WorkshopCatalog.items(in: section, for: workshopEnvironment))
+                        capabilitySection(section.title, items: WorkshopCatalog.items(in: section, for: environment))
                     }
                 }
                 .padding(24)
@@ -71,7 +71,7 @@ struct WorkshopView: View {
             metric("Data Packs", value: "\(installedPackCount)", icon: "externaldrive.fill", tint: HiveInk.amber)
             metric("Sources", value: "\(manager.availableDevices.count)", icon: "antenna.radiowaves.left.and.right", tint: HiveInk.cyan)
             metric("Demods", value: "\(DemodMode.allCases.count)", icon: "waveform", tint: HiveInk.mint)
-            metric("Decoders", value: "\(WorkshopCatalog.workingDecoders(for: workshopEnvironment))", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
+            metric("Decoders", value: "\(WorkshopCatalog.workingDecoders(for: environment))", icon: "dot.radiowaves.forward", tint: HiveInk.violet)
         }
     }
 
@@ -98,6 +98,8 @@ struct WorkshopView: View {
             action("Search", icon: "magnifyingglass", panel: .search)
             action("Trunked", icon: "antenna.radiowaves.left.and.right", panel: .trunked)
             action("Scanner", icon: "waveform.path.ecg", panel: .scanner)
+            action("Decoder Hub", icon: "dot.radiowaves.forward", panel: .decoderHub)
+            action("Satellites", icon: "globe.americas", panel: .satellites)
             action("Codeplug", icon: "memorychip", panel: .codeplug)
             action("Air Map", icon: "airplane", panel: .airMap)
             action("Air Data", icon: "doc.text.magnifyingglass", panel: .airData)
@@ -184,7 +186,7 @@ struct WorkshopView: View {
     }
 
     /// What this machine has, from what the app can see.
-    private var workshopEnvironment: WorkshopEnvironment {
+    private var environment: WorkshopEnvironment {
         var dongles = 0
         if case let .found(list) = RTLSDRAvailability.current.state { dongles = list.count }
         var tools: Set<String> = []
@@ -212,9 +214,11 @@ struct WorkshopView: View {
         case .browse: return .browse
         case .search: return .search
         case .scanner: return .scanner
+        case .decoderHub: return .decoderHub
         case .trunked: return .trunked
         case .codeplug: return .codeplug
         case .aiLab: return .aiLab
+        case .satellites: return .satellites
         case .airMap: return .airMap
         case .airData: return .airData
         }

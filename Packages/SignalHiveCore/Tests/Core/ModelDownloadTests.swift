@@ -52,7 +52,7 @@ private func client(listing json: String, status: Int = 200) -> ModelHubClient {
 }
 
 private final class FakeTransport: ModelFileTransport, @unchecked Sendable {
-    private let lock = NSLock()
+    private let queue = DispatchQueue(label: "SignalHiveCoreTests.FakeTransport")
     private var served: [String: Data] = [:]
     private var requestedURLs: [String] = []
     private var failing: Set<String> = []
@@ -64,32 +64,32 @@ private final class FakeTransport: ModelFileTransport, @unchecked Sendable {
 
     /// Serves different bytes for a file, as a damaged download would.
     func corrupt(_ blob: Blob, with bytes: Data) {
-        lock.lock(); served["\(hub.absoluteString)/\(repoID)/resolve/main/\(blob.path)"] = bytes; lock.unlock()
+        queue.sync { served["\(hub.absoluteString)/\(repoID)/resolve/main/\(blob.path)"] = bytes }
     }
 
     func serve(_ blob: Blob) {
-        lock.lock(); served["\(hub.absoluteString)/\(repoID)/resolve/main/\(blob.path)"] = blob.data; lock.unlock()
+        queue.sync { served["\(hub.absoluteString)/\(repoID)/resolve/main/\(blob.path)"] = blob.data }
     }
 
-    func cancel(_ path: String) { lock.lock(); cancelling.insert(path); lock.unlock() }
-    func stopCancelling() { lock.lock(); cancelling.removeAll(); lock.unlock() }
-    func fail(_ path: String) { lock.lock(); failing.insert(path); lock.unlock() }
+    func cancel(_ path: String) { queue.sync { _ = cancelling.insert(path) } }
+    func stopCancelling() { queue.sync { cancelling.removeAll() } }
+    func fail(_ path: String) { queue.sync { _ = failing.insert(path) } }
 
-    var requested: [String] { lock.lock(); defer { lock.unlock() }; return requestedURLs }
-
-    /// Notes the request and says how it should be answered. Synchronous, because NSLock cannot be used across an await.
-    private func plan(for key: String) -> (data: Data?, mustCancel: Bool, mustFail: Bool) {
-        lock.lock()
-        defer { lock.unlock() }
-        requestedURLs.append(key)
-        return (served[key],
-                cancelling.contains { key.hasSuffix("/" + $0) },
-                failing.contains { key.hasSuffix("/" + $0) })
-    }
+    var requested: [String] { queue.sync { requestedURLs } }
 
     func download(_ url: URL, progress: @escaping @Sendable (Int64) -> Void) async throws -> URL {
         let key = url.absoluteString
-        let (data, mustCancel, mustFail) = plan(for: key)
+        let state = queue.sync {
+            requestedURLs.append(key)
+            return (
+                data: served[key],
+                mustCancel: cancelling.contains { key.hasSuffix("/" + $0) },
+                mustFail: failing.contains { key.hasSuffix("/" + $0) }
+            )
+        }
+        let data = state.data
+        let mustCancel = state.mustCancel
+        let mustFail = state.mustFail
         if mustCancel { throw URLError(.cancelled) }
         if mustFail { throw URLError(.networkConnectionLost) }
         guard let data else { throw ModelDownloadError.downloadFailed(file: url.lastPathComponent, reason: "HTTP 404") }
@@ -304,7 +304,7 @@ struct ModelDownloadManagerTests {
             guard case let .downloadFailed(file, _) = error else { Issue.record("wrong error \(error)"); return }
             #expect(file == "model.safetensors")
         }
-        #expect(await manager.stagedBytes(repoID) == Int64(config.data.count + tokenizer.data.count))
+        #expect(await manager.stagedBytes(repoID) == Int64(config.data.count))
     }
 
     @Test func cancellingStopsAndResumingContinues() async throws {

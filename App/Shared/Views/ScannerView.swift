@@ -33,6 +33,7 @@ struct ScannerView: View {
     @State private var selectedActivityID: Int?
     @State private var heldActivityID: Int?
     @State private var lockedOutKeys: Set<Int> = []
+    @State private var rfCoachRequest: RFCoachRequest?
 
     @AppStorage("scannerVolumeLevel") private var volumeLevel = 0.6
     @AppStorage("scannerMuted") private var muted = false
@@ -82,6 +83,9 @@ struct ScannerView: View {
             Task { await retune() }
         }
         .sheet(isPresented: $showFinder) { finderSheet }
+        .sheet(item: $rfCoachRequest) { request in
+            RFCoachSheet(request: request)
+        }
     }
 
     private var frequencyHeader: some View {
@@ -312,7 +316,7 @@ struct ScannerView: View {
                 .disabled(selectedActivity == nil)
 
                 Button { saveSelectedToCodeplug() } label: {
-                    Label("Save", systemImage: "plus.memorychip")
+                    Label("Save", systemImage: "rectangle.stack.badge.plus")
                 }
                 .disabled(selectedActivity == nil)
 
@@ -436,7 +440,10 @@ struct ScannerView: View {
                 Button { tune(activity) } label: { Image(systemName: "scope") }
                     .buttonStyle(.borderless)
                     .help("Tune")
-                Button { save(activity) } label: { Image(systemName: "plus.memorychip") }
+                Button { explain(activity) } label: { Image(systemName: "sparkles") }
+                    .buttonStyle(.borderless)
+                    .help("Explain with RF Coach")
+                Button { save(activity) } label: { Image(systemName: "rectangle.stack.badge.plus") }
                     .buttonStyle(.borderless)
                     .help("Save to codeplug")
             }
@@ -472,7 +479,7 @@ struct ScannerView: View {
                         }
                         .buttonStyle(.borderless)
                         Button { model.addToCodeplug(channel: channel.codeplugChannel()) } label: {
-                            Image(systemName: "plus.memorychip")
+                            Image(systemName: "rectangle.stack.badge.plus")
                         }
                         .buttonStyle(.borderless)
                     }
@@ -793,6 +800,36 @@ struct ScannerView: View {
     private func tune(_ activity: ScanActivity) {
         selectedActivityID = activity.id
         setFrequency(mhz: activity.frequencyHz / 1_000_000)
+    }
+
+    private func explain(_ activity: ScanActivity) {
+        selectedActivityID = activity.id
+        rfCoachRequest = RFCoachRequest(
+            title: activity.displayMHz,
+            subtitle: "Live scanner hit · \(mode.rawValue) · \(Int(activity.strengthDB)) dBFS",
+            context: SignalDescriptionContext(
+                frequencyHz: activity.frequencyHz,
+                mode: ChannelMode(demodMode: mode),
+                bandwidthHz: activity.bandwidthHz ?? mode.defaultBandwidth,
+                rssiDBFS: Double(activity.strengthDB),
+                serviceName: activity.label.isEmpty ? nil : activity.label,
+                modeHints: modeHints(for: mode)
+            ),
+            operatorNote: activity.snrDB.map { String(format: "Estimated SNR %.0f dB from the current noise floor.", $0) }
+        )
+    }
+
+    private func modeHints(for mode: DemodMode) -> [ModeHint] {
+        switch mode {
+        case .am:
+            return [.am]
+        case .nfm, .wfm:
+            return [.analogFM]
+        case .usb, .lsb:
+            return [.ssb]
+        case .cw, .raw:
+            return [.unknown]
+        }
     }
 
     private func holdSelected() {

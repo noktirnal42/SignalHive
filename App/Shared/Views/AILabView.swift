@@ -7,6 +7,12 @@ import FoundationModels
 struct AILabView: View {
     @Environment(AppModel.self) private var app
     @State private var availability = FoundationAvailabilitySnapshot.unchecked
+    @State private var rfCoachFrequencyText = "155.475"
+    @State private var rfCoachMode = ChannelMode.nfm
+    @State private var rfCoachRSSIText = "-53"
+    @State private var rfCoachResult: SignalDescription?
+    @State private var rfCoachError: String?
+    @State private var rfCoachRunning = false
 
     private let machine = LocalMachineProfile.current
     private let classifierValidation = AutoClassifierBundleValidator.validate()
@@ -40,6 +46,7 @@ struct AILabView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     hero
                     providerGrid
+                    rfCoachWorkbench
                     featureMap
                     mlxDownloadManager
                     roadmap
@@ -143,6 +150,170 @@ struct AILabView: View {
         .frame(minHeight: 126, alignment: .top)
     }
 
+    private var rfCoachWorkbench: some View {
+        HiveInstrumentPanel("RF Coach", status: rfCoachResult == nil ? "rules ready" : "answered locally") {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Explain a Signal")
+                            .font(.system(.title3, design: .rounded).weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.94))
+                        Text("Local rules use frequency, mode, bandwidth hints, and optional signal level. Models can be layered on this context later.")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.56))
+                    }
+                    Spacer()
+                    HiveStatusBadge("SignalHive Rules", tint: HiveInk.mint)
+                }
+
+                LazyVGrid(columns: [
+                    GridItem(.flexible(minimum: 180), spacing: 10),
+                    GridItem(.flexible(minimum: 150), spacing: 10),
+                    GridItem(.flexible(minimum: 130), spacing: 10),
+                    GridItem(.fixed(126), spacing: 10),
+                ], alignment: .leading, spacing: 10) {
+                    labeledField("Frequency", suffix: "MHz") {
+                        TextField("155.475", text: $rfCoachFrequencyText)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    labeledField("Mode") {
+                        Picker("Mode", selection: $rfCoachMode) {
+                            ForEach(ChannelMode.allCases, id: \.self) { mode in
+                                Text(mode.rawValue).tag(mode)
+                            }
+                        }
+                        .labelsHidden()
+                    }
+                    labeledField("Level", suffix: "dBFS") {
+                        TextField("-53", text: $rfCoachRSSIText)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Action")
+                            .font(.caption2.monospaced().weight(.bold))
+                            .foregroundStyle(.white.opacity(0.48))
+                        Button {
+                            runRFCoach()
+                        } label: {
+                            Label(rfCoachRunning ? "Working" : "Explain", systemImage: "sparkles")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(HiveInk.mint)
+                        .disabled(rfCoachRunning)
+                    }
+                }
+
+                if let rfCoachError {
+                    Label(rfCoachError, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(HiveInk.amber)
+                }
+
+                if let rfCoachResult {
+                    rfCoachResultPanel(rfCoachResult)
+                }
+            }
+        }
+    }
+
+    private func labeledField<Content: View>(
+        _ title: String,
+        suffix: String? = nil,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Text(title)
+                if let suffix {
+                    Text(suffix).foregroundStyle(.white.opacity(0.34))
+                }
+            }
+            .font(.caption2.monospaced().weight(.bold))
+            .foregroundStyle(.white.opacity(0.48))
+            content()
+        }
+    }
+
+    private func rfCoachResultPanel(_ result: SignalDescription) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label(result.confidence, systemImage: "checkmark.seal")
+                    .font(.caption.monospaced())
+                    .foregroundStyle(HiveInk.mint)
+                Spacer()
+                Text("Local, deterministic")
+                    .font(.caption2.monospaced().weight(.bold))
+                    .foregroundStyle(.white.opacity(0.42))
+            }
+            Text(result.explanation)
+                .font(.system(.body, design: .rounded))
+                .foregroundStyle(.white.opacity(0.86))
+                .fixedSize(horizontal: false, vertical: true)
+            Divider().overlay(.white.opacity(0.10))
+            Text(result.recommendation)
+                .font(.callout)
+                .foregroundStyle(.white.opacity(0.70))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .background(.black.opacity(0.22), in: RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(HiveInk.mint.opacity(0.22), lineWidth: 1)
+        }
+    }
+
+    private func runRFCoach() {
+        guard let mhz = FrequencyEntry.parseMHz(rfCoachFrequencyText), mhz > 0 else {
+            rfCoachError = "Enter a valid frequency."
+            rfCoachResult = nil
+            return
+        }
+        let trimmedRSSI = rfCoachRSSIText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let rssi = trimmedRSSI.isEmpty ? nil : Double(trimmedRSSI)
+        if !trimmedRSSI.isEmpty, rssi == nil {
+            rfCoachError = "RSSI must be a number."
+            rfCoachResult = nil
+            return
+        }
+
+        rfCoachError = nil
+        rfCoachRunning = true
+        let context = SignalDescriptionContext(
+            frequencyHz: mhz * 1_000_000,
+            mode: rfCoachMode,
+            bandwidthHz: bandwidth(for: rfCoachMode),
+            rssiDBFS: rssi,
+            modeHints: modeHints(for: rfCoachMode)
+        )
+
+        Task {
+            let answer = await SignalDescriptionEngine().describe(context: context)
+            await MainActor.run {
+                rfCoachResult = answer
+                rfCoachRunning = false
+            }
+        }
+    }
+
+    private func bandwidth(for mode: ChannelMode) -> Double? {
+        switch mode {
+        case .nfm, .p25, .dmr, .dstar: return 12_500
+        case .fm: return 25_000
+        case .am: return 10_000
+        }
+    }
+
+    private func modeHints(for mode: ChannelMode) -> [ModeHint] {
+        switch mode {
+        case .fm, .nfm: return [.analogFM]
+        case .am: return [.am]
+        case .p25: return [.digitalP25]
+        case .dmr, .dstar: return [.digitalOther]
+        }
+    }
+
     private var featureMap: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeading("Feature Map")
@@ -244,7 +415,7 @@ struct AILabView: View {
     private func modelTile(_ model: MLXModelCandidate) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "shippingbox.and.arrow.down")
+                Image(systemName: "shippingbox")
                     .foregroundStyle(color(for: model.compatibility))
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 3) {

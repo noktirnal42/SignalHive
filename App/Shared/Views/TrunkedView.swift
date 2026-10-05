@@ -9,6 +9,7 @@ final class TrunkedModel {
 
     var systems: [TrunkedSystem] = []
     var systemsSavedAt: Date?
+    var systemsSeeded = false
     var systemsNetworkError: String?
     var systemsError: String?
     var loadingSystems = false
@@ -17,6 +18,7 @@ final class TrunkedModel {
     var selectedSystemID: String?
     var talkgroups: [TrunkedTalkgroup] = []
     var talkgroupsSavedAt: Date?
+    var talkgroupsSeeded = false
     var talkgroupsNetworkError: String?
     var talkgroupsError: String?
     var loadingTalkgroups = false
@@ -38,6 +40,7 @@ final class TrunkedModel {
             let load = try await repository.systems()
             systems = load.value
             systemsSavedAt = load.savedAt
+            systemsSeeded = load.isSeeded
             systemsNetworkError = load.networkError
         } catch {
             systemsError = error.localizedDescription
@@ -51,6 +54,7 @@ final class TrunkedModel {
         talkgroupsError = nil
         talkgroupsNetworkError = nil
         talkgroupsSavedAt = nil
+        talkgroupsSeeded = false
         talkgroupSearch = ""
         category = nil
         loadingTalkgroups = false
@@ -68,6 +72,7 @@ final class TrunkedModel {
             guard selectedSystemID == name, !Task.isCancelled else { return }
             talkgroups = load.value
             talkgroupsSavedAt = load.savedAt
+            talkgroupsSeeded = load.isSeeded
             talkgroupsNetworkError = load.networkError
         } catch {
             guard selectedSystemID == name, !Task.isCancelled else { return }
@@ -82,6 +87,7 @@ struct TrunkedView: View {
     @State private var model = TrunkedModel()
     @State private var selectedTalkgroups: Set<String> = []
     @State private var addedNote: String?
+    @State private var rfCoachRequest: RFCoachRequest?
 
     var body: some View {
         NavigationSplitView {
@@ -91,6 +97,9 @@ struct TrunkedView: View {
         }
         .navigationTitle("Trunked")
         .task { if model.systems.isEmpty { await model.loadSystems() } }
+        .sheet(item: $rfCoachRequest) { request in
+            RFCoachSheet(request: request)
+        }
     }
 
     // MARK: Systems
@@ -98,7 +107,7 @@ struct TrunkedView: View {
     private var systemList: some View {
         @Bindable var model = model
         return List(selection: Binding(get: { model.selectedSystemID }, set: { model.select($0); selectedTalkgroups = []; addedNote = nil })) {
-            if let note = offlineNote(savedAt: model.systemsSavedAt, error: model.systemsNetworkError) {
+            if let note = offlineNote(savedAt: model.systemsSavedAt, isSeeded: model.systemsSeeded, error: model.systemsNetworkError) {
                 Label(note, systemImage: "wifi.slash")
                     .font(.caption)
                     .foregroundStyle(.orange)
@@ -197,7 +206,7 @@ struct TrunkedView: View {
                         Text(system.details).font(.caption).foregroundStyle(.secondary)
                     }
                 }
-                if let note = offlineNote(savedAt: model.talkgroupsSavedAt, error: model.talkgroupsNetworkError) {
+                if let note = offlineNote(savedAt: model.talkgroupsSavedAt, isSeeded: model.talkgroupsSeeded, error: model.talkgroupsNetworkError) {
                     Label(note, systemImage: "wifi.slash").font(.caption).foregroundStyle(.orange)
                 }
                 if let addedNote {
@@ -221,14 +230,17 @@ struct TrunkedView: View {
                 ForEach(model.groups) { group in
                     Section {
                         ForEach(group.talkgroups) { talkgroup in
-                            TalkgroupRow(talkgroup: talkgroup)
+                            TalkgroupRow(talkgroup: talkgroup) {
+                                explain(talkgroup, on: system)
+                            }
                                 .tag(talkgroup.id)
                                 .swipeActions {
-                                    Button { add([talkgroup], on: system) } label: { Label("Add", systemImage: "plus.memorychip") }
+                                    Button { add([talkgroup], on: system) } label: { Label("Add", systemImage: "rectangle.stack.badge.plus") }
                                         .tint(.blue)
                                 }
                                 .contextMenu {
-                                    Button { add([talkgroup], on: system) } label: { Label("Add to codeplug", systemImage: "plus.memorychip") }
+                                    Button { explain(talkgroup, on: system) } label: { Label("Explain with RF Coach", systemImage: "sparkles") }
+                                    Button { add([talkgroup], on: system) } label: { Label("Add to codeplug", systemImage: "rectangle.stack.badge.plus") }
                                 }
                         }
                     } header: {
@@ -237,7 +249,9 @@ struct TrunkedView: View {
                 }
             }
         }
-        .searchable(text: $model.talkgroupSearch, prompt: "Search talkgroups")
+        // Not `.searchable`: the system list already owns the window's one search toolbar item, and a second one in the
+        // detail column makes NSToolbar throw (a crash on macOS the moment a system is selected).
+        .safeAreaInset(edge: .top, spacing: 0) { talkgroupSearchField(text: $model.talkgroupSearch) }
         .toolbar {
             #if os(iOS)
             ToolbarItem { EditButton() }
@@ -249,11 +263,26 @@ struct TrunkedView: View {
                     selectedTalkgroups = []
                 } label: {
                     Label(selectedTalkgroups.isEmpty ? "Add to codeplug" : "Add \(selectedTalkgroups.count) to codeplug",
-                          systemImage: "plus.memorychip")
+                          systemImage: "rectangle.stack.badge.plus")
                 }
                 .disabled(selectedTalkgroups.isEmpty)
             }
         }
+    }
+
+    private func talkgroupSearchField(text: Binding<String>) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            TextField("Search talkgroups", text: text)
+                .textFieldStyle(.plain)
+            if !text.wrappedValue.isEmpty {
+                Button { text.wrappedValue = "" } label: { Image(systemName: "xmark.circle.fill") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(8)
+        .background(.bar)
     }
 
     private var categoryChips: some View {
@@ -293,7 +322,31 @@ struct TrunkedView: View {
         addedNote = note
     }
 
-    private func offlineNote(savedAt: Date?, error: String?) -> String? {
+    private func explain(_ talkgroup: TrunkedTalkgroup, on system: TrunkedSystem) {
+        let serviceParts = [
+            talkgroup.category.displayName,
+            talkgroup.tag,
+            talkgroup.group
+        ].filter { !$0.isEmpty }
+        rfCoachRequest = RFCoachRequest(
+            title: "\(talkgroup.displayName) · TG \(talkgroup.code)",
+            subtitle: [system.name, system.typeLabel, system.location].filter { !$0.isEmpty }.joined(separator: " · "),
+            context: SignalDescriptionContext(
+                frequencyHz: 0,
+                licensee: system.name,
+                serviceName: serviceParts.joined(separator: " / "),
+                trunkedSystemName: system.name,
+                talkgroupCode: talkgroup.code,
+                contextNote: "OpenMHz talkgroup metadata does not include control-channel or voice-channel frequencies."
+            ),
+            operatorNote: "This explains the talkgroup role and codeplug impact. Use a control-channel/decoder workflow for live trunk following."
+        )
+    }
+
+    private func offlineNote(savedAt: Date?, isSeeded: Bool, error: String?) -> String? {
+        if isSeeded {
+            return "Starter directory: OpenMHz live data is unavailable." + (error.map { " (\($0))" } ?? "")
+        }
         guard let savedAt else { return nil }
         let when = savedAt.formatted(date: .abbreviated, time: .shortened)
         return "Offline: showing the copy saved \(when)." + (error.map { " (\($0))" } ?? "")
@@ -330,6 +383,7 @@ private struct SystemRow: View {
 
 private struct TalkgroupRow: View {
     let talkgroup: TrunkedTalkgroup
+    var onExplain: () -> Void
 
     var body: some View {
         HStack {
@@ -341,6 +395,11 @@ private struct TalkgroupRow: View {
                 }
             }
             Spacer()
+            Button(action: onExplain) {
+                Image(systemName: "sparkles")
+            }
+            .buttonStyle(.borderless)
+            .help("Explain with RF Coach")
             Text("\(talkgroup.code)").font(.caption.monospaced()).foregroundStyle(.secondary)
         }
     }

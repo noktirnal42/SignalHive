@@ -248,10 +248,25 @@ struct TrunkedRepositoryTests {
         #expect(talkgroups.isCached && talkgroups.value.count == 3)
     }
 
-    @Test func withNoNetworkAndNoCopyTheErrorIsReported() async {
+    @Test func whenTheNetworkAndCacheAreEmptyTheStarterDirectoryKeepsBrowsingUsable() async throws {
         let directory = temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let repository = TrunkedRepository(client: stubClient([:]), cache: TrunkedCache(directory: directory))
+
+        let systems = try await repository.systems()
+        #expect(systems.isSeeded)
+        #expect(!systems.value.isEmpty)
+        #expect(systems.networkError != nil)
+
+        let talkgroups = try await repository.talkgroups(system: "sccsd")
+        #expect(talkgroups.isSeeded)
+        #expect(talkgroups.value.contains { $0.category == .law })
+    }
+
+    @Test func withNoNetworkAndNoCopyTheErrorIsReported() async {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let repository = TrunkedRepository(client: stubClient([:]), cache: TrunkedCache(directory: directory), seed: nil)
         await #expect(throws: OpenMHzError.self) { try await repository.systems() }
         await #expect(throws: OpenMHzError.self) { try await repository.talkgroups(system: "sccsd") }
     }

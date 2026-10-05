@@ -180,6 +180,9 @@ public struct OpenMHzClient: Sendable {
             throw OpenMHzError.requestFailed(error.localizedDescription)
         }
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            if http.statusCode == 403, (http.value(forHTTPHeaderField: "cf-mitigated")?.lowercased() == "challenge") {
+                throw OpenMHzError.requestFailed("Cloudflare challenged \(path); live OpenMHz data is blocked for this native request")
+            }
             throw OpenMHzError.requestFailed("HTTP \(http.statusCode) for \(path)")
         }
         return data
@@ -249,28 +252,97 @@ public struct TrunkedLoad<Value: Sendable>: Sendable {
     /// When the data was saved, if it came from the cache.
     public var savedAt: Date?
     public var isCached: Bool { savedAt != nil }
+    /// True when the app fell back to the bundled starter directory because neither the network nor a local cache worked.
+    public var isSeeded: Bool
     /// Why the network was not used, when the cache stood in for it.
     public var networkError: String?
+
+    public init(value: Value, savedAt: Date? = nil, isSeeded: Bool = false, networkError: String? = nil) {
+        self.value = value
+        self.savedAt = savedAt
+        self.isSeeded = isSeeded
+        self.networkError = networkError
+    }
+}
+
+/// Small offline starter directory for first launch and for API blocks. It is deliberately modest: SignalHive still
+/// prefers live OpenMHz and the user's saved cache, but the Trunked browser should never open as an empty dead pane.
+public struct TrunkedSeed: Sendable {
+    public var systems: [TrunkedSystem]
+    public var talkgroups: [String: [TrunkedTalkgroup]]
+
+    public init(systems: [TrunkedSystem], talkgroups: [String: [TrunkedTalkgroup]]) {
+        self.systems = systems
+        self.talkgroups = talkgroups
+    }
+
+    public static let starter = TrunkedSeed(
+        systems: [
+            TrunkedSystem(shortName: "sccsd", name: "Santa Clara County Sheriff", systemType: "p25",
+                          city: "San Jose", county: "Santa Clara", state: "CA", country: "US",
+                          details: "Starter directory entry. Use Reload when OpenMHz is reachable for live metadata.",
+                          callsPerHour: 40),
+            TrunkedSystem(shortName: "tippco", name: "Tippecanoe County Public Safety", systemType: "p25",
+                          city: "Lafayette", county: "Tippecanoe", state: "IN", country: "US",
+                          details: "Starter directory entry based on public OpenMHz system naming.",
+                          callsPerHour: 25),
+            TrunkedSystem(shortName: "monroecony", name: "Monroe and Ontario Counties", systemType: "p25",
+                          city: "Rochester", county: "Monroe", state: "NY", country: "US",
+                          details: "Starter directory entry based on public OpenMHz system naming.",
+                          callsPerHour: 20),
+            TrunkedSystem(shortName: "wmata", name: "WMATA Bus", systemType: "smartnet",
+                          city: "Washington", state: "DC", country: "US",
+                          details: "Starter directory entry. Older SmartNet systems are useful for codeplug planning tests.",
+                          callsPerHour: 7)
+        ],
+        talkgroups: [
+            "sccsd": [
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 5, alphaTag: "SO Tac", descriptionText: "Sheriff Tactical", tag: "Law Tac", group: "Sheriff"),
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 10, alphaTag: "SO Disp", descriptionText: "Sheriff Dispatch", tag: "Law Dispatch", group: "Sheriff"),
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 20, alphaTag: "FD Disp", descriptionText: "Fire Dispatch", tag: "Fire Dispatch", group: "Fire"),
+                TrunkedTalkgroup(systemShortName: "sccsd", code: 300, alphaTag: "PW Yard", descriptionText: "Public Works Yard", tag: "Public Works", group: "Public Works")
+            ],
+            "tippco": [
+                TrunkedTalkgroup(systemShortName: "tippco", code: 101, alphaTag: "Law Disp", descriptionText: "Law Dispatch", tag: "Law Dispatch", group: "Public Safety"),
+                TrunkedTalkgroup(systemShortName: "tippco", code: 2105, alphaTag: "Fire Ops", descriptionText: "Fire Operations", tag: "Fire-Tac", group: "Fire"),
+                TrunkedTalkgroup(systemShortName: "tippco", code: 3101, alphaTag: "EMS Disp", descriptionText: "EMS Dispatch", tag: "EMS Dispatch", group: "EMS")
+            ],
+            "monroecony": [
+                TrunkedTalkgroup(systemShortName: "monroecony", code: 1806, alphaTag: "County Law", descriptionText: "County law dispatch", tag: "Law Dispatch", group: "Law"),
+                TrunkedTalkgroup(systemShortName: "monroecony", code: 1811, alphaTag: "Fire Main", descriptionText: "Fire dispatch", tag: "Fire Dispatch", group: "Fire"),
+                TrunkedTalkgroup(systemShortName: "monroecony", code: 2201, alphaTag: "Hospital", descriptionText: "Hospital coordination", tag: "Hospital", group: "Medical")
+            ],
+            "wmata": [
+                TrunkedTalkgroup(systemShortName: "wmata", code: 1001, alphaTag: "Bus Ops", descriptionText: "Bus operations", tag: "Transit", group: "Transit"),
+                TrunkedTalkgroup(systemShortName: "wmata", code: 1002, alphaTag: "Rail Ops", descriptionText: "Rail operations", tag: "Transit", group: "Transit")
+            ]
+        ]
+    )
 }
 
 /// Loads from OpenMHz, remembers what it got, and falls back to the last copy when the network fails.
 public struct TrunkedRepository: Sendable {
     private let client: OpenMHzClient
     private let cache: TrunkedCache
+    private let seed: TrunkedSeed?
 
-    public init(client: OpenMHzClient = OpenMHzClient(), cache: TrunkedCache = .standard) {
+    public init(client: OpenMHzClient = OpenMHzClient(), cache: TrunkedCache = .standard, seed: TrunkedSeed? = .starter) {
         self.client = client
         self.cache = cache
+        self.seed = seed
     }
 
     public func systems() async throws -> TrunkedLoad<[TrunkedSystem]> {
         do {
             let fresh = try await client.systems()
             try? cache.saveSystems(fresh)
-            return TrunkedLoad(value: fresh, savedAt: nil, networkError: nil)
+            return TrunkedLoad(value: fresh)
         } catch {
             if let cached = cache.loadSystems(), !cached.systems.isEmpty {
                 return TrunkedLoad(value: cached.systems, savedAt: cached.savedAt, networkError: error.localizedDescription)
+            }
+            if let seed, !seed.systems.isEmpty {
+                return TrunkedLoad(value: seed.systems, isSeeded: true, networkError: error.localizedDescription)
             }
             throw error
         }
@@ -280,10 +352,13 @@ public struct TrunkedRepository: Sendable {
         do {
             let fresh = try await client.talkgroups(systemShortName: system)
             try? cache.saveTalkgroups(fresh, system: system)
-            return TrunkedLoad(value: fresh, savedAt: nil, networkError: nil)
+            return TrunkedLoad(value: fresh)
         } catch {
             if let cached = cache.loadTalkgroups(system: system), !cached.talkgroups.isEmpty {
                 return TrunkedLoad(value: cached.talkgroups, savedAt: cached.savedAt, networkError: error.localizedDescription)
+            }
+            if let talkgroups = seed?.talkgroups[system] {
+                return TrunkedLoad(value: talkgroups, isSeeded: true, networkError: error.localizedDescription)
             }
             throw error
         }
