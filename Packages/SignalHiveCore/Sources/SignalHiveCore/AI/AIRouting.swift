@@ -10,17 +10,24 @@ public enum AITask: Equatable, Sendable {
     case explainSignal
     /// What is in the air and in the weather reports right now, in plain words.
     case briefAviation
+    /// What is wrong with a codeplug, in plain words. The model explains; it never edits.
+    case reviewCodeplug
 }
 
 /// Plain values the caller gathered; the AI never reaches into app state.
 public struct AIContext: Equatable, Sendable {
     public var signal: SignalDescriptionContext?
     public var aviation: AviationBriefing?
+    public var codeplug: CodeplugReview?
 
-    public init(signal: SignalDescriptionContext? = nil, aviation: AviationBriefing? = nil) {
+    public init(signal: SignalDescriptionContext? = nil, aviation: AviationBriefing? = nil, codeplug: CodeplugReview? = nil) {
         self.signal = signal
         self.aviation = aviation
+        self.codeplug = codeplug
     }
+
+    /// Whether there is anything to ask about.
+    public var hasContent: Bool { signal != nil || aviation != nil || codeplug != nil }
 
     /// The inputs as short labelled lines, for the prompt and for showing the operator what was used.
     public var inputs: [String] {
@@ -31,6 +38,16 @@ public struct AIContext: Equatable, Sendable {
                 "Emergencies \(aviation.emergencies.count)",
                 "Weather stations \(aviation.weather.stations)",
                 "Hazard products \(aviation.hazards.sigmets + aviation.hazards.airmets + aviation.hazards.advisories + aviation.hazards.restrictions)",
+            ]
+        }
+        if let codeplug {
+            let counts = codeplug.counts
+            lines += [
+                "Radio \(codeplug.target.rawValue)",
+                "Channels \(codeplug.channelCount)",
+                "Problems \(counts.errors)",
+                "To check \(counts.warnings)",
+                "Notes \(counts.notes)",
             ]
         }
         return lines
@@ -76,6 +93,10 @@ public struct AIRequest: Sendable {
 
     public static func brief(_ briefing: AviationBriefing, preferred: AIProviderKind? = nil) -> AIRequest {
         AIRequest(task: .briefAviation, context: AIContext(aviation: briefing), preferred: preferred)
+    }
+
+    public static func review(_ review: CodeplugReview, preferred: AIProviderKind? = nil) -> AIRequest {
+        AIRequest(task: .reviewCodeplug, context: AIContext(codeplug: review), preferred: preferred)
     }
 }
 
@@ -170,6 +191,14 @@ public struct RulesProvider: LanguageModelProvider {
                     continuation.yield(.done(AIAnswer(provider: .rulesEngine,
                                                       summary: ([briefing.headline] + briefing.lines).joined(separator: "\n"),
                                                       recommendation: nil, confidence: "rules / counted")))
+                case .reviewCodeplug:
+                    guard let review = request.context.codeplug else {
+                        continuation.finish(throwing: AIError.missingContext)
+                        return
+                    }
+                    continuation.yield(.done(AIAnswer(provider: .rulesEngine,
+                                                      summary: ([review.headline] + review.lines).joined(separator: "\n"),
+                                                      recommendation: review.recommendation, confidence: "rules / counted")))
                 }
                 continuation.finish()
             }
@@ -190,6 +219,14 @@ public struct AIRouter: Sendable {
     public init(providers: [any LanguageModelProvider], rules: any LanguageModelProvider = RulesProvider()) {
         self.providers = providers
         self.rules = rules
+    }
+
+    /// Exactly the text a model provider would be sent for this request: the inputs and the rules facts it is held to.
+    /// Shown before anything goes to Private Cloud Compute, so what the operator agrees to is what is sent.
+    public func outgoingText(for request: AIRequest) async throws -> String {
+        var grounded = request
+        grounded.grounding = [try await finalAnswer(from: rules.respond(to: request)).summary]
+        return AIPrompt.prompt(for: grounded)
     }
 
     public func answer(_ request: AIRequest) -> AsyncThrowingStream<AIChunk, Error> {
@@ -296,12 +333,35 @@ enum AIPrompt {
         switch request.task {
         case .explainSignal: return explainSignal(request)
         case .briefAviation: return briefAviation(request)
+        case .reviewCodeplug: return reviewCodeplug(request)
         }
     }
 
     /// Each fact on its own line, so a multi-line digest reads as a list.
     private static func factLines(_ request: AIRequest) -> [String] {
         request.grounding.flatMap { $0.split(separator: "\n", omittingEmptySubsequences: true) }.map { "- \($0)" }
+    }
+
+    static func reviewCodeplug(_ request: AIRequest) -> String {
+        var lines = [
+            "You are the codeplug assistant inside SignalHive, a receive-only radio workbench that prepares channel lists for scanners and handheld radios. Explain the review findings below in plain language for the operator, most important first.",
+            "Use only the inputs and facts given. Never contradict the facts. Do not invent channels, frequencies, tones, names or fixes. You cannot change the codeplug: the operator previews and applies fixes in the app. Do not suggest transmitting.",
+            "",
+            "Inputs:",
+        ]
+        lines += request.context.inputs.map { "- \($0)" }
+        if !request.grounding.isEmpty {
+            lines += ["", "Facts from SignalHive Rules (true; do not contradict):"]
+            lines += factLines(request)
+        }
+        lines += [
+            "",
+            "Reply in exactly this format and nothing else:",
+            "SUMMARY: <two to four sentences: what matters most in this codeplug and why>",
+            "NEXT: <one short sentence: what the operator should do first>",
+            "CONFIDENCE: <high, medium or low>",
+        ]
+        return lines.joined(separator: "\n")
     }
 
     static func briefAviation(_ request: AIRequest) -> String {

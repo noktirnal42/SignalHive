@@ -87,7 +87,7 @@ enum FoundationModelsStreaming {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    guard request.context.signal != nil || request.context.aviation != nil else { throw AIError.missingContext }
+                    guard request.context.hasContent else { throw AIError.missingContext }
                     let session = makeSession()
                     var text = ""
                     for try await snapshot in session.streamResponse(to: AIPrompt.prompt(for: request)) {

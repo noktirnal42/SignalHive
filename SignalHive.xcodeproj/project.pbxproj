@@ -101,6 +101,9 @@
 		60D3C8F750903A0B08F3AF39 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */; };
 		672484E9130B7B0578BA4934 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */; };
 		E17FCCEC52284D9E7A510440 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */; };
+		56D05D694DF1F8E79224DDB3 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
+		72160C1A0FD6DA81A5EE09EE /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
+		7B6983A31D1EE7BC73821761 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -147,6 +150,7 @@
 		FE79022937FEAE9AAA3DBFBD /* SignalHiveMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHiveMenuBar.entitlements; sourceTree = "<group>"; };
 		405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopSheets.swift; sourceTree = "<group>"; };
 		B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnswerSheet.swift; sourceTree = "<group>"; };
+		DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugFixSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -308,6 +312,7 @@
 				69AFB203A996B9F769878976 /* WorkshopView.swift */,
 				405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */,
 				B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */,
+				DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -490,6 +495,7 @@
 				193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */,
 				250168D0AA8A7795941F0F66 /* WorkshopSheets.swift in Sources */,
 				60D3C8F750903A0B08F3AF39 /* AIAnswerSheet.swift in Sources */,
+				56D05D694DF1F8E79224DDB3 /* CodeplugFixSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,6 +532,7 @@
 				C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */,
 				22F4C74C33F547B9111F99C4 /* WorkshopSheets.swift in Sources */,
 				E17FCCEC52284D9E7A510440 /* AIAnswerSheet.swift in Sources */,
+				7B6983A31D1EE7BC73821761 /* CodeplugFixSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -563,6 +570,7 @@
 				E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */,
 				77D6DECEEB8B24B06E676092 /* WorkshopSheets.swift in Sources */,
 				672484E9130B7B0578BA4934 /* AIAnswerSheet.swift in Sources */,
+				72160C1A0FD6DA81A5EE09EE /* CodeplugFixSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

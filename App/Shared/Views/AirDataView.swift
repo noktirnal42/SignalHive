@@ -25,7 +25,6 @@ struct AirDataView: View {
                 title: snapshot.briefing.headline,
                 subtitle: "Snapshot at \(snapshot.briefing.generatedAt.formatted(date: .omitted, time: .standard))",
                 note: snapshot.briefing.traffic.bySource["Demo"] != nil ? "This picture includes demo aircraft." : nil,
-                inputs: AIContext(aviation: snapshot.briefing).inputs,
                 makeRequest: { .brief(snapshot.briefing, preferred: $0) },
                 identity: snapshot.id)
         }

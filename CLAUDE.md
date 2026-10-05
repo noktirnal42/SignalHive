@@ -37,7 +37,7 @@ scanner, decoders, aviation (ADS-B / UAT), trunking, codeplugs and on-device AI.
 
 ```bash
 script/build_and_run.sh --verify                                       # macOS app (needs macOS 27 SDK)
-cd Packages/SignalHiveCore && swift test --skip RTLSDRHardwareTests    # 493 tests
+cd Packages/SignalHiveCore && swift test --skip RTLSDRHardwareTests    # 516 tests
 cd Packages/SwiftRTLSDR && swift test                                  # embedded driver
 ```
 

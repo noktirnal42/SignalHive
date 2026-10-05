@@ -17,12 +17,25 @@ struct CodeplugView: View {
     @State private var showImporter = false
     @State private var importStatus: String?
     @State private var fixStatus: String?
+    @State private var reviewSnapshot: ReviewSnapshot?
+    @State private var fixPreview: FixPreview?
+
+    private struct ReviewSnapshot: Identifiable {
+        let id = UUID()
+        let review: CodeplugReview
+    }
+
+    private struct FixPreview: Identifiable {
+        let id = UUID()
+        let plan: CodeplugFixPlan
+    }
 
     var body: some View {
-        let issues = CodeplugValidator.validate(model.codeplug)
+        let review = CodeplugReview.make(for: model.codeplug)
+        let issues = review.issues
         List {
             codeplugSection
-            if !model.codeplug.channels.isEmpty { checksSection(issues) }
+            if !model.codeplug.channels.isEmpty { checksSection(issues, review: review) }
             channelsSection(issues)
             actionsSection
             if let writeStatus {
@@ -47,6 +60,25 @@ struct CodeplugView: View {
             }
         }
         .sheet(isPresented: $showNewPlug) { newPlugSheet }
+        .sheet(item: $reviewSnapshot) { snapshot in
+            AIAnswerSheet(
+                navigationTitle: "Codeplug review",
+                title: snapshot.review.headline,
+                subtitle: snapshot.review.codeplugName,
+                note: "The assistant explains the findings. It never changes the codeplug: fixes are previewed and applied by you.",
+                makeRequest: { .review(snapshot.review, preferred: $0) },
+                identity: snapshot.id)
+        }
+        .sheet(item: $fixPreview) { preview in
+            CodeplugFixSheet(plan: preview.plan, codeplugName: model.codeplug.name) {
+                let count = preview.plan.changes.count
+                if model.applyCodeplugFix(preview.plan) {
+                    fixStatus = "Applied \(count) change\(count == 1 ? "" : "s"). Undo is available below."
+                } else {
+                    fixStatus = "The codeplug changed since the preview, so nothing was applied. Preview the fixes again."
+                }
+            }
+        }
         .sheet(isPresented: $showExportShare) {
             if let exportText {
                 ExportSheet(csvText: exportText, fileName: "\(model.codeplug.name)-\(model.codeplug.target.rawValue.replacingOccurrences(of: " ", with: "-")).csv")
@@ -142,7 +174,7 @@ struct CodeplugView: View {
 
     // MARK: Checks
 
-    private func checksSection(_ issues: [CodeplugIssue]) -> some View {
+    private func checksSection(_ issues: [CodeplugIssue], review: CodeplugReview) -> some View {
         let counts = CodeplugValidator.counts(issues)
         return Section {
             if issues.isEmpty {
@@ -181,8 +213,8 @@ struct CodeplugView: View {
                 if issues.count > 40 {
                     Text("Showing the first 40 of \(issues.count).").font(.caption2).foregroundStyle(.secondary)
                 }
-                fixButtons(issues)
             }
+            actionButtons(review)
             if let fixStatus {
                 Text(fixStatus).font(.caption).foregroundStyle(.secondary)
             }
@@ -191,21 +223,24 @@ struct CodeplugView: View {
         }
     }
 
-    @ViewBuilder
-    private func fixButtons(_ issues: [CodeplugIssue]) -> some View {
-        let codes = Set(issues.map(\.code))
+    private func actionButtons(_ review: CodeplugReview) -> some View {
         HStack(spacing: 8) {
-            if codes.contains(.nameTooLong) || codes.contains(.overCapacity) {
-                Button("Fit to radio") {
-                    let result = model.fitCodeplugToRadio()
-                    fixStatus = "Shortened \(result.shortenedNames) name\(result.shortenedNames == 1 ? "" : "s")"
-                        + (result.dropped > 0 ? ", dropped \(result.dropped) channel\(result.dropped == 1 ? "" : "s") past the radio's capacity." : ".")
+            Button {
+                reviewSnapshot = ReviewSnapshot(review: review)
+            } label: {
+                Label("Review with AI", systemImage: "sparkles")
+            }
+            if !review.plan.isEmpty {
+                Button {
+                    fixPreview = FixPreview(plan: review.plan)
+                } label: {
+                    Label("Preview fixes…", systemImage: "wand.and.stars")
                 }
             }
-            if codes.contains(.duplicateChannel) {
-                Button("Remove duplicates") {
-                    let removed = model.removeDuplicateChannels()
-                    fixStatus = "Removed \(removed) duplicate channel\(removed == 1 ? "" : "s")."
+            if model.codeplugBeforeFix?.id == model.codeplug.id {
+                Button("Undo last fix") {
+                    model.undoCodeplugFix()
+                    fixStatus = "Undid the last fix."
                 }
             }
         }

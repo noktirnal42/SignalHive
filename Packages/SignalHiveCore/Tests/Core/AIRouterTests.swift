@@ -337,3 +337,80 @@ struct AIBriefingRouterTests {
         }
     }
 }
+
+
+// MARK: - What is sent, and the codeplug review task
+
+extension AIRouterTests {
+    @Test func theConsentTextIsExactlyWhatAModelWouldBeSent() async throws {
+        let recorder = Recorder()
+        let router = router([.answering(.foundationOnDevice, recorder: recorder)])
+
+        let preview = try await router.outgoingText(for: weather)
+        _ = try await collect(router.answer(weather))
+
+        let seen = try #require(await recorder.requests.first)
+        #expect(preview == AIPrompt.prompt(for: seen))
+        #expect(preview.contains("Licensee NOAA Weather Radio"), "the inputs are in it")
+        #expect(preview.contains("NOAA Weather Radio channels"), "so are the rules facts the model is given")
+    }
+}
+
+private func sampleReview() -> CodeplugReview {
+    func channel(_ name: String, _ mhz: Double, talkgroup: Int = 0) -> CodeplugChannel {
+        CodeplugChannel(name: name, frequencyHz: mhz * 1_000_000, talkgroupID: talkgroup)
+    }
+    return CodeplugReview.make(for: Codeplug(name: "Test", target: .baofengUV5R, channels: [
+        channel("SHERIFF DEPT", 155.475), channel("", 154.28), channel("TG101", 0, talkgroup: 101),
+    ]))
+}
+
+struct AICodeplugRouterTests {
+    private let review = sampleReview()
+
+    @Test func rulesAnswerTheReviewWithTheFindingsAndTheRecommendation() async throws {
+        let (_, answer) = try await collect(AIRouter(providers: []).answer(.review(review)))
+
+        #expect(answer.provider == .rulesEngine)
+        #expect(answer.summary.hasPrefix(review.headline))
+        for line in review.lines { #expect(answer.summary.contains(line), "\(line)") }
+        #expect(answer.recommendation == review.recommendation)
+        #expect(answer.confidence.hasPrefix("rules"))
+    }
+
+    @Test func theAnswerListsWhatTheReviewCovered() async throws {
+        let (_, answer) = try await collect(AIRouter(providers: []).answer(.review(review)))
+
+        #expect(answer.inputs == ["Radio Baofeng UV-5R", "Channels 3", "Problems 1", "To check 2", "Notes 0"])
+    }
+
+    @Test func aModelIsHeldToTheFindingsAndTheConsentTextShowsThem() async throws {
+        let recorder = Recorder()
+        let router = AIRouter(providers: [FakeProvider.answering(.foundationOnDevice, summary: "Two things to fix.", recorder: recorder)])
+        let (_, answer) = try await collect(router.answer(.review(review)))
+
+        let seen = try #require(await recorder.requests.first)
+        #expect(seen.grounding.first?.contains("SHERIFF DEPT") == true)
+        #expect(answer.facts == seen.grounding)
+        let outgoing = try await router.outgoingText(for: .review(review))
+        #expect(outgoing.contains("SHERIFF DEPT"), "the operator is shown the channel names before anything leaves the Mac")
+    }
+
+    @Test func theReviewPromptForbidsInventingOrEditing() {
+        var request = AIRequest.review(review)
+        request.grounding = review.lines
+        let prompt = AIPrompt.reviewCodeplug(request)
+
+        #expect(prompt.contains("Channels 3"))
+        #expect(prompt.contains(review.lines[0]))
+        #expect(prompt.contains("SUMMARY:") && prompt.contains("NEXT:") && prompt.contains("CONFIDENCE:"))
+        #expect(prompt.localizedCaseInsensitiveContains("never contradict"))
+        #expect(prompt.localizedCaseInsensitiveContains("do not invent"))
+        #expect(prompt.localizedCaseInsensitiveContains("cannot change the codeplug"))
+    }
+
+    @Test func aRequestWithoutAReviewFailsInsteadOfInventingOne() async {
+        let request = AIRequest(task: .reviewCodeplug, context: AIContext())
+        await #expect(throws: AIError.missingContext) { _ = try await collect(AIRouter(providers: []).answer(request)) }
+    }
+}

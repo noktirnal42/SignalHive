@@ -8,8 +8,6 @@ struct AIAnswerSheet: View {
     var title: String
     var subtitle = ""
     var note: String?
-    /// What the request is built from, shown before anything leaves the Mac.
-    var inputs: [String]
     var makeRequest: (AIProviderKind?) -> AIRequest
     /// A new identity restarts the run (a new request, not just a new provider choice).
     var identity: UUID
@@ -22,6 +20,8 @@ struct AIAnswerSheet: View {
     @State private var answer: AIAnswer?
     @State private var failure: String?
     @State private var running = false
+    /// The exact text a Private Cloud Compute request would send, shown before the operator agrees.
+    @State private var outgoing: String?
 
     private let router = AIRouter(providers: [FoundationOnDeviceProvider(), PrivateCloudProvider()])
 
@@ -136,15 +136,28 @@ struct AIAnswerSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Private Cloud Compute", systemImage: "lock.icloud")
                 .font(.headline)
-            Text("This sends the inputs below to Apple's Private Cloud Compute to answer. Nothing is sent until you press the button.")
+            Text("This sends exactly the text below to Apple's Private Cloud Compute to answer. Nothing is sent until you press the button.")
                 .fixedSize(horizontal: false, vertical: true)
-            inputsList(inputs)
+            if let outgoing {
+                ScrollView {
+                    Text(outgoing)
+                        .font(.caption2.monospaced())
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxHeight: 170)
+                .padding(8)
+                .background(.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 6))
+            } else {
+                ProgressView().controlSize(.small)
+            }
             Button {
                 cloudToken += 1
             } label: {
                 Label("Ask Private Cloud Compute", systemImage: "paperplane")
             }
             .buttonStyle(.borderedProminent)
+            .disabled(outgoing == nil)
         }
         .padding(14)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
@@ -236,7 +249,11 @@ struct AIAnswerSheet: View {
         answer = nil
         partial = nil
         failure = nil
-        guard !waitingForCloudConsent else { return }
+        outgoing = nil
+        guard !waitingForCloudConsent else {
+            outgoing = try? await router.outgoingText(for: makeRequest(choice.preferred))
+            return
+        }
         running = true
         defer { running = false }
         do {

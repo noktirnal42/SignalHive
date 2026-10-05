@@ -34,6 +34,8 @@ final class AppModel: ObservableObject {
     // Codeplug
     var codeplug = Codeplug()
     var codeplugs: [Codeplug] = []
+    /// The codeplug as it was before the last fix was applied, for one-step undo.
+    var codeplugBeforeFix: Codeplug?
 
     // Cross-view navigation intent
     var pendingScanFrequency: Double?
@@ -434,18 +436,22 @@ final class AppModel: ObservableObject {
         persistCodeplug()
     }
 
+    /// Applies a fix plan the operator previewed, if the codeplug is still what was previewed. Keeps the codeplug as it was so
+    /// the fix can be undone.
     @discardableResult
-    func removeDuplicateChannels() -> Int {
-        let removed = codeplug.removeDuplicates()
-        if removed > 0 { persistCodeplug() }
-        return removed
+    func applyCodeplugFix(_ plan: CodeplugFixPlan) -> Bool {
+        guard let fixed = plan.applying(to: codeplug) else { return false }
+        codeplugBeforeFix = codeplug
+        codeplug = fixed
+        persistCodeplug()
+        return true
     }
 
-    @discardableResult
-    func fitCodeplugToRadio() -> (shortenedNames: Int, dropped: Int) {
-        let result = codeplug.fitToRadio()
-        if result.shortenedNames > 0 || result.dropped > 0 { persistCodeplug() }
-        return result
+    func undoCodeplugFix() {
+        guard let before = codeplugBeforeFix, before.id == codeplug.id else { return }
+        codeplug = before
+        codeplugBeforeFix = nil
+        persistCodeplug()
     }
 
     /// Adds the channels of a CHIRP CSV to the open codeplug. Returns what was read and what was skipped.

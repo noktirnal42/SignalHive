@@ -1,5 +1,14 @@
 import Foundation
 
+extension CodeplugChannel {
+    /// What makes a channel a repeat of an earlier one: frequency, offset, mode and tone. nil for a talkgroup-only channel,
+    /// which has no frequency to repeat.
+    var repeatKey: String? {
+        guard frequencyHz > 0 else { return nil }
+        return String(format: "%.0f|%.0f|%@|%.1f|%d", frequencyHz, offsetHz, mode.rawValue, ctcssToneHz, dtcsCode)
+    }
+}
+
 extension Codeplug {
     /// Moves channels the way a list's drag-to-reorder does: the ones at `source` go to just before `destination`
     /// (an index into the list as it is now).
@@ -48,9 +57,7 @@ extension Codeplug {
         var seen = Set<String>()
         var kept: [CodeplugChannel] = []
         for channel in channels {
-            guard channel.frequencyHz > 0 else { kept.append(channel); continue }
-            let key = String(format: "%.0f|%.0f|%@|%.1f|%d", channel.frequencyHz, channel.offsetHz, channel.mode.rawValue,
-                             channel.ctcssToneHz, channel.dtcsCode)
+            guard let key = channel.repeatKey else { kept.append(channel); continue }
             if seen.insert(key).inserted { kept.append(channel) }
         }
         let removed = channels.count - kept.count

@@ -31,7 +31,6 @@ struct RFCoachSheet: View {
             title: request.title,
             subtitle: request.subtitle,
             note: request.operatorNote,
-            inputs: AIContext(signal: request.context).inputs,
             makeRequest: { .explain(request.context, preferred: $0) },
             identity: request.id)
     }
