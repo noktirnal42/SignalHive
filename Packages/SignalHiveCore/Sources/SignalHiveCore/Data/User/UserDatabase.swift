@@ -30,6 +30,14 @@ public actor UserDatabase {
                 t.column("value", .text).notNull()
             }
         }
+        migrator.registerMigration("v2") { db in
+            // Antennas the owner has declared; the satellite pass ratings are only as honest as this list.
+            try db.create(table: "antennas") { t in
+                t.column("id", .text).primaryKey()
+                t.column("json", .text).notNull()
+                t.column("updatedAt", .datetime).notNull()
+            }
+        }
         try migrator.migrate(queue)
         return UserDatabase(queue: queue)
     }
@@ -73,6 +81,31 @@ public actor UserDatabase {
 
     public func deleteCodeplug(id: UUID) throws {
         try queue.write { try $0.execute(sql: "DELETE FROM codeplugs WHERE id = ?", arguments: [id.uuidString]) }
+    }
+
+    // MARK: Antennas
+
+    public func saveAntenna(_ antenna: AntennaProfile) throws {
+        let json = String(decoding: try JSONEncoder().encode(antenna), as: UTF8.self)
+        try queue.write { db in
+            try db.execute(sql: """
+                INSERT INTO antennas (id, json, updatedAt) VALUES (?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET json = excluded.json, updatedAt = excluded.updatedAt
+                """, arguments: [antenna.id.uuidString, json, Date()])
+        }
+    }
+
+    public func antennas() throws -> [AntennaProfile] {
+        try queue.read { db in
+            try Row.fetchAll(db, sql: "SELECT json FROM antennas ORDER BY updatedAt, id").compactMap { row in
+                guard let data = (row["json"] as String).data(using: .utf8) else { return nil }
+                return try? JSONDecoder().decode(AntennaProfile.self, from: data)
+            }
+        }
+    }
+
+    public func deleteAntenna(id: UUID) throws {
+        try queue.write { try $0.execute(sql: "DELETE FROM antennas WHERE id = ?", arguments: [id.uuidString]) }
     }
 
     // MARK: Legacy migration
