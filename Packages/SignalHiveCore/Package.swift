@@ -50,6 +50,7 @@ let package = Package(
             name: "SignalHiveCoreTests",
             dependencies: ["SignalHiveCore"],
             path: "Tests/Core",
+            resources: [.copy("Fixtures")],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
     ]
