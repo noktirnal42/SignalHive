@@ -90,16 +90,33 @@ struct TrunkedView: View {
     @State private var rfCoachRequest: RFCoachRequest?
 
     var body: some View {
-        NavigationSplitView {
-            systemList
-        } detail: {
-            talkgroupList
-        }
+        trunkedLayout
         .navigationTitle("Trunked")
         .task { if model.systems.isEmpty { await model.loadSystems() } }
         .sheet(item: $rfCoachRequest) { request in
             RFCoachSheet(request: request)
         }
+    }
+
+    @ViewBuilder
+    private var trunkedLayout: some View {
+        #if os(macOS)
+        // A split view nested inside the app's own split view left about 200 pt of dead space ahead of the
+        // talkgroups; Browse uses plain columns for the same reason.
+        HStack(spacing: 0) {
+            systemList
+                .frame(minWidth: 240, idealWidth: 300, maxWidth: 360)
+            Divider()
+            talkgroupList
+                .frame(maxWidth: .infinity)
+        }
+        #else
+        NavigationSplitView {
+            systemList
+        } detail: {
+            talkgroupList
+        }
+        #endif
     }
 
     // MARK: Systems
@@ -144,6 +161,8 @@ struct TrunkedView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(6)
+                    .frame(maxWidth: .infinity)
+                    .background(.bar)
             }
         }
     }

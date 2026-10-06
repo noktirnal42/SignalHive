@@ -55,12 +55,14 @@ struct BrowseView: View {
     @ViewBuilder
     private var browseLayout: some View {
         #if os(macOS)
+        // Four panes share the window, so the first two stay narrow: at 300 + 380 the license detail was left
+        // with about 85 pt and its labels wrapped one word (or one letter) per line.
         HStack(spacing: 0) {
             stateColumn
-                .frame(width: 300)
+                .frame(minWidth: 190, idealWidth: 210, maxWidth: 240)
             Divider()
             countyColumn
-                .frame(width: 380)
+                .frame(minWidth: 210, idealWidth: 250, maxWidth: 300)
             Divider()
             licenseColumn
                 .frame(maxWidth: .infinity)
@@ -254,10 +256,10 @@ struct BrowseView: View {
         #if os(macOS)
         HStack(spacing: 0) {
             licenseList
-                .frame(minWidth: 360, idealWidth: 440, maxWidth: 500)
+                .frame(minWidth: 300, idealWidth: 340, maxWidth: 420)
             Divider()
             licenseDetailPane
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minWidth: 300, maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationSplitViewColumnWidth(min: 620, ideal: 760)
         #else

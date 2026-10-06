@@ -201,14 +201,38 @@ per-screen verdicts, 12 cross-cutting UI findings and the build spec. The remain
   session yet.
 - Air Map's demo sky has no UI entry (button removed in `80cdfc6`) while the Workshop text still promises it.
 - The USB error text in the upstream driver always blames a missing sandbox entitlement for `0xe00002e2`.
-- Browse shows five columns at the default window and two "Select a County" placeholders: too cramped. It needs a
-  larger default window and a leaner layout.
+- Browse showed five columns at the default window and two "Select a County" placeholders: too cramped. Fixed
+  2026-10-05 by narrowing the state and county columns (see the QA item below); the doubled placeholder remains.
 - Power shows "0 W" for mobile-class frequencies; zero should be hidden.
 - Every non-installed state says "Build locally"; no hosted pack server exists yet (the manifest URL is a
   setting: `packBaseURL`). Local build of the large public-safety file (LMpriv, ~423 MB) has not been timed.
 - FCC ULS has no talkgroups, CTCSS/DCS tones or alpha tags. Trunked-system data needs its own approach
   (self-discovery by decoding control channels; optional OpenMHz was approved as an opt-in source).
 - **Found in visual QA of the reconciled app (2026-10-05):** the live AIS decoder reported 300 "vessels" from noise (it never checked the HDLC frame check or the message type, so any bits between two flag patterns became a message) and the flood froze the UI. Fixed with `AISFrameCheck` (CRC-16/X.25 and types 1-27; tests include the standard check value and a noise test that fails without it); **not yet re-run on the dongle after the fix**. The live ACARS decoder has no BCS/parity check either (it only needs a plausible frame), and the Scanner's live scan reports the dongle's own spurs as hits (37 hits spaced exactly 128 kHz apart at 2.048 MS/s; earlier, 4.8 MHz multiples in `rtlsdr-tool scan`). The Scanner also used to keep the dongle open after you left it; it now releases it when it disappears, waiting for an open in flight.
+- **Visual QA pass, macOS app on branch `claude/satellite-workshop` (2026-10-05, window 1419x838, driven headless, every
+  sidebar screen visited; the Scanner was run on the Test Signal Generator only, not the dongle).** Working: Workshop
+  tiles and statuses, AI Lab Explain (answered by the on-device Foundation Model in 3.6 s with its inputs and held-back
+  facts shown), Browse state/county/license lists, Search by call sign, Trunked OpenMHz list and talkgroups, Decoder Hub,
+  Air Data empty state, Scanner waterfall/spectrum/hit list. Defects found, worst first:
+  1. **FIXED (same day): Browse license detail pane was crushed to ~85 pt** at the default window: "Call Sign" and "Service" wrap per word,
+     the "Digital" tag is stacked one letter per line, the "Frequencies" header is cut to "Frequencies...", and the
+     frequency value itself is not visible (only class, power, bandwidth). The county column takes the space. Same
+     root cause as the "five columns" item above; fix the column widths, not just the window size.
+  2. **FIXED (same day, `ViewThatFits` drops the second row to two rows): Scanner bottom control strip overflowed** with the right sidebar open: the Gain label ("... dB") is clipped on the left
+     and the zoom/Find button is cut off on the right.
+  3. **FIXED (same day, plain columns instead of a nested split view): Trunked** had a ~200 pt dead gap between the system list and the talkgroup pane; its "N of N systems" footer also overlapped the last row (now has a bar background).
+  4. **Satellite pass planner is "Ready" on the Workshop** and its text promises NOAA, Meteor and MetOp capture, but the
+     old planner is a two-body Kepler model, NOAA APT is decommissioned, and no capture is wired. The Satellites screen
+     itself is honest ("Needs elements", "capture ... are the next app layer"). Both are replaced by satellite Phase 1.
+  5. **Search**: the suggestion chip "155.475" returns "No matches" on the Arizona-only pack, which reads as a broken chip;
+     chips should be hidden or marked when the installed packs cannot answer them.
+  6. **Air Data** type-filter chips run off the right edge (TFR/SUA clipped, no scroll cue).
+  7. **Scanner Sources** shows raw Hz ranges ("100000.0...6000000000.0"); format with units.
+  8. **Codeplug** is an unstyled form while Workshop/AI Lab/Scanner use the HiveInk look; the Search and Air Data toolbars
+     show ghost (disabled, empty) buttons at the top right.
+  9. **Air Map** drew a blank grid (no map tiles) in the headless capture, and the "Maps" attribution is partly hidden
+     behind the altitude legend. Not confirmed on a foreground window: add to the Owner QA checklist.
+  Small touch targets: the Trunked talkgroup "Sparkle" (Explain) buttons are 12x15 pt.
 - `SDRDeviceManager.scan()` runs six providers; RTL-SDR has been exercised on real hardware through the native Swift
   driver. Other source types still need hardware/provider QA.
 - SwiftRTLSDR PR #1 and PR #2 are merged upstream; SignalHive's embedded copy is upstream `main` at `c8b470f` (2026-10-06), byte-identical (checked with `diff -r`). PR #4 (a `Meshtastic.swift` one-line `reduce` that Swift 6.3.3 on the `macos-26` CI runner cannot type-check) merged that day, so the copy no longer carries a local patch. It includes
@@ -299,3 +323,4 @@ Keep this list honest: add what a change needs checked, tick it when the owner c
 - [ ] Dock icon after a fresh install (not just a rebuild).
 - [ ] Trunked: add a talkgroup to a codeplug and see it in Codeplug.
 - [ ] Radio programming against a real radio (Baofeng UV-5R, Uniden).
+- [ ] Air Map draws map tiles in all six styles (Dark, Map, Terrain, Satellite, Hybrid, Hybrid Terrain) on a foreground window; the 2026-10-05 headless QA capture showed a blank grid.

@@ -345,57 +345,99 @@ struct ScannerView: View {
                 Spacer(minLength: 0)
             }
 
-            HStack(spacing: 18) {
-                sliderBlock("Gain", value: $gain, range: 0...49, suffix: "dB") {
-                    Task { await applyControls() }
+            // One row when it fits; with the 350 pt rail open at the default window it does not (about 900 pt wanted,
+            // 780 pt available), and the overflow used to clip the Gain label and the Find button.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 18) {
+                    gainSlider
+                    squelchSlider
+                    volumeControl
+                    modePicker
+                    detailPicker
+                    retuneButton
+                    findButton
                 }
-                sliderBlock("Squelch", value: Binding(
-                    get: { Double(squelchDB) },
-                    set: { squelchDB = Float($0) }
-                ), range: -120...(-30), suffix: "dB") {
-                    Task { await applyControls() }
-                }
-
-                HStack(spacing: 7) {
-                    Button { muted.toggle() } label: {
-                        Image(systemName: volumeIcon)
-                            .frame(width: 22)
-                            .foregroundStyle(muted ? Color.secondary : Color.white.opacity(0.88))
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 18) {
+                        gainSlider
+                        squelchSlider
+                        volumeControl
+                        Spacer(minLength: 0)
                     }
-                    .buttonStyle(.borderless)
-                    Slider(value: $volumeLevel, in: 0...1)
-                        .frame(width: 110)
-                }
-                .onChange(of: volumeLevel) { _, _ in Task { await pipeline?.setVolume(volume) } }
-                .onChange(of: muted) { _, _ in Task { await pipeline?.setVolume(volume) } }
-
-                Picker("Mode", selection: $mode) {
-                    ForEach(DemodMode.allCases, id: \.self) { m in
-                        Text(m.rawValue).tag(m)
+                    HStack(spacing: 18) {
+                        modePicker
+                        detailPicker
+                        retuneButton
+                        findButton
+                        Spacer(minLength: 0)
                     }
                 }
-                .frame(width: 112)
-                .onChange(of: mode) { _, _ in Task { await applyControls() } }
-
-                Picker("Detail", selection: $fftSize) {
-                    ForEach([2048, 4096, 8192, 16384], id: \.self) { size in
-                        Text("\(Int(sampleRateHz) / size) Hz").tag(size)
-                    }
-                }
-                .frame(width: 132)
-                .onChange(of: fftSize) { _, _ in Task { await applyControls() } }
-
-                Button { Task { await retune() } } label: { Image(systemName: "arrow.triangle.2.circlepath") }
-                    .help("Retune")
-
-                Button { findActive() } label: {
-                    Label("Find", systemImage: "sparkle.magnifyingglass")
-                }
-                .disabled(displaySpectrum.isEmpty)
             }
         }
         .padding(14)
         .background(HiveInk.panel.opacity(0.92))
+    }
+
+    private var gainSlider: some View {
+        sliderBlock("Gain", value: $gain, range: 0...49, suffix: "dB") {
+            Task { await applyControls() }
+        }
+    }
+
+    private var squelchSlider: some View {
+        sliderBlock("Squelch", value: Binding(
+            get: { Double(squelchDB) },
+            set: { squelchDB = Float($0) }
+        ), range: -120...(-30), suffix: "dB") {
+            Task { await applyControls() }
+        }
+    }
+
+    private var volumeControl: some View {
+        HStack(spacing: 7) {
+            Button { muted.toggle() } label: {
+                Image(systemName: volumeIcon)
+                    .frame(width: 22)
+                    .foregroundStyle(muted ? Color.secondary : Color.white.opacity(0.88))
+            }
+            .buttonStyle(.borderless)
+            Slider(value: $volumeLevel, in: 0...1)
+                .frame(width: 110)
+        }
+        .onChange(of: volumeLevel) { _, _ in Task { await pipeline?.setVolume(volume) } }
+        .onChange(of: muted) { _, _ in Task { await pipeline?.setVolume(volume) } }
+    }
+
+    private var modePicker: some View {
+        Picker("Mode", selection: $mode) {
+            ForEach(DemodMode.allCases, id: \.self) { m in
+                Text(m.rawValue).tag(m)
+            }
+        }
+        .frame(width: 112)
+        .onChange(of: mode) { _, _ in Task { await applyControls() } }
+    }
+
+    private var detailPicker: some View {
+        Picker("Detail", selection: $fftSize) {
+            ForEach([2048, 4096, 8192, 16384], id: \.self) { size in
+                Text("\(Int(sampleRateHz) / size) Hz").tag(size)
+            }
+        }
+        .frame(width: 132)
+        .onChange(of: fftSize) { _, _ in Task { await applyControls() } }
+    }
+
+    private var retuneButton: some View {
+        Button { Task { await retune() } } label: { Image(systemName: "arrow.triangle.2.circlepath") }
+            .help("Retune")
+    }
+
+    private var findButton: some View {
+        Button { findActive() } label: {
+            Label("Find", systemImage: "sparkle.magnifyingglass")
+        }
+        .disabled(displaySpectrum.isEmpty)
     }
 
     private func sliderBlock(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String, onEditingEnded: @escaping () -> Void) -> some View {
