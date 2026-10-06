@@ -33,6 +33,15 @@ ISS = (
 DEFAULT_MINUTES = [-1440.0, -360.0, 0.0, 360.0, 1440.0, 4320.0]
 XPDOTP = 1440.0 / (2.0 * math.pi)
 
+# Observer-frame samples for the Swift topocentric tests: where the owner's antenna is, every 10 minutes for a day.
+LOOK_OBSERVER = (35.2534, -109.4374, 1800.0)  # latitude, longitude (degrees), altitude (metres)
+LOOK_CASES = ("iss-2025-09-30", "meteor-m2-4")
+LOOK_MINUTES = [i * 10.0 for i in range(0, 145)]
+WGS84_A = 6378.137
+WGS84_F = 1 / 298.257223563
+EARTH_ROTATION = 7.292115146706979e-5  # rad/s
+J2000 = dt.datetime(2000, 1, 1, 12, 0, 0)
+
 
 def checksum_ok(line):
     total = 0
@@ -129,6 +138,51 @@ def propagate(sat, minutes_list):
     return samples, None
 
 
+def gmst_radians(moment):
+    """IAU-1982 GMST for a UTC datetime, treating UTC as UT1 (the same simplification the Swift code documents)."""
+    days = (moment - J2000).total_seconds() / 86400.0
+    t = days / 36525.0
+    deg = 280.46061837 + 360.98564736629 * days + 0.000387933 * t * t - t * t * t / 38710000.0
+    return math.radians(deg % 360.0)
+
+
+def observer_ecef(lat_deg, lon_deg, alt_m):
+    lat, lon, h = math.radians(lat_deg), math.radians(lon_deg), alt_m / 1000.0
+    e2 = WGS84_F * (2 - WGS84_F)
+    n = WGS84_A / math.sqrt(1 - e2 * math.sin(lat) ** 2)
+    return [(n + h) * math.cos(lat) * math.cos(lon), (n + h) * math.cos(lat) * math.sin(lon),
+            (n * (1 - e2) + h) * math.sin(lat)]
+
+
+def look_samples(sat, epoch, observer, minutes_list):
+    """Azimuth, elevation, range and range-rate by rotation matrices (south-east-zenith), independent of the Swift code."""
+    lat, lon = math.radians(observer[0]), math.radians(observer[1])
+    obs = observer_ecef(*observer)
+    out = []
+    for minutes in minutes_list:
+        e, r, v = sat.sgp4_tsince(minutes)
+        if e != 0:
+            continue
+        gmst = gmst_radians(epoch + dt.timedelta(minutes=minutes))
+        c, s_ = math.cos(gmst), math.sin(gmst)
+        r_e = [c * r[0] + s_ * r[1], -s_ * r[0] + c * r[1], r[2]]
+        # Velocity relative to the rotating Earth: rotate, then subtract omega x r.
+        v_e = [c * v[0] + s_ * v[1] + EARTH_ROTATION * r_e[1], -s_ * v[0] + c * v[1] - EARTH_ROTATION * r_e[0], v[2]]
+        rho = [r_e[i] - obs[i] for i in range(3)]
+        south = math.sin(lat) * math.cos(lon) * rho[0] + math.sin(lat) * math.sin(lon) * rho[1] - math.cos(lat) * rho[2]
+        east = -math.sin(lon) * rho[0] + math.cos(lon) * rho[1]
+        zenith = math.cos(lat) * math.cos(lon) * rho[0] + math.cos(lat) * math.sin(lon) * rho[1] + math.sin(lat) * rho[2]
+        rng = math.sqrt(sum(x * x for x in rho))
+        out.append({
+            "minutes": minutes,
+            "az": math.degrees(math.atan2(east, -south)) % 360.0,
+            "el": math.degrees(math.asin(zenith / rng)),
+            "rangeKM": rng,
+            "rangeRateKMS": sum(rho[i] * v_e[i] for i in range(3)) / rng,
+        })
+    return {"observer": list(observer), "samples": out}
+
+
 def build_case(name, omm, tle, minutes_list):
     sat = satrec_from_omm(omm)
     all_samples, failure = propagate(sat, minutes_list)
@@ -211,8 +265,13 @@ def main():
         full_samples[omm["NORAD_CAT_ID"]] = (case["periodMinutes"], {round(s["minutes"], 6): s for s in all_samples})
     check_against_cpp_reference(full_samples)
 
-    iss_omm = omm_from_tle("ISS (ZARYA)", *ISS)
-    cases.append(build_case("iss-2025-09-30", iss_omm, ISS, DEFAULT_MINUTES)[0])
+    def add_case(name, omm, tle):
+        case, sat, _ = build_case(name, omm, tle, DEFAULT_MINUTES)
+        if name in LOOK_CASES:
+            case["look"] = look_samples(sat, dt.datetime.fromisoformat(omm["EPOCH"]), LOOK_OBSERVER, LOOK_MINUTES)
+        cases.append(case)
+
+    add_case("iss-2025-09-30", omm_from_tle("ISS (ZARYA)", *ISS), ISS)
 
     if args.weather:
         weather = json.load(open(args.weather))
@@ -228,7 +287,7 @@ def main():
         omm = {k: entry[k] for k in ("OBJECT_NAME", "NORAD_CAT_ID", "EPOCH", "MEAN_MOTION", "ECCENTRICITY",
                                      "INCLINATION", "RA_OF_ASC_NODE", "ARG_OF_PERICENTER", "MEAN_ANOMALY",
                                      "BSTAR", "MEAN_MOTION_DOT", "MEAN_MOTION_DDOT")}
-        cases.append(build_case(name.lower().replace(" ", "-"), omm, None, DEFAULT_MINUTES)[0])
+        add_case(name.lower().replace(" ", "-"), omm, None)
 
     json.dump({"generator": "python-sgp4 2.25, WGS-72, opsmode a", "cases": cases}, sys.stdout, indent=1)
     sys.stdout.write("\n")
