@@ -37,6 +37,7 @@ let package = Package(
             path: "Sources/SignalHiveCore",
             resources: [
                 .process("DSP/Models"),
+                .process("Satellite/Catalog/Resources"),
             ],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),

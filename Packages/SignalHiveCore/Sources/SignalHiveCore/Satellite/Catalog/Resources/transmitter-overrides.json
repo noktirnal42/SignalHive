@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "comment": "Facts SatNOGS does not carry. Strength classes are reports from operators and amateurs, not measurements made by SignalHive; a transmitter listed under verifiedTransmitters has been received on air by the owner (none yet).",
+  "satellites": [
+    {
+      "noradID": 57166,
+      "name": "METEOR-M2 3",
+      "strength": "weak",
+      "note": "Its LRPT antenna did not fully deploy, so the signal is weak: only high passes with a good antenna work, and a simple mast antenna often gets nothing. (Operator and amateur reports; not measured here.)"
+    },
+    {
+      "noradID": 59051,
+      "name": "METEOR-M2 4",
+      "strength": "medium",
+      "note": "LRPT downlink at 137 MHz, reported strong enough for a simple antenna on higher passes. (Amateur reports; not measured here.)"
+    }
+  ],
+  "verifiedTransmitters": []
+}
