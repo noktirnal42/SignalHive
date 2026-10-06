@@ -1,5 +1,5 @@
 {
- "generator": "python-sgp4 2.25, WGS-72, opsmode a",
+ "generator": "python-sgp4 2.25, WGS-72, opsmode a; passes by 1 s brute force with an independent geodesy, cross-checked with skyfield 1.55 by script/verify_passes_skyfield.py",
  "cases": [
   {
    "name": "ver-00005",
@@ -4406,7 +4406,30 @@
     }
    ],
    "error": 6,
-   "errorMinutes": 55.0
+   "errorMinutes": 55.0,
+   "passes": [
+    {
+     "observer": [
+      74.77105057198975,
+      53.100117690499864,
+      0.0
+     ],
+     "from": "2005-11-29T00:28:58.939104",
+     "through": "2005-11-30T00:28:58.939104",
+     "minElevation": 5.0,
+     "failureMinutes": 51.516666666666666,
+     "list": [
+      {
+       "aos": "2005-11-29T00:45:17.230605",
+       "tca": "2005-11-29T00:48:57.712470",
+       "los": "2005-11-29T00:52:30.252605",
+       "maxEl": 89.17918334002906,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    }
+   ]
   },
   {
    "name": "ver-29141",
@@ -6568,7 +6591,525 @@
       "rangeRateKMS": 0.022423085999361856
      }
     ]
-   }
+   },
+   "passes": [
+    {
+     "observer": [
+      35.2534,
+      -109.4374,
+      1800.0
+     ],
+     "from": "2025-09-30T13:30:28.486080",
+     "through": "2025-10-03T13:30:28.486080",
+     "minElevation": 5.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2025-09-30T19:48:24.043558",
+       "tca": "2025-09-30T19:52:05.385419",
+       "los": "2025-09-30T19:55:47.846853",
+       "maxEl": 22.081511302133773,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T21:24:45.723809",
+       "tca": "2025-09-30T21:28:42.474076",
+       "los": "2025-09-30T21:32:40.645455",
+       "maxEl": 29.52469696046124,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T23:04:28.869504",
+       "tca": "2025-09-30T23:06:20.335819",
+       "los": "2025-09-30T23:08:11.983621",
+       "maxEl": 7.101550634407123,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T02:19:48.219419",
+       "tca": "2025-10-01T02:22:47.157798",
+       "los": "2025-10-01T02:25:45.839694",
+       "maxEl": 11.91477230247268,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T03:55:45.642349",
+       "tca": "2025-10-01T04:00:00.098917",
+       "los": "2025-10-01T04:04:13.568145",
+       "maxEl": 78.02746576645053,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T05:34:09.752774",
+       "tca": "2025-10-01T05:36:14.590060",
+       "los": "2025-10-01T05:38:19.306776",
+       "maxEl": 7.85932948147108,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T19:00:56.546720",
+       "tca": "2025-10-01T19:03:50.262567",
+       "los": "2025-10-01T19:06:44.503359",
+       "maxEl": 11.84125180595507,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T20:36:03.410773",
+       "tca": "2025-10-01T20:40:12.463141",
+       "los": "2025-10-01T20:44:23.157256",
+       "maxEl": 52.31314806687579,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T22:14:59.228589",
+       "tca": "2025-10-01T22:17:34.726096",
+       "los": "2025-10-01T22:20:10.639266",
+       "maxEl": 9.714981357859054,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T01:31:43.831899",
+       "tca": "2025-10-02T01:34:03.424323",
+       "los": "2025-10-02T01:36:22.905465",
+       "maxEl": 8.546153926467387,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T03:07:24.648416",
+       "tca": "2025-10-02T03:11:32.026923",
+       "los": "2025-10-02T03:15:38.544379",
+       "maxEl": 40.61726358847122,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T04:44:40.643765",
+       "tca": "2025-10-02T04:48:00.485468",
+       "los": "2025-10-02T04:51:19.867688",
+       "maxEl": 15.568650871343003,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T18:14:53.366724",
+       "tca": "2025-10-02T18:15:36.649426",
+       "los": "2025-10-02T18:16:19.951514",
+       "maxEl": 5.3031988132656585,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T19:47:33.495337",
+       "tca": "2025-10-02T19:51:45.028426",
+       "los": "2025-10-02T19:55:58.217001",
+       "maxEl": 79.31811747594362,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T21:25:40.041060",
+       "tca": "2025-10-02T21:28:51.178896",
+       "los": "2025-10-02T21:32:03.031359",
+       "maxEl": 13.693337637133205,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-03T00:43:44.221576",
+       "tca": "2025-10-03T00:45:14.670400",
+       "los": "2025-10-03T00:46:45.092084",
+       "maxEl": 6.319868157594344,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-03T02:19:07.341503",
+       "tca": "2025-10-03T02:22:58.230027",
+       "los": "2025-10-03T02:26:48.459264",
+       "maxEl": 24.397470007376974,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-03T03:55:46.168849",
+       "tca": "2025-10-03T03:59:41.587665",
+       "los": "2025-10-03T04:03:36.221252",
+       "maxEl": 28.781299195069742,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      35.2534,
+      -109.4374,
+      1800.0
+     ],
+     "from": "2025-09-30T13:30:28.486080",
+     "through": "2025-10-03T13:30:28.486080",
+     "minElevation": 10.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2025-09-30T19:49:27.175514",
+       "tca": "2025-09-30T19:52:05.385419",
+       "los": "2025-09-30T19:54:44.268387",
+       "maxEl": 22.081511302133773,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T21:25:44.630325",
+       "tca": "2025-09-30T21:28:42.474076",
+       "los": "2025-09-30T21:31:41.225259",
+       "maxEl": 29.52469696046124,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T02:21:25.598313",
+       "tca": "2025-10-01T02:22:47.157798",
+       "los": "2025-10-01T02:24:08.660455",
+       "maxEl": 11.91477230247268,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T03:56:39.646943",
+       "tca": "2025-10-01T04:00:00.098917",
+       "los": "2025-10-01T04:03:19.851881",
+       "maxEl": 78.02746576645053,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T19:02:32.189525",
+       "tca": "2025-10-01T19:03:50.262567",
+       "los": "2025-10-01T19:05:08.464195",
+       "maxEl": 11.84125180595507,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T20:36:57.933578",
+       "tca": "2025-10-01T20:40:12.463141",
+       "los": "2025-10-01T20:43:28.134585",
+       "maxEl": 52.31314806687579,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T03:08:21.033500",
+       "tca": "2025-10-02T03:11:32.026923",
+       "los": "2025-10-02T03:14:42.443328",
+       "maxEl": 40.61726358847122,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T04:45:55.809374",
+       "tca": "2025-10-02T04:48:00.485468",
+       "los": "2025-10-02T04:50:04.943265",
+       "maxEl": 15.568650871343003,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T19:48:26.917802",
+       "tca": "2025-10-02T19:51:45.028426",
+       "los": "2025-10-02T19:55:04.319844",
+       "maxEl": 79.31811747594362,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T21:27:03.608427",
+       "tca": "2025-10-02T21:28:51.178896",
+       "los": "2025-10-02T21:30:39.001357",
+       "maxEl": 13.693337637133205,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-03T02:20:09.700123",
+       "tca": "2025-10-03T02:22:58.230027",
+       "los": "2025-10-03T02:25:46.371734",
+       "maxEl": 24.397470007376974,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-03T03:56:45.364814",
+       "tca": "2025-10-03T03:59:41.587665",
+       "los": "2025-10-03T04:02:37.290885",
+       "maxEl": 28.781299195069742,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      -33.8688,
+      151.2093,
+      50.0
+     ],
+     "from": "2025-09-30T13:30:28.486080",
+     "through": "2025-10-03T13:30:28.486080",
+     "minElevation": 5.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2025-09-30T14:22:49.322135",
+       "tca": "2025-09-30T14:26:33.541428",
+       "los": "2025-09-30T14:30:20.202388",
+       "maxEl": 21.60257259583916,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T15:59:08.195959",
+       "tca": "2025-09-30T16:03:10.519586",
+       "los": "2025-09-30T16:07:15.325512",
+       "maxEl": 29.633910524003277,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T17:39:14.653291",
+       "tca": "2025-09-30T17:40:50.888560",
+       "los": "2025-09-30T17:42:27.273965",
+       "maxEl": 6.450652536554877,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T20:55:08.569422",
+       "tca": "2025-09-30T20:57:38.108480",
+       "los": "2025-09-30T21:00:06.920983",
+       "maxEl": 9.014300535044796,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T22:30:46.170822",
+       "tca": "2025-09-30T22:35:02.979199",
+       "los": "2025-09-30T22:39:15.933565",
+       "maxEl": 51.37191070603312,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T00:08:29.300690",
+       "tca": "2025-10-01T00:11:24.953722",
+       "los": "2025-10-01T00:14:19.100183",
+       "maxEl": 11.674550846679692,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T13:35:25.795350",
+       "tca": "2025-10-01T13:38:18.989200",
+       "los": "2025-10-01T13:41:13.450292",
+       "maxEl": 11.466940193004632,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T15:10:25.708055",
+       "tca": "2025-10-01T15:14:40.611343",
+       "los": "2025-10-01T15:18:58.691618",
+       "maxEl": 53.071018882517535,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T16:49:32.322263",
+       "tca": "2025-10-01T16:52:04.555196",
+       "los": "2025-10-01T16:54:37.321820",
+       "maxEl": 9.220931515214357,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T20:07:19.482827",
+       "tca": "2025-10-01T20:08:51.364063",
+       "los": "2025-10-01T20:10:23.027713",
+       "maxEl": 6.311363708551692,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T21:42:29.338531",
+       "tca": "2025-10-01T21:46:32.474995",
+       "los": "2025-10-01T21:50:32.502993",
+       "maxEl": 28.83062639602378,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T23:19:22.946264",
+       "tca": "2025-10-01T23:23:09.783495",
+       "los": "2025-10-01T23:26:53.700216",
+       "maxEl": 22.019893560996877,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T14:21:56.506196",
+       "tca": "2025-10-02T14:26:13.418801",
+       "los": "2025-10-02T14:30:33.843172",
+       "maxEl": 77.86687087984973,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T16:00:07.459505",
+       "tca": "2025-10-02T16:03:20.583076",
+       "los": "2025-10-02T16:06:34.835571",
+       "maxEl": 13.361470493462605,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T20:54:16.361798",
+       "tca": "2025-10-02T20:57:55.984107",
+       "los": "2025-10-02T21:01:33.414227",
+       "maxEl": 18.344411734496017,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T22:30:37.773103",
+       "tca": "2025-10-02T22:34:49.515618",
+       "los": "2025-10-02T22:38:57.376051",
+       "maxEl": 42.62128930053468,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      -33.8688,
+      151.2093,
+      50.0
+     ],
+     "from": "2025-09-30T13:30:28.486080",
+     "through": "2025-10-03T13:30:28.486080",
+     "minElevation": 10.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2025-09-30T14:23:53.526722",
+       "tca": "2025-09-30T14:26:33.541428",
+       "los": "2025-09-30T14:29:15.001982",
+       "maxEl": 21.60257259583916,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T16:00:07.676832",
+       "tca": "2025-09-30T16:03:10.519586",
+       "los": "2025-09-30T16:06:14.969313",
+       "maxEl": 29.633910524003277,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-09-30T22:31:42.112688",
+       "tca": "2025-09-30T22:35:02.979199",
+       "los": "2025-09-30T22:38:21.137138",
+       "maxEl": 51.37191070603312,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T00:10:08.767769",
+       "tca": "2025-10-01T00:11:24.953722",
+       "los": "2025-10-01T00:12:40.806072",
+       "maxEl": 11.674550846679692,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T13:37:07.194248",
+       "tca": "2025-10-01T13:38:18.989200",
+       "los": "2025-10-01T13:39:31.038939",
+       "maxEl": 11.466940193004632,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T15:11:20.590072",
+       "tca": "2025-10-01T15:14:40.611343",
+       "los": "2025-10-01T15:18:02.870996",
+       "maxEl": 53.071018882517535,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T21:43:30.044449",
+       "tca": "2025-10-01T21:46:32.474995",
+       "los": "2025-10-01T21:49:32.904220",
+       "maxEl": 28.83062639602378,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-01T23:20:27.598040",
+       "tca": "2025-10-01T23:23:09.783495",
+       "los": "2025-10-01T23:25:50.229377",
+       "maxEl": 22.019893560996877,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T14:22:50.270979",
+       "tca": "2025-10-02T14:26:13.418801",
+       "los": "2025-10-02T14:29:39.092107",
+       "maxEl": 77.86687087984973,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T16:01:34.379926",
+       "tca": "2025-10-02T16:03:20.583076",
+       "los": "2025-10-02T16:05:07.169039",
+       "maxEl": 13.361470493462605,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T20:55:27.174381",
+       "tca": "2025-10-02T20:57:55.984107",
+       "los": "2025-10-02T21:00:23.647999",
+       "maxEl": 18.344411734496017,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2025-10-02T22:31:34.344687",
+       "tca": "2025-10-02T22:34:49.515618",
+       "los": "2025-10-02T22:38:01.984219",
+       "maxEl": 42.62128930053468,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    }
+   ]
   },
   {
    "name": "meteor-m2-4",
@@ -7694,7 +8235,477 @@
       "rangeRateKMS": -3.2709315756937998
      }
     ]
-   }
+   },
+   "passes": [
+    {
+     "observer": [
+      35.2534,
+      -109.4374,
+      1800.0
+     ],
+     "from": "2026-10-05T14:52:43.642848",
+     "through": "2026-10-08T14:52:43.642848",
+     "minElevation": 5.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T20:04:35.619099",
+       "tca": "2026-10-05T20:08:33.983005",
+       "los": "2026-10-05T20:12:32.330570",
+       "maxEl": 11.682025750724444,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T21:41:25.931865",
+       "tca": "2026-10-05T21:47:49.854558",
+       "los": "2026-10-05T21:54:16.364064",
+       "maxEl": 80.1862894810593,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T23:26:12.592062",
+       "tca": "2026-10-05T23:28:31.239816",
+       "los": "2026-10-05T23:30:50.435148",
+       "maxEl": 6.769787066851551,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T10:01:31.879046",
+       "tca": "2026-10-06T10:07:49.892370",
+       "los": "2026-10-06T10:14:04.002314",
+       "maxEl": 52.573226186424456,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T11:42:28.295892",
+       "tca": "2026-10-06T11:47:21.840956",
+       "los": "2026-10-06T11:52:14.508248",
+       "maxEl": 17.444193185600806,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T19:45:22.398004",
+       "tca": "2026-10-06T19:47:17.931305",
+       "los": "2026-10-06T19:49:13.412045",
+       "maxEl": 6.281532540947905,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T21:19:53.856479",
+       "tca": "2026-10-06T21:26:13.874381",
+       "los": "2026-10-06T21:32:35.870244",
+       "maxEl": 63.67036604417577,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T23:02:13.245743",
+       "tca": "2026-10-06T23:06:36.763883",
+       "los": "2026-10-06T23:11:02.093358",
+       "maxEl": 13.290757918076112,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T09:40:10.542584",
+       "tca": "2026-10-07T09:46:06.535413",
+       "los": "2026-10-07T09:51:58.853539",
+       "maxEl": 32.00040993372885,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T11:20:18.119489",
+       "tca": "2026-10-07T11:25:57.238710",
+       "los": "2026-10-07T11:31:34.699718",
+       "maxEl": 27.331943242232125,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T20:58:38.682686",
+       "tca": "2026-10-07T21:04:41.851970",
+       "los": "2026-10-07T21:10:46.269553",
+       "maxEl": 39.19241638323056,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T22:39:20.731400",
+       "tca": "2026-10-07T22:44:46.561015",
+       "los": "2026-10-07T22:50:14.902066",
+       "maxEl": 22.2197988299391,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T09:19:04.717690",
+       "tca": "2026-10-08T09:24:19.234354",
+       "los": "2026-10-08T09:29:30.754390",
+       "maxEl": 19.726596744266097,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T10:58:20.726109",
+       "tca": "2026-10-08T11:04:28.344667",
+       "los": "2026-10-08T11:10:33.464249",
+       "maxEl": 43.316302112792364,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      35.2534,
+      -109.4374,
+      1800.0
+     ],
+     "from": "2026-10-05T14:52:43.642848",
+     "through": "2026-10-08T14:52:43.642848",
+     "minElevation": 10.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T20:06:45.776583",
+       "tca": "2026-10-05T20:08:33.983005",
+       "los": "2026-10-05T20:10:22.198245",
+       "maxEl": 11.682025750724444,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T21:42:29.115578",
+       "tca": "2026-10-05T21:47:49.854558",
+       "los": "2026-10-05T21:53:12.589424",
+       "maxEl": 80.1862894810593,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T10:02:37.569795",
+       "tca": "2026-10-06T10:07:49.892370",
+       "los": "2026-10-06T10:12:59.278953",
+       "maxEl": 52.573226186424456,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T11:43:58.000134",
+       "tca": "2026-10-06T11:47:21.840956",
+       "los": "2026-10-06T11:50:45.169622",
+       "maxEl": 17.444193185600806,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T21:20:57.607549",
+       "tca": "2026-10-06T21:26:13.874381",
+       "los": "2026-10-06T21:31:31.685343",
+       "maxEl": 63.67036604417577,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T23:04:06.654916",
+       "tca": "2026-10-06T23:06:36.763883",
+       "los": "2026-10-06T23:09:07.490253",
+       "maxEl": 13.290757918076112,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T09:41:22.246102",
+       "tca": "2026-10-07T09:46:06.535413",
+       "los": "2026-10-07T09:50:48.270971",
+       "maxEl": 32.00040993372885,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T11:21:31.725536",
+       "tca": "2026-10-07T11:25:57.238710",
+       "los": "2026-10-07T11:30:21.566883",
+       "maxEl": 27.331943242232125,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T20:59:46.095289",
+       "tca": "2026-10-07T21:04:41.851970",
+       "los": "2026-10-07T21:09:38.571771",
+       "maxEl": 39.19241638323056,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T22:40:41.047277",
+       "tca": "2026-10-07T22:44:46.561015",
+       "los": "2026-10-07T22:48:53.591934",
+       "maxEl": 22.2197988299391,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T09:20:30.558820",
+       "tca": "2026-10-08T09:24:19.234354",
+       "los": "2026-10-08T09:28:06.202771",
+       "maxEl": 19.726596744266097,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T10:59:27.322270",
+       "tca": "2026-10-08T11:04:28.344667",
+       "los": "2026-10-08T11:09:27.455918",
+       "maxEl": 43.316302112792364,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      -33.8688,
+      151.2093,
+      50.0
+     ],
+     "from": "2026-10-05T14:52:43.642848",
+     "through": "2026-10-08T14:52:43.642848",
+     "minElevation": 5.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T15:47:10.770657",
+       "tca": "2026-10-05T15:53:21.912236",
+       "los": "2026-10-05T15:59:37.650130",
+       "maxEl": 48.45048102616677,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T17:28:37.878421",
+       "tca": "2026-10-05T17:33:34.704827",
+       "los": "2026-10-05T17:38:35.379935",
+       "maxEl": 17.179993487095775,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T04:08:12.085387",
+       "tca": "2026-10-06T04:13:59.145424",
+       "los": "2026-10-06T04:19:41.894937",
+       "maxEl": 26.585001070127046,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T05:47:59.568277",
+       "tca": "2026-10-06T05:53:55.807338",
+       "los": "2026-10-06T05:59:49.440700",
+       "maxEl": 32.35554090090491,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T15:26:05.793110",
+       "tca": "2026-10-06T15:31:52.259577",
+       "los": "2026-10-06T15:37:42.096171",
+       "maxEl": 30.17091151944025,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T17:06:01.707954",
+       "tca": "2026-10-06T17:11:46.584683",
+       "los": "2026-10-06T17:17:36.661837",
+       "maxEl": 28.194655361120986,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T03:47:16.344817",
+       "tca": "2026-10-07T03:52:10.704933",
+       "los": "2026-10-07T03:57:01.855026",
+       "maxEl": 16.16305740329648,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T05:26:05.534534",
+       "tca": "2026-10-07T05:32:25.629910",
+       "los": "2026-10-07T05:38:42.003897",
+       "maxEl": 52.103386359595326,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T15:05:21.789841",
+       "tca": "2026-10-07T15:10:26.854031",
+       "los": "2026-10-07T15:15:33.996520",
+       "maxEl": 19.16489974138715,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T16:43:51.007839",
+       "tca": "2026-10-07T16:50:02.377770",
+       "los": "2026-10-07T16:56:19.692372",
+       "maxEl": 46.22766536610832,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T03:27:00.114799",
+       "tca": "2026-10-08T03:30:18.186389",
+       "los": "2026-10-08T03:33:34.754716",
+       "maxEl": 8.85284359202184,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T05:04:21.334289",
+       "tca": "2026-10-08T05:10:51.399378",
+       "los": "2026-10-08T05:17:16.867663",
+       "maxEl": 84.78345610034346,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T06:46:42.525730",
+       "tca": "2026-10-08T06:49:58.276356",
+       "los": "2026-10-08T06:53:13.758675",
+       "maxEl": 9.029498921819581,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T14:45:06.882200",
+       "tca": "2026-10-08T14:49:05.910246",
+       "los": "2026-10-08T14:52:43.642848",
+       "maxEl": 11.732517988322934,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": true
+      }
+     ]
+    },
+    {
+     "observer": [
+      -33.8688,
+      151.2093,
+      50.0
+     ],
+     "from": "2026-10-05T14:52:43.642848",
+     "through": "2026-10-08T14:52:43.642848",
+     "minElevation": 10.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T15:48:15.781357",
+       "tca": "2026-10-05T15:53:21.912236",
+       "los": "2026-10-05T15:58:31.573533",
+       "maxEl": 48.45048102616677,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T17:30:09.555675",
+       "tca": "2026-10-05T17:33:34.704827",
+       "los": "2026-10-05T17:37:01.841362",
+       "maxEl": 17.179993487095775,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T04:09:28.452078",
+       "tca": "2026-10-06T04:13:59.145424",
+       "los": "2026-10-06T04:18:26.978908",
+       "maxEl": 26.585001070127046,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T05:49:10.433511",
+       "tca": "2026-10-06T05:53:55.807338",
+       "los": "2026-10-06T05:58:39.261867",
+       "maxEl": 32.35554090090491,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T15:27:16.900033",
+       "tca": "2026-10-06T15:31:52.259577",
+       "los": "2026-10-06T15:36:30.048559",
+       "maxEl": 30.17091151944025,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T17:07:14.831286",
+       "tca": "2026-10-06T17:11:46.584683",
+       "los": "2026-10-06T17:16:21.867842",
+       "maxEl": 28.194655361120986,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T03:48:54.085310",
+       "tca": "2026-10-07T03:52:10.704933",
+       "los": "2026-10-07T03:55:25.777080",
+       "maxEl": 16.16305740329648,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T05:27:11.152885",
+       "tca": "2026-10-07T05:32:25.629910",
+       "los": "2026-10-07T05:37:37.226741",
+       "maxEl": 52.103386359595326,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T15:06:46.634128",
+       "tca": "2026-10-07T15:10:26.854031",
+       "los": "2026-10-07T15:14:08.328529",
+       "maxEl": 19.16489974138715,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T16:44:56.694657",
+       "tca": "2026-10-07T16:50:02.377770",
+       "los": "2026-10-07T16:55:12.506636",
+       "maxEl": 46.22766536610832,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T05:05:25.339658",
+       "tca": "2026-10-08T05:10:51.399378",
+       "los": "2026-10-08T05:16:13.867166",
+       "maxEl": 84.78345610034346,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T14:47:16.077536",
+       "tca": "2026-10-08T14:49:05.910246",
+       "los": "2026-10-08T14:50:55.981372",
+       "maxEl": 11.732517988322934,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    }
+   ]
   },
   {
    "name": "meteor-m2-3",
@@ -7898,7 +8909,453 @@
     }
    ],
    "error": null,
-   "errorMinutes": null
+   "errorMinutes": null,
+   "passes": [
+    {
+     "observer": [
+      35.2534,
+      -109.4374,
+      1800.0
+     ],
+     "from": "2026-10-05T13:18:10.888416",
+     "through": "2026-10-08T13:18:10.888416",
+     "minElevation": 5.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T18:31:37.175069",
+       "tca": "2026-10-05T18:34:55.895925",
+       "los": "2026-10-05T18:38:14.609588",
+       "maxEl": 9.20795984013399,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T20:07:49.311465",
+       "tca": "2026-10-05T20:14:14.870072",
+       "los": "2026-10-05T20:20:43.049527",
+       "maxEl": 83.25578083241507,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T21:51:31.031197",
+       "tca": "2026-10-05T21:55:00.453305",
+       "los": "2026-10-05T21:58:31.126799",
+       "maxEl": 9.482692704421238,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T08:29:25.949539",
+       "tca": "2026-10-06T08:35:41.546601",
+       "los": "2026-10-06T08:41:53.905898",
+       "maxEl": 44.002900164797865,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T10:10:15.925022",
+       "tca": "2026-10-06T10:15:32.386988",
+       "los": "2026-10-06T10:20:48.151792",
+       "maxEl": 20.86509259374747,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T19:49:12.505505",
+       "tca": "2026-10-06T19:55:30.560366",
+       "los": "2026-10-06T20:01:50.682036",
+       "maxEl": 54.88481130776718,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T21:31:12.000830",
+       "tca": "2026-10-06T21:36:00.172822",
+       "los": "2026-10-06T21:40:50.567660",
+       "maxEl": 15.7653913745289,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T08:10:56.355694",
+       "tca": "2026-10-07T08:16:48.661862",
+       "los": "2026-10-07T08:22:37.893937",
+       "maxEl": 28.91830674704361,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T09:51:04.734890",
+       "tca": "2026-10-07T09:56:55.599970",
+       "los": "2026-10-07T10:02:45.176629",
+       "maxEl": 30.651132047668643,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T19:30:48.559650",
+       "tca": "2026-10-07T19:36:49.267086",
+       "los": "2026-10-07T19:42:51.405793",
+       "maxEl": 36.334192649548704,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T21:11:27.767665",
+       "tca": "2026-10-07T21:17:03.030785",
+       "los": "2026-10-07T21:22:41.105490",
+       "maxEl": 24.22841928849243,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T07:52:39.423798",
+       "tca": "2026-10-08T07:57:52.796094",
+       "los": "2026-10-08T08:03:03.575555",
+       "maxEl": 19.041982522105894,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T09:32:02.243054",
+       "tca": "2026-10-08T09:38:15.625828",
+       "los": "2026-10-08T09:44:27.070962",
+       "maxEl": 45.75809237153375,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      35.2534,
+      -109.4374,
+      1800.0
+     ],
+     "from": "2026-10-05T13:18:10.888416",
+     "through": "2026-10-08T13:18:10.888416",
+     "minElevation": 10.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T20:08:52.527986",
+       "tca": "2026-10-05T20:14:14.870072",
+       "los": "2026-10-05T20:19:39.253720",
+       "maxEl": 83.25578083241507,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T08:30:33.470106",
+       "tca": "2026-10-06T08:35:41.546601",
+       "los": "2026-10-06T08:40:47.246836",
+       "maxEl": 44.002900164797865,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T10:11:37.905185",
+       "tca": "2026-10-06T10:15:32.386988",
+       "los": "2026-10-06T10:19:26.395450",
+       "maxEl": 20.86509259374747,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T19:50:17.132326",
+       "tca": "2026-10-06T19:55:30.560366",
+       "los": "2026-10-06T20:00:45.598715",
+       "maxEl": 54.88481130776718,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T21:32:50.045007",
+       "tca": "2026-10-06T21:36:00.172822",
+       "los": "2026-10-06T21:39:11.323967",
+       "maxEl": 15.7653913745289,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T08:12:10.463365",
+       "tca": "2026-10-07T08:16:48.661862",
+       "los": "2026-10-07T08:21:24.791380",
+       "maxEl": 28.91830674704361,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T09:52:16.312334",
+       "tca": "2026-10-07T09:56:55.599970",
+       "los": "2026-10-07T10:01:33.927996",
+       "maxEl": 30.651132047668643,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T19:31:57.099033",
+       "tca": "2026-10-07T19:36:49.267086",
+       "los": "2026-10-07T19:41:42.526595",
+       "maxEl": 36.334192649548704,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T21:12:45.484259",
+       "tca": "2026-10-07T21:17:03.030785",
+       "los": "2026-10-07T21:21:22.352022",
+       "maxEl": 24.22841928849243,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T07:54:07.428003",
+       "tca": "2026-10-08T07:57:52.796094",
+       "los": "2026-10-08T08:01:36.731176",
+       "maxEl": 19.041982522105894,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T09:33:08.605984",
+       "tca": "2026-10-08T09:38:15.625828",
+       "los": "2026-10-08T09:43:21.148035",
+       "maxEl": 45.75809237153375,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      -33.8688,
+      151.2093,
+      50.0
+     ],
+     "from": "2026-10-05T13:18:10.888416",
+     "through": "2026-10-08T13:18:10.888416",
+     "minElevation": 5.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T14:13:01.863624",
+       "tca": "2026-10-05T14:19:07.887993",
+       "los": "2026-10-05T14:25:17.749091",
+       "maxEl": 38.99509969350326,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T15:53:56.512609",
+       "tca": "2026-10-05T15:59:23.991788",
+       "los": "2026-10-05T16:04:55.978624",
+       "maxEl": 22.06694701831527,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T02:35:35.305924",
+       "tca": "2026-10-06T02:41:07.506007",
+       "los": "2026-10-06T02:46:35.277759",
+       "maxEl": 22.070592227742445,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T04:15:13.455943",
+       "tca": "2026-10-06T04:21:23.608677",
+       "los": "2026-10-06T04:27:30.047322",
+       "maxEl": 39.0606592176845,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T13:54:49.982249",
+       "tca": "2026-10-06T14:00:29.377798",
+       "los": "2026-10-06T14:06:11.499556",
+       "maxEl": 26.25410514703116,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T15:34:28.927083",
+       "tca": "2026-10-06T15:40:29.342664",
+       "los": "2026-10-06T15:46:35.141409",
+       "maxEl": 33.536924994845215,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T02:17:32.368426",
+       "tca": "2026-10-07T02:22:09.879909",
+       "los": "2026-10-07T02:26:44.254755",
+       "maxEl": 14.129799273224322,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T03:56:15.255196",
+       "tca": "2026-10-07T04:02:41.961070",
+       "los": "2026-10-07T04:09:03.970329",
+       "maxEl": 59.49149803803117,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T05:40:41.644590",
+       "tca": "2026-10-07T05:41:45.239868",
+       "los": "2026-10-07T05:42:48.808323",
+       "maxEl": 5.366584418586101,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T13:36:55.013162",
+       "tca": "2026-10-07T13:41:54.100021",
+       "los": "2026-10-07T13:46:54.848551",
+       "maxEl": 17.73887089545853,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T15:15:18.341490",
+       "tca": "2026-10-07T15:21:37.636589",
+       "los": "2026-10-07T15:28:02.714085",
+       "maxEl": 51.56465571409979,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T02:00:07.012405",
+       "tca": "2026-10-08T02:03:09.126856",
+       "los": "2026-10-08T02:06:09.866233",
+       "maxEl": 8.135680755439969,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T03:37:24.223486",
+       "tca": "2026-10-08T03:43:57.203491",
+       "los": "2026-10-08T03:50:24.871832",
+       "maxEl": 89.63285249098791,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T05:19:45.673605",
+       "tca": "2026-10-08T05:23:18.219557",
+       "los": "2026-10-08T05:26:50.261809",
+       "maxEl": 9.845494954684588,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    },
+    {
+     "observer": [
+      -33.8688,
+      151.2093,
+      50.0
+     ],
+     "from": "2026-10-05T13:18:10.888416",
+     "through": "2026-10-08T13:18:10.888416",
+     "minElevation": 10.0,
+     "failureMinutes": null,
+     "list": [
+      {
+       "aos": "2026-10-05T14:14:09.435839",
+       "tca": "2026-10-05T14:19:07.887993",
+       "los": "2026-10-05T14:24:09.234320",
+       "maxEl": 38.99509969350326,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-05T15:55:17.264018",
+       "tca": "2026-10-05T15:59:23.991788",
+       "los": "2026-10-05T16:03:33.496161",
+       "maxEl": 22.06694701831527,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T02:36:57.806372",
+       "tca": "2026-10-06T02:41:07.506007",
+       "los": "2026-10-06T02:45:14.479059",
+       "maxEl": 22.070592227742445,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T04:16:21.958419",
+       "tca": "2026-10-06T04:21:23.608677",
+       "los": "2026-10-06T04:26:22.455271",
+       "maxEl": 39.0606592176845,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T13:56:04.678390",
+       "tca": "2026-10-06T14:00:29.377798",
+       "los": "2026-10-06T14:04:55.981208",
+       "maxEl": 26.25410514703116,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-06T15:35:39.122582",
+       "tca": "2026-10-06T15:40:29.342664",
+       "los": "2026-10-06T15:45:23.384918",
+       "maxEl": 33.536924994845215,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T02:19:21.686703",
+       "tca": "2026-10-07T02:22:09.879909",
+       "los": "2026-10-07T02:24:56.826873",
+       "maxEl": 14.129799273224322,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T03:57:20.415636",
+       "tca": "2026-10-07T04:02:41.961070",
+       "los": "2026-10-07T04:07:59.849784",
+       "maxEl": 59.49149803803117,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T13:38:24.362331",
+       "tca": "2026-10-07T13:41:54.100021",
+       "los": "2026-10-07T13:45:24.792368",
+       "maxEl": 17.73887089545853,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-07T15:16:23.522377",
+       "tca": "2026-10-07T15:21:37.636589",
+       "los": "2026-10-07T15:26:56.129279",
+       "maxEl": 51.56465571409979,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      },
+      {
+       "aos": "2026-10-08T03:38:28.497408",
+       "tca": "2026-10-08T03:43:57.203491",
+       "los": "2026-10-08T03:49:21.775161",
+       "maxEl": 89.63285249098791,
+       "startsBeforeWindow": false,
+       "endsAfterWindow": false
+      }
+     ]
+    }
+   ]
   }
  ]
 }

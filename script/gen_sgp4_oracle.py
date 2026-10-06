@@ -42,6 +42,13 @@ WGS84_F = 1 / 298.257223563
 EARTH_ROTATION = 7.292115146706979e-5  # rad/s
 J2000 = dt.datetime(2000, 1, 1, 12, 0, 0)
 
+# Expected passes: a 1-second brute-force search with the geodesy above (independent of the Swift code).
+PASS_CASES = ("iss-2025-09-30", "meteor-m2-4", "noaa-21-(jpss-2)")
+PASS_OBSERVERS = [(35.2534, -109.4374, 1800.0), (-33.8688, 151.2093, 50.0)]
+PASS_DAYS = 3
+PASS_MIN_ELEVATIONS = (5.0, 10.0)
+DECAY_CASE = "ver-28872"  # decays 55 minutes after its epoch; the observer sits under its track at minute 20
+
 
 def checksum_ok(line):
     total = 0
@@ -183,6 +190,107 @@ def look_samples(sat, epoch, observer, minutes_list):
     return {"observer": list(observer), "samples": out}
 
 
+class _Site:
+    """Observer constants for the fast elevation-only loop."""
+
+    def __init__(self, observer):
+        self.lat, self.lon = math.radians(observer[0]), math.radians(observer[1])
+        self.ecef = observer_ecef(*observer)
+        self.sl, self.cl = math.sin(self.lat), math.cos(self.lat)
+        self.so, self.co = math.sin(self.lon), math.cos(self.lon)
+
+
+def _elevation_at(sat, site, epoch_days, minutes):
+    """Elevation in degrees, or None where SGP4 reports an error."""
+    e, r, _ = sat.sgp4_tsince(minutes)
+    if e != 0:
+        return None
+    days = epoch_days + minutes / 1440.0
+    t = days / 36525.0
+    gmst = math.radians((280.46061837 + 360.98564736629 * days + 0.000387933 * t * t - t * t * t / 38710000.0) % 360.0)
+    c, s_ = math.cos(gmst), math.sin(gmst)
+    rx, ry, rz = c * r[0] + s_ * r[1] - site.ecef[0], -s_ * r[0] + c * r[1] - site.ecef[1], r[2] - site.ecef[2]
+    zenith = site.cl * site.co * rx + site.cl * site.so * ry + site.sl * rz
+    return math.degrees(math.asin(zenith / math.sqrt(rx * rx + ry * ry + rz * rz)))
+
+
+def brute_force_passes(sat, epoch, observer, start_minutes, end_minutes, min_elevation, step_seconds=1.0):
+    """Passes above `min_elevation` between two times (minutes after the element epoch), found by sampling every
+    second, with linear interpolation for the crossings and a parabola through the peak. Stops at an SGP4 failure
+    and returns its minute; a pass still up at that moment is dropped (its end is unknown)."""
+    site = _Site(observer)
+    epoch_days = (epoch - J2000).total_seconds() / 86400.0
+    step = step_seconds / 60.0
+    count = int(round((end_minutes - start_minutes) / step))
+    values, failure = [], None
+    for k in range(count + 1):
+        minutes = start_minutes + k * step
+        el = _elevation_at(sat, site, epoch_days, minutes)
+        if el is None:
+            failure = minutes
+            break
+        values.append(el)
+    passes, k = [], 0
+    n = len(values)
+    while k < n:
+        if values[k] < min_elevation:
+            k += 1
+            continue
+        first = k
+        while k < n and values[k] >= min_elevation:
+            k += 1
+        last = k - 1
+        starts_before = first == 0
+        ends_after = last == n - 1 and failure is None
+        if last == n - 1 and failure is not None:
+            break  # still up when SGP4 failed: the end is unknown
+        def crossing(a, b):
+            frac = (min_elevation - values[a]) / (values[b] - values[a])
+            return start_minutes + (a + frac) * step
+        aos = start_minutes if starts_before else crossing(first - 1, first)
+        los = end_minutes if ends_after else crossing(last, last + 1)
+        peak = max(range(first, last + 1), key=lambda i: values[i])
+        tca, max_el = start_minutes + peak * step, values[peak]
+        if 0 < peak < n - 1:
+            a, b, c = values[peak - 1], values[peak], values[peak + 1]
+            denom = a - 2 * b + c
+            if denom != 0:
+                d = 0.5 * (a - c) / denom
+                tca, max_el = start_minutes + (peak + d) * step, b - 0.25 * (a - c) * d
+        passes.append({"aosMinutes": aos, "tcaMinutes": tca, "losMinutes": los, "maxEl": max_el,
+                       "startsBeforeWindow": starts_before, "endsAfterWindow": ends_after})
+    return passes, failure
+
+
+def iso(epoch, minutes):
+    return (epoch + dt.timedelta(minutes=minutes)).isoformat(timespec="microseconds")
+
+
+def pass_entries(sat, omm, observers, days, min_elevations):
+    epoch = dt.datetime.fromisoformat(omm["EPOCH"])
+    entries = []
+    for observer in observers:
+        for min_el in min_elevations:
+            found, failure = brute_force_passes(sat, epoch, observer, 0.0, days * 1440.0, min_el)
+            entries.append({
+                "observer": list(observer), "from": iso(epoch, 0.0), "through": iso(epoch, days * 1440.0),
+                "minElevation": min_el, "failureMinutes": failure,
+                "list": [{"aos": iso(epoch, p["aosMinutes"]), "tca": iso(epoch, p["tcaMinutes"]),
+                          "los": iso(epoch, p["losMinutes"]), "maxEl": p["maxEl"],
+                          "startsBeforeWindow": p["startsBeforeWindow"], "endsAfterWindow": p["endsAfterWindow"]}
+                         for p in found]})
+    return entries
+
+
+def subpoint_observer(sat, epoch, minutes, altitude_m=0.0):
+    """An observer directly under the satellite at a given minute (geocentric latitude is close enough to put it overhead)."""
+    _, r, _ = sat.sgp4_tsince(minutes)
+    gmst = gmst_radians(epoch + dt.timedelta(minutes=minutes))
+    c, s_ = math.cos(gmst), math.sin(gmst)
+    x, y, z = c * r[0] + s_ * r[1], -s_ * r[0] + c * r[1], r[2]
+    return (math.degrees(math.atan2(z, math.hypot(x, y))), math.degrees(math.atan2(y, x)), altitude_m)
+
+
 def build_case(name, omm, tle, minutes_list):
     sat = satrec_from_omm(omm)
     all_samples, failure = propagate(sat, minutes_list)
@@ -264,11 +372,19 @@ def main():
         cases.append(case)
         full_samples[omm["NORAD_CAT_ID"]] = (case["periodMinutes"], {round(s["minutes"], 6): s for s in all_samples})
     check_against_cpp_reference(full_samples)
+    for case in cases:
+        if case["name"] == DECAY_CASE:
+            omm = case["omm"]
+            sat = satrec_from_omm(omm)
+            observer = subpoint_observer(sat, dt.datetime.fromisoformat(omm["EPOCH"]), 20.0)
+            case["passes"] = pass_entries(sat, omm, [observer], 1, (5.0,))
 
     def add_case(name, omm, tle):
         case, sat, _ = build_case(name, omm, tle, DEFAULT_MINUTES)
         if name in LOOK_CASES:
             case["look"] = look_samples(sat, dt.datetime.fromisoformat(omm["EPOCH"]), LOOK_OBSERVER, LOOK_MINUTES)
+        if name in PASS_CASES:
+            case["passes"] = pass_entries(sat, omm, PASS_OBSERVERS, PASS_DAYS, PASS_MIN_ELEVATIONS)
         cases.append(case)
 
     add_case("iss-2025-09-30", omm_from_tle("ISS (ZARYA)", *ISS), ISS)
@@ -289,7 +405,8 @@ def main():
                                      "BSTAR", "MEAN_MOTION_DOT", "MEAN_MOTION_DDOT")}
         add_case(name.lower().replace(" ", "-"), omm, None)
 
-    json.dump({"generator": "python-sgp4 2.25, WGS-72, opsmode a", "cases": cases}, sys.stdout, indent=1)
+    json.dump({"generator": "python-sgp4 2.25, WGS-72, opsmode a; passes by 1 s brute force with an independent geodesy, "
+                 "cross-checked with skyfield 1.55 by script/verify_passes_skyfield.py", "cases": cases}, sys.stdout, indent=1)
     sys.stdout.write("\n")
 
 
