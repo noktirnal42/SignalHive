@@ -134,4 +134,22 @@ struct SatelliteDirectoryTests {
         let noaa21 = try #require(records.first { $0.elements.noradID == 54234 })
         #expect(noaa21.primaryTransmitter == nil)
     }
+
+    @Test func suppressedTransmittersAreNotListedOrChosen() {
+        let overrides = TransmitterOverrides(strengths: [:], notes: [:], verified: [],
+                                             suppressed: [.init(noradID: 1, downlinkHz: 1_227_600_000, reason: "GPS receive frequency")])
+        let transmitters = [transmitter("gps", norad: 1, mhz: 1227.6, mode: "FM"), transmitter("real", norad: 1, mhz: 137.1),
+                            transmitter("otherSat", norad: 2, mhz: 1227.6, mode: "FM")]
+        let records = SatelliteDirectory.build(groups: [.stations: [elements(1), elements(2)]], satellites: [:], transmitters: transmitters, overrides: overrides)
+        #expect(records.first { $0.elements.noradID == 1 }?.transmitters.map(\.id) == ["real"])
+        #expect(records.first { $0.elements.noradID == 2 }?.transmitters.map(\.id) == ["otherSat"], "only the named satellite is affected")
+    }
+
+    @Test func bundledOverridesDropNOAA20sGPSFrequencies() throws {
+        let overrides = try TransmitterOverrides.bundled()
+        #expect(overrides.isSuppressed(noradID: 43013, downlinkHz: 1_227_600_000))
+        #expect(overrides.isSuppressed(noradID: 43013, downlinkHz: 1_575_420_000))
+        #expect(!overrides.isSuppressed(noradID: 43013, downlinkHz: 1_544_500_000))
+        #expect(!overrides.isSuppressed(noradID: 59051, downlinkHz: 1_227_600_000))
+    }
 }

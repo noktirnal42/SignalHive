@@ -15,6 +15,8 @@ final class AppModel: ObservableObject {
     /// The Decoder Hub's live session (one dongle, one decoder).
     let liveDecoder = LiveDecoderModel()
     @ObservationIgnored private var userData: UserDatabase?
+    /// The open user database, for screens that keep their own small tables (antennas).
+    var userDatabase: UserDatabase? { userData }
     var states: [StateAvailability] = []
     /// Live progress for installs in flight (the pack store only reports milestones).
     var liveStatus: [String: PackStatus] = [:]

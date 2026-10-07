@@ -54,7 +54,7 @@ public enum SatelliteDirectory {
                 let status = satellites[elements.noradID] ?? .unknown
                 guard status != .dead, status != .reentered, status != .future else { continue }
 
-                var own = byID[elements.noradID] ?? []
+                var own = (byID[elements.noradID] ?? []).filter { !overrides.isSuppressed(noradID: $0.noradID, downlinkHz: $0.downlinkHz) }
                 for verified in overrides.transmitters(for: elements.noradID) {
                     if let index = own.firstIndex(where: { $0.id == verified.id }) { own[index] = verified } else { own.append(verified) }
                 }

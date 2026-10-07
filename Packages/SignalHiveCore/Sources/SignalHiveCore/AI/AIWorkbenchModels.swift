@@ -458,12 +458,12 @@ public enum AIWorkbenchFeatureCatalog {
                 category: "Satellite",
                 provider: .foundationOnDevice,
                 status: .planned,
-                detail: "Will plan NOAA/Meteor passes, annotate capture quality, and explain image products after decoders mature.",
+                detail: "Will annotate Meteor LRPT capture quality and explain image products once passes can be recorded and decoded.",
                 privacy: "Planned on-device analysis of local pass data.",
-                useCases: ["NOAA APT pass plan", "LRPT capture notes", "Image QA"],
+                useCases: ["Pass plan notes", "LRPT capture notes", "Image QA"],
                 inputs: ["TLE/pass data", "RTL-SDR settings", "Audio/image product", "Signal quality"],
                 outputs: ["Pass plan", "Capture checklist", "Image quality notes", "Retune recommendation"],
-                nextMilestone: "Implement pass planner and APT/LRPT decode products before LLM summaries."
+                nextMilestone: "Record and decode Meteor LRPT passes before LLM summaries (pass prediction already exists)."
             ),
             AIFeature(
                 id: "semantic-fcc-search",

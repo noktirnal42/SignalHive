@@ -7,11 +7,26 @@ public struct TransmitterOverrides: Sendable {
     private let strengths: [Int: SignalStrengthClass]
     private let notes: [Int: String]
     private let verified: [TransmitterInfo]
+    private let suppressed: [Suppressed]
 
-    public init(strengths: [Int: SignalStrengthClass], notes: [Int: String], verified: [TransmitterInfo]) {
+    /// A downlink SatNOGS lists that is known not to be one (for example a GPS receive frequency).
+    public struct Suppressed: Sendable, Decodable {
+        public var noradID: Int
+        public var downlinkHz: Double
+        public var reason: String
+
+        public init(noradID: Int, downlinkHz: Double, reason: String) {
+            self.noradID = noradID
+            self.downlinkHz = downlinkHz
+            self.reason = reason
+        }
+    }
+
+    public init(strengths: [Int: SignalStrengthClass], notes: [Int: String], verified: [TransmitterInfo], suppressed: [Suppressed] = []) {
         self.strengths = strengths
         self.notes = notes
         self.verified = verified
+        self.suppressed = suppressed
     }
 
     private struct File: Decodable {
@@ -22,6 +37,7 @@ public struct TransmitterOverrides: Sendable {
         }
         var satellites: [Entry]
         var verifiedTransmitters: [TransmitterInfo]
+        var suppressedTransmitters: [Suppressed]?
     }
 
     public static func bundled() throws -> TransmitterOverrides {
@@ -35,10 +51,15 @@ public struct TransmitterOverrides: Sendable {
             if let strength = entry.strength { strengths[entry.noradID] = strength }
             if let note = entry.note { notes[entry.noradID] = note }
         }
-        return TransmitterOverrides(strengths: strengths, notes: notes, verified: file.verifiedTransmitters)
+        return TransmitterOverrides(strengths: strengths, notes: notes, verified: file.verifiedTransmitters,
+                                    suppressed: file.suppressedTransmitters ?? [])
     }
 
     public func strength(for noradID: Int) -> SignalStrengthClass { strengths[noradID] ?? .unknown }
     public func note(for noradID: Int) -> String? { notes[noradID] }
+    /// Within 1 kHz, since feeds round frequencies differently.
+    public func isSuppressed(noradID: Int, downlinkHz: Double) -> Bool {
+        suppressed.contains { $0.noradID == noradID && abs($0.downlinkHz - downlinkHz) < 1000 }
+    }
     public func transmitters(for noradID: Int) -> [TransmitterInfo] { verified.filter { $0.noradID == noradID } }
 }

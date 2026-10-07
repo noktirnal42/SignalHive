@@ -93,7 +93,6 @@ struct WorkshopCatalogTests {
         #expect(try item("ais", bare).destination == .decoderHub)
         #expect(try item("morse", bare).destination == .decoderHub)
         #expect(try item("satellites", bare).destination == .satellites)
-        #expect(try item("apt", bare).destination == nil)
     }
 
     @Test func theCountsFollowTheStatuses() {

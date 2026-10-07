@@ -236,8 +236,8 @@ public enum WorkshopCatalog {
             setup: env.rtlsdrDongles > 0 ? nil : "FIS-B is broadcast on 978 MHz and needs an RTL-SDR.",
             action: uatAction))
         items.append(WorkshopItem(
-            "satellites", .workflows, "Satellite pass planner",
-            "Fetches current weather-satellite elements, uses the antenna location, and schedules upcoming NOAA, Meteor and MetOp passes for RTL-SDR capture.",
+            "satellites", .workflows, "Satellite passes",
+            "Predicts passes of weather, station and amateur satellites from your antenna location (SGP4), rates each against the antennas you have, and shows where to point. It does not record or decode a pass yet.",
             symbol: "globe.americas", status: .ready, action: .open(.satellites)))
         items.append(WorkshopItem(
             "decoderhub", .workflows, "Decoder Hub",
@@ -371,8 +371,7 @@ public enum WorkshopCatalog {
         // MARK: Planned
 
         for (id, title, detail, symbol) in [
-            ("apt", "NOAA APT weather satellite images", "Needs an audio capture chain and an image renderer; pass scheduling now has a Swift foundation.", "dot.radiowaves.up.forward"),
-            ("satdump", "SatDump-style product browser", "Needs capture sessions, Doppler assist, image gallery, calibration metadata and export around the Swift LRPT decoder.", "shippingbox"),
+            ("satdump", "SatDump-style product browser", "Needs capture sessions, Doppler assist, image gallery, calibration metadata and export around the Swift LRPT decoder (pass prediction exists; NOAA APT is off the air).", "shippingbox"),
             ("lora", "LoRa and Meshtastic", "Needs a Swift LoRa demodulator and packet decoder; no published SwiftRTLSDR branch is available yet.", "dot.radiowaves.forward"),
             ("dvb", "Satellite and terrestrial TV", "Needs hardware beyond a standard RTL-SDR.", "tv"),
             ("follow", "Trunk following", "Needs control-channel decoding, talkgroup following and audio recording.", "point.3.connected.trianglepath.dotted"),

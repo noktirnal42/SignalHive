@@ -79,7 +79,7 @@ struct ContentView: View {
             case .trunked: TrunkedView()
             case .scanner: ScannerView()
             case .decoderHub: DecoderHubView()
-            case .satellites: SatelliteView()
+            case .satellites: SatellitesView()
             case .airMap: AirMapView()
             case .airData: AirDataView()
             case .codeplug: CodeplugView()

@@ -205,8 +205,8 @@ public actor SignalDescriptionEngine {
         case 137_000_000...138_000_000:
             return (
                 "the VHF weather-satellite band",
-                "This is where NOAA APT and Meteor-style satellite downlinks are commonly hunted with RTL-SDR gear.",
-                "Use a satellite-pass plan, a wide enough IQ capture, and image decoders once the Decoder Hub is wired."
+                "This is where Meteor LRPT weather-satellite downlinks are received with RTL-SDR gear (NOAA's APT satellites have gone off the air).",
+                "Use the Satellites screen to find a high pass, a wide enough IQ capture, and an LRPT decoder once recording is wired."
             )
         case 144_000_000...148_000_000:
             return (

@@ -15,5 +15,9 @@
       "note": "LRPT downlink at 137 MHz, reported strong enough for a simple antenna on higher passes. (Amateur reports; not measured here.)"
     }
   ],
-  "verifiedTransmitters": []
+  "verifiedTransmitters": [],
+  "suppressedTransmitters": [
+    { "noradID": 43013, "downlinkHz": 1227600000, "reason": "NOAA 20: SatNOGS lists the GPS L2 frequency as a downlink; it is the satellite's GPS receiver, not a transmitter." },
+    { "noradID": 43013, "downlinkHz": 1575420000, "reason": "NOAA 20: SatNOGS lists the GPS L1 frequency as a downlink; it is the satellite's GPS receiver, not a transmitter." }
+  ]
 }
