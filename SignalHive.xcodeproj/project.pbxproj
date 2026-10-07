@@ -8,28 +8,41 @@
 
 /* Begin PBXBuildFile section */
 		005512CC6DA1AEB4A8B054EA /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
+		0317C9F12400E75B0C40793A /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 076838481A346BAE9857E2E8 /* LiveDecoderModel.swift */; };
 		08F503600DFFB11F25E306BD /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
 		0BDE5FE62A614B9D09D614C6 /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
-		0DA3EB9A496C39B77E557A38 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE596D83136B1E6E2479B3E /* SatelliteView.swift */; };
+		0CB68FEB2B7F280E7F1E6D23 /* PassTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5033470694EBBB6FE8516EAE /* PassTimelineView.swift */; };
+		0FD67A6204AF5D2850FD40CA /* SatellitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784CE2C627751C222BA9A607 /* SatellitesView.swift */; };
 		107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
+		11F1DA22F6D3470CC916A4AA /* PassTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5033470694EBBB6FE8516EAE /* PassTimelineView.swift */; };
 		1247E6FB1820F3CB65B9C48B /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F502D1C78A459A663F809EF2 /* ModelLibrary.swift */; };
 		14834E128153021E5B9F2770 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
 		176A92185F753F60101D0C40 /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
 		193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
+		1B8F365FBB233ECB5253DD0C /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C02CE42A86902629ACCDBF1 /* AIAnswerSheet.swift */; };
 		1D04CEFFC046BB1FB22685C8 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
+		20126754DEC445DFDF5DE86B /* PassInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09639D0D74C8D677D5844391 /* PassInspectorView.swift */; };
+		218E1333FBE9F81545EB77E4 /* WorkshopSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9DE9F952EED4CBC90B1A71 /* WorkshopSheets.swift */; };
 		2418D316E1312AF0973268AB /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 37F3717AC3E08F594D491B33 /* SignalHiveCore */; };
 		271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */; };
 		2734480FB21FA65258BDAF8B /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
+		3101FD9A69C635244D26D3F3 /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 076838481A346BAE9857E2E8 /* LiveDecoderModel.swift */; };
 		337F20F3FDE9408C4D61BA4E /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */; };
+		3593A1737FDCB4363E36904E /* SatellitesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87AB700EAC7C1AA6D72EFCA7 /* SatellitesModel.swift */; };
 		36812FF465737730CC288846 /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
+		39B7A0BE18DFDEA0E1BDC263 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73908E1275E92809D78B1848 /* CodeplugFixSheet.swift */; };
 		4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
+		414C3A2244A05B759DF5F21C /* SatellitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784CE2C627751C222BA9A607 /* SatellitesView.swift */; };
 		41C77ABBF61E8AFDF6A260AC /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
 		42B6525233723D525A63AEF8 /* ScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4BE49843C1B12AB457B4085 /* ScannerView.swift */; };
 		4B3FC808ADC54710A9907B1A /* MenuBarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6884868AC2561809B1890F7 /* MenuBarApp.swift */; };
+		591CE7537494E680B6078B00 /* GroundTrackMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68FBAB5D165387C21E86B8E3 /* GroundTrackMap.swift */; };
 		5934FCA2E190AE36E0A4E581 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
+		5C43DBBAA947A9232A9C9288 /* PolarSkyPlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0E4598D76D108EE2BE1724 /* PolarSkyPlot.swift */; };
 		5C53D8674F30077AA3463F8E /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
 		5EDD2F8E5D23959EEFEA0882 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
 		5F0941B0551AFFDA62C216E4 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
+		5F1C8DE0A58499241A6D4360 /* SatellitesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87AB700EAC7C1AA6D72EFCA7 /* SatellitesModel.swift */; };
 		61AE2650F85D34ED71310B15 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
 		625D686397EAC1E5E2E3AF84 /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		64C34FCE1C063EBF6009AD34 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
@@ -42,7 +55,9 @@
 		70A8C5C5385B3D901AA7A933 /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
 		7218F49A826B4803E7A7CBB4 /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
 		73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */; };
+		7411EF8A510BEB249284BA06 /* AntennaEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5DECF4D120B8C2594E8B60 /* AntennaEditorSheet.swift */; };
 		768D7B39B9964719999CBCE8 /* ReceiverLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */; };
+		791A71C8D071AF9807A37FEE /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73908E1275E92809D78B1848 /* CodeplugFixSheet.swift */; };
 		7AAA95935596DC0C14E7C32B /* ReceiverLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */; };
 		7B11AD7964D24A0A86A4672F /* ReceiverLocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */; };
 		7BB50E45997B4B448891E932 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */; };
@@ -51,21 +66,32 @@
 		7FD434A80FD6BB548DF1E11B /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23ED14F82291986C7D32CA20 /* AirDataView.swift */; };
 		80327CF9EC8C59FF02DDDBA1 /* IOSPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F281C2E5409DFA34E2603A8 /* IOSPlatform.swift */; };
 		84C954774CD570C1022B68F5 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
-		889A3D764037802240935017 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE596D83136B1E6E2479B3E /* SatelliteView.swift */; };
+		86572FE2DEAD1C230D05B982 /* GroundTrackMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68FBAB5D165387C21E86B8E3 /* GroundTrackMap.swift */; };
 		8B86E737807DED9676F18485 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		8FA4307472FE812D02CEF0FA /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
 		8FD05DF7E0E8BA9D16072DB7 /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
+		9175095C796F356AD0EFF585 /* PassInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09639D0D74C8D677D5844391 /* PassInspectorView.swift */; };
+		98148D84A278D74E45BA752A /* PassFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED433723D6F1BBB3FE97D9E /* PassFormat.swift */; };
+		988204E3110493923C3A104E /* AntennaEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5DECF4D120B8C2594E8B60 /* AntennaEditorSheet.swift */; };
 		9BCA6FE1F34D9C80DC77B3DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		9C3F508B1F2B7B0F5DB46667 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
 		9D71F72E33E6D0A3F7DFE01C /* AirMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40604D31962E11C73A08FD7C /* AirMapView.swift */; };
+		A0A178CD1AB6F173BF7DFE8E /* WorkshopSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9DE9F952EED4CBC90B1A71 /* WorkshopSheets.swift */; };
 		A376EC0225E7277F8261F167 /* AirDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23ED14F82291986C7D32CA20 /* AirDataView.swift */; };
+		A57F0CED74F1AA684639101E /* GroundTrackMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68FBAB5D165387C21E86B8E3 /* GroundTrackMap.swift */; };
 		A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
 		A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */; };
 		AB66B586AFC79C38B4E7E2E0 /* RFCoachSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */; };
 		AE6D5B5A9C5E8F61BEB60CAF /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B7AE917721E446C187D13B0 /* SignalHiveCore */; };
+		B5BC549E13B65A33BE70B84F /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C02CE42A86902629ACCDBF1 /* AIAnswerSheet.swift */; };
+		B67C0242719C5529445C0D0E /* AntennaEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5DECF4D120B8C2594E8B60 /* AntennaEditorSheet.swift */; };
+		B97209A8D924A92C7D60F82C /* PassCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A3D1248720B50678C5C102 /* PassCharts.swift */; };
 		BA60D6CE7801E55AC5E482E6 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABF61028C20628FB5F4E497 /* ContentView.swift */; };
+		BF885474CD99E8A39A8FBDF9 /* PassFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED433723D6F1BBB3FE97D9E /* PassFormat.swift */; };
 		C1D608EC968BC097430BC9E1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27373345F1C7E36527757CDF /* Assets.xcassets */; };
 		C58151539066A5EC98AE2698 /* SignalHiveApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */; };
+		C5FDE8CD3A40440BC3F2DFF4 /* PolarSkyPlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0E4598D76D108EE2BE1724 /* PolarSkyPlot.swift */; };
+		C611D9C198025C06D64A37A6 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C02CE42A86902629ACCDBF1 /* AIAnswerSheet.swift */; };
 		C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
 		C9AF7621627797C098DBB7FF /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
 		CB9FC040DA006C27A37A9D56 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
@@ -75,72 +101,82 @@
 		D1AD43EDC6BA8E39F6DAA82E /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */; };
 		D25F44B6F0219F175958B25E /* FrequencyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */; };
 		D44019462AF3B5702FD37246 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */; };
-		D5CA1E196A592815FC8DCEA6 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAE596D83136B1E6E2479B3E /* SatelliteView.swift */; };
 		D8FCE62A61494CC02D6CA682 /* SignalHiveCore in Frameworks */ = {isa = PBXBuildFile; productRef = E37025EDFFB2492E594A896D /* SignalHiveCore */; };
 		D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */; };
 		D96607A4DD6949BC6B193C59 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
+		DA842929B24B426586F45B2D /* PassCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A3D1248720B50678C5C102 /* PassCharts.swift */; };
 		DB294E3DED99AF40BFCEC54D /* ModelLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F502D1C78A459A663F809EF2 /* ModelLibrary.swift */; };
+		DECD14B61D3629D81B7E5BCC /* PassFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED433723D6F1BBB3FE97D9E /* PassFormat.swift */; };
 		E11480BC31DF356B5C63A99C /* SignalHiveIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */; };
+		E2AD3420A5B8650EC7EC690B /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73908E1275E92809D78B1848 /* CodeplugFixSheet.swift */; };
 		E34FCCA1229A6EC4ED204706 /* AircraftIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780305D8A47251654E026F16 /* AircraftIconRenderer.swift */; };
 		E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AFB203A996B9F769878976 /* WorkshopView.swift */; };
+		E6E2C49A568D22D044D278FB /* PassInspectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09639D0D74C8D677D5844391 /* PassInspectorView.swift */; };
+		E7D0CF2B761ACFA406905D2F /* SatellitesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87AB700EAC7C1AA6D72EFCA7 /* SatellitesModel.swift */; };
 		E88231C1275B72A1DD82CE59 /* AviationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D015468B43A518A1B8917F1 /* AviationModel.swift */; };
 		E934D298BA9A3CAAA8FC6892 /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
 		EDE975B67368FB7F6A91BFDD /* MacAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */; };
+		EFE919C59C97A2E47BF9C0AD /* WorkshopSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9DE9F952EED4CBC90B1A71 /* WorkshopSheets.swift */; };
+		EFF789339CC1879526DFCF56 /* SatellitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 784CE2C627751C222BA9A607 /* SatellitesView.swift */; };
+		F137D9EB9E90413C51180E38 /* PassCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A3D1248720B50678C5C102 /* PassCharts.swift */; };
 		F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281A33AE2902FAF37439A94 /* CodeplugView.swift */; };
 		F6C3DE17BCE5E7A2E7498394 /* GetDataSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */; };
 		F6FB10A584252396376E20CF /* MacPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE53DC740AEEAF549EF95771 /* MacPlatform.swift */; };
 		F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */; };
+		FAF8F295AC3B8224F4A79CA2 /* PolarSkyPlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D0E4598D76D108EE2BE1724 /* PolarSkyPlot.swift */; };
+		FB4458BE298F547F7B968B11 /* PassTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5033470694EBBB6FE8516EAE /* PassTimelineView.swift */; };
 		FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F685913ED57BC8289A8B578E /* SearchView.swift */; };
 		FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */; };
 		FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
+		FF65480AA4C4C75599C4D45C /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 076838481A346BAE9857E2E8 /* LiveDecoderModel.swift */; };
 		FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A7BC3463759467EC305C361 /* SettingsView.swift */; };
-		22F4C74C33F547B9111F99C4 /* WorkshopSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */; };
-		250168D0AA8A7795941F0F66 /* WorkshopSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */; };
-		77D6DECEEB8B24B06E676092 /* WorkshopSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */; };
-		60D3C8F750903A0B08F3AF39 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */; };
-		672484E9130B7B0578BA4934 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */; };
-		E17FCCEC52284D9E7A510440 /* AIAnswerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */; };
-		56D05D694DF1F8E79224DDB3 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
-		72160C1A0FD6DA81A5EE09EE /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
-		7B6983A31D1EE7BC73821761 /* CodeplugFixSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */; };
-		67AFC6453B98CF4651870925 /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
-		C89D98447134639BA9CDAB4B /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
-		E6B34C08C7AABDF2DC84F4AD /* LiveDecoderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrunkedView.swift; sourceTree = "<group>"; };
+		076838481A346BAE9857E2E8 /* LiveDecoderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDecoderModel.swift; sourceTree = "<group>"; };
+		09639D0D74C8D677D5844391 /* PassInspectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassInspectorView.swift; sourceTree = "<group>"; };
 		0A82C24B3B53C9BCD1DEF65A /* MacAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppDelegate.swift; sourceTree = "<group>"; };
 		0F281C2E5409DFA34E2603A8 /* IOSPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSPlatform.swift; sourceTree = "<group>"; };
 		113EAD5193D1C4434B5297AB /* SignalHive-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SignalHive-iOS.entitlements"; sourceTree = "<group>"; };
 		1C6642C5FBCDD94C99FA7A65 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		1D015468B43A518A1B8917F1 /* AviationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationModel.swift; sourceTree = "<group>"; };
+		1D0E4598D76D108EE2BE1724 /* PolarSkyPlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarSkyPlot.swift; sourceTree = "<group>"; };
+		22A3D1248720B50678C5C102 /* PassCharts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassCharts.swift; sourceTree = "<group>"; };
 		23ED14F82291986C7D32CA20 /* AirDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirDataView.swift; sourceTree = "<group>"; };
 		27373345F1C7E36527757CDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverLocationService.swift; sourceTree = "<group>"; };
 		38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetDataSheet.swift; sourceTree = "<group>"; };
 		40604D31962E11C73A08FD7C /* AirMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirMapView.swift; sourceTree = "<group>"; };
+		5033470694EBBB6FE8516EAE /* PassTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassTimelineView.swift; sourceTree = "<group>"; };
 		55F95B8F4A3ED4CB3F199908 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5FFDD44E7F1F8E48B6AAC698 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6281A33AE2902FAF37439A94 /* CodeplugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugView.swift; sourceTree = "<group>"; };
 		62ACCBF5940262AE7CF43C8B /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		675AB467A347E9E1FBF670C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		68FBAB5D165387C21E86B8E3 /* GroundTrackMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroundTrackMap.swift; sourceTree = "<group>"; };
 		69AFB203A996B9F769878976 /* WorkshopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopView.swift; sourceTree = "<group>"; };
 		6ABF61028C20628FB5F4E497 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6C02CE42A86902629ACCDBF1 /* AIAnswerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnswerSheet.swift; sourceTree = "<group>"; };
+		6E5DECF4D120B8C2594E8B60 /* AntennaEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntennaEditorSheet.swift; sourceTree = "<group>"; };
 		70FFC133A12EAA82DD88CE7F /* SignalHiveVisualSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveVisualSystem.swift; sourceTree = "<group>"; };
+		73908E1275E92809D78B1848 /* CodeplugFixSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugFixSheet.swift; sourceTree = "<group>"; };
 		780305D8A47251654E026F16 /* AircraftIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftIconRenderer.swift; sourceTree = "<group>"; };
+		784CE2C627751C222BA9A607 /* SatellitesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatellitesView.swift; sourceTree = "<group>"; };
+		87AB700EAC7C1AA6D72EFCA7 /* SatellitesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatellitesModel.swift; sourceTree = "<group>"; };
 		8A7BC3463759467EC305C361 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8D5CFBBD77118015D765AA70 /* SignalHive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignalHive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DA37BCC9679F9DE2DECDA9D /* SignalHiveIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveIntents.swift; sourceTree = "<group>"; };
 		A63FDAFF97C413E63C669034 /* SignalHiveMenuBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SignalHiveMenuBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA703C607A512C302E7AD1BD /* SignalHive-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "SignalHive-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AAE596D83136B1E6E2479B3E /* SatelliteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteView.swift; sourceTree = "<group>"; };
+		AED433723D6F1BBB3FE97D9E /* PassFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassFormat.swift; sourceTree = "<group>"; };
 		AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrequencyDetailView.swift; sourceTree = "<group>"; };
 		B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoderHubView.swift; sourceTree = "<group>"; };
 		B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		B4BE49843C1B12AB457B4085 /* ScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerView.swift; sourceTree = "<group>"; };
 		BB8A2E5C8B5B8B0BE4FFC618 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		CF9DE9F952EED4CBC90B1A71 /* WorkshopSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopSheets.swift; sourceTree = "<group>"; };
 		D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILabView.swift; sourceTree = "<group>"; };
 		E5579AEB9B0CB0704D1AC011 /* SignalHiveCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SignalHiveCore; path = Packages/SignalHiveCore; sourceTree = SOURCE_ROOT; };
 		E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalHiveApp.swift; sourceTree = "<group>"; };
@@ -151,10 +187,6 @@
 		F6884868AC2561809B1890F7 /* MenuBarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarApp.swift; sourceTree = "<group>"; };
 		FE53DC740AEEAF549EF95771 /* MacPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPlatform.swift; sourceTree = "<group>"; };
 		FE79022937FEAE9AAA3DBFBD /* SignalHiveMenuBar.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SignalHiveMenuBar.entitlements; sourceTree = "<group>"; };
-		405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkshopSheets.swift; sourceTree = "<group>"; };
-		B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAnswerSheet.swift; sourceTree = "<group>"; };
-		DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeplugFixSheet.swift; sourceTree = "<group>"; };
-		07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDecoderModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,6 +237,14 @@
 			path = iOS;
 			sourceTree = "<group>";
 		};
+		2AB80443A7C4D9DAB9E60CE6 /* Decoders */ = {
+			isa = PBXGroup;
+			children = (
+				076838481A346BAE9857E2E8 /* LiveDecoderModel.swift */,
+			);
+			path = Decoders;
+			sourceTree = "<group>";
+		};
 		4255AAC509BDA186B86A2523 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -215,10 +255,10 @@
 				E71CD206B15882A93BD3B171 /* SignalHiveApp.swift */,
 				C4F39A45E6239B581A7464C0 /* AppIntents */,
 				E78F880FE717CE2FA367A189 /* Aviation */,
+				2AB80443A7C4D9DAB9E60CE6 /* Decoders */,
 				49A6491476F78E7B4EB6E58C /* Design */,
 				1ACBAD8D417904F0271CD964 /* Stores */,
 				D7EA068CBA56C88CA6DB41E6 /* Views */,
-				5AADDAAE6516718BFF84F52A /* Decoders */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -289,6 +329,22 @@
 			path = Packages;
 			sourceTree = "<group>";
 		};
+		C23F811945E78B8C5BCC17B8 /* Satellites */ = {
+			isa = PBXGroup;
+			children = (
+				6E5DECF4D120B8C2594E8B60 /* AntennaEditorSheet.swift */,
+				68FBAB5D165387C21E86B8E3 /* GroundTrackMap.swift */,
+				22A3D1248720B50678C5C102 /* PassCharts.swift */,
+				AED433723D6F1BBB3FE97D9E /* PassFormat.swift */,
+				09639D0D74C8D677D5844391 /* PassInspectorView.swift */,
+				5033470694EBBB6FE8516EAE /* PassTimelineView.swift */,
+				1D0E4598D76D108EE2BE1724 /* PolarSkyPlot.swift */,
+				87AB700EAC7C1AA6D72EFCA7 /* SatellitesModel.swift */,
+				784CE2C627751C222BA9A607 /* SatellitesView.swift */,
+			);
+			path = Satellites;
+			sourceTree = "<group>";
+		};
 		C4F39A45E6239B581A7464C0 /* AppIntents */ = {
 			isa = PBXGroup;
 			children = (
@@ -300,24 +356,24 @@
 		D7EA068CBA56C88CA6DB41E6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				6C02CE42A86902629ACCDBF1 /* AIAnswerSheet.swift */,
 				D1515F2F7FF5D6CB0EB03146 /* AILabView.swift */,
 				23ED14F82291986C7D32CA20 /* AirDataView.swift */,
 				40604D31962E11C73A08FD7C /* AirMapView.swift */,
 				B2DB63E693A34BBE4DE0EDC7 /* BrowseView.swift */,
+				73908E1275E92809D78B1848 /* CodeplugFixSheet.swift */,
 				6281A33AE2902FAF37439A94 /* CodeplugView.swift */,
 				B2BFB9CCA96A0A76A94FBA45 /* DecoderHubView.swift */,
 				AFFB4B462D982E4060584579 /* FrequencyDetailView.swift */,
 				38BED41905171AA7BD6ECBEA /* GetDataSheet.swift */,
 				E73862DFAD0E2CB9C3D9E96A /* RFCoachSheet.swift */,
-				AAE596D83136B1E6E2479B3E /* SatelliteView.swift */,
 				B4BE49843C1B12AB457B4085 /* ScannerView.swift */,
 				F685913ED57BC8289A8B578E /* SearchView.swift */,
 				8A7BC3463759467EC305C361 /* SettingsView.swift */,
 				0600FC79C535A083E4D5CDA2 /* TrunkedView.swift */,
+				CF9DE9F952EED4CBC90B1A71 /* WorkshopSheets.swift */,
 				69AFB203A996B9F769878976 /* WorkshopView.swift */,
-				405EAB713D506CA49898B1D4 /* WorkshopSheets.swift */,
-				B97EF052C006130606DA46F5 /* AIAnswerSheet.swift */,
-				DBF76A953D917EDD86D21472 /* CodeplugFixSheet.swift */,
+				C23F811945E78B8C5BCC17B8 /* Satellites */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -330,14 +386,6 @@
 				33FE8BF7132C1E7A74065934 /* ReceiverLocationService.swift */,
 			);
 			path = Aviation;
-			sourceTree = "<group>";
-		};
-		5AADDAAE6516718BFF84F52A /* Decoders */ = {
-			isa = PBXGroup;
-			children = (
-				07C32C680B1C42D1DA5B52E9 /* LiveDecoderModel.swift */,
-			);
-			path = Decoders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -479,25 +527,36 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C611D9C198025C06D64A37A6 /* AIAnswerSheet.swift in Sources */,
 				8B86E737807DED9676F18485 /* AILabView.swift in Sources */,
 				A376EC0225E7277F8261F167 /* AirDataView.swift in Sources */,
 				9D71F72E33E6D0A3F7DFE01C /* AirMapView.swift in Sources */,
 				8FA4307472FE812D02CEF0FA /* AircraftIconRenderer.swift in Sources */,
+				B67C0242719C5529445C0D0E /* AntennaEditorSheet.swift in Sources */,
 				D1AD43EDC6BA8E39F6DAA82E /* AppConfiguration.swift in Sources */,
 				70777A10BEE917F32185C0D7 /* AppModel.swift in Sources */,
 				176A92185F753F60101D0C40 /* AviationModel.swift in Sources */,
 				D94F2C371CD9238124B14579 /* BrowseView.swift in Sources */,
+				39B7A0BE18DFDEA0E1BDC263 /* CodeplugFixSheet.swift in Sources */,
 				107B097D42AFE21B6D703D4C /* CodeplugView.swift in Sources */,
 				9C3F508B1F2B7B0F5DB46667 /* ContentView.swift in Sources */,
 				FD144BD4C276899A016CB5BE /* DecoderHubView.swift in Sources */,
 				D057BC4F5D009DFE69C73E63 /* FrequencyDetailView.swift in Sources */,
 				337F20F3FDE9408C4D61BA4E /* GetDataSheet.swift in Sources */,
+				A57F0CED74F1AA684639101E /* GroundTrackMap.swift in Sources */,
+				FF65480AA4C4C75599C4D45C /* LiveDecoderModel.swift in Sources */,
 				5C53D8674F30077AA3463F8E /* MacAppDelegate.swift in Sources */,
 				4B3FC808ADC54710A9907B1A /* MenuBarApp.swift in Sources */,
 				DB294E3DED99AF40BFCEC54D /* ModelLibrary.swift in Sources */,
+				B97209A8D924A92C7D60F82C /* PassCharts.swift in Sources */,
+				DECD14B61D3629D81B7E5BCC /* PassFormat.swift in Sources */,
+				20126754DEC445DFDF5DE86B /* PassInspectorView.swift in Sources */,
+				FB4458BE298F547F7B968B11 /* PassTimelineView.swift in Sources */,
+				FAF8F295AC3B8224F4A79CA2 /* PolarSkyPlot.swift in Sources */,
 				1D04CEFFC046BB1FB22685C8 /* RFCoachSheet.swift in Sources */,
 				7B11AD7964D24A0A86A4672F /* ReceiverLocationService.swift in Sources */,
-				D5CA1E196A592815FC8DCEA6 /* SatelliteView.swift in Sources */,
+				5F1C8DE0A58499241A6D4360 /* SatellitesModel.swift in Sources */,
+				414C3A2244A05B759DF5F21C /* SatellitesView.swift in Sources */,
 				CC937FB5565D9FE0DC3D86A5 /* ScannerView.swift in Sources */,
 				08F503600DFFB11F25E306BD /* SearchView.swift in Sources */,
 				D96607A4DD6949BC6B193C59 /* SettingsView.swift in Sources */,
@@ -505,11 +564,8 @@
 				0BDE5FE62A614B9D09D614C6 /* SignalHiveIntents.swift in Sources */,
 				4132EBE90AB18346998A896E /* SignalHiveVisualSystem.swift in Sources */,
 				66FBECB9C05985E55EA222CF /* TrunkedView.swift in Sources */,
+				EFE919C59C97A2E47BF9C0AD /* WorkshopSheets.swift in Sources */,
 				193B8DA5BC81C82D0F245D19 /* WorkshopView.swift in Sources */,
-				250168D0AA8A7795941F0F66 /* WorkshopSheets.swift in Sources */,
-				60D3C8F750903A0B08F3AF39 /* AIAnswerSheet.swift in Sources */,
-				56D05D694DF1F8E79224DDB3 /* CodeplugFixSheet.swift in Sources */,
-				67AFC6453B98CF4651870925 /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -517,25 +573,36 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5BC549E13B65A33BE70B84F /* AIAnswerSheet.swift in Sources */,
 				F790D6DD85BD694646630FB5 /* AILabView.swift in Sources */,
 				7FD434A80FD6BB548DF1E11B /* AirDataView.swift in Sources */,
 				8FD05DF7E0E8BA9D16072DB7 /* AirMapView.swift in Sources */,
 				5934FCA2E190AE36E0A4E581 /* AircraftIconRenderer.swift in Sources */,
+				7411EF8A510BEB249284BA06 /* AntennaEditorSheet.swift in Sources */,
 				C9AF7621627797C098DBB7FF /* AppConfiguration.swift in Sources */,
 				D44019462AF3B5702FD37246 /* AppModel.swift in Sources */,
 				005512CC6DA1AEB4A8B054EA /* AviationModel.swift in Sources */,
 				CB9FC040DA006C27A37A9D56 /* BrowseView.swift in Sources */,
+				E2AD3420A5B8650EC7EC690B /* CodeplugFixSheet.swift in Sources */,
 				6C87C4AC101A3F9F75CA1A9E /* CodeplugView.swift in Sources */,
 				CD4CD3E59552109B2B834601 /* ContentView.swift in Sources */,
 				625D686397EAC1E5E2E3AF84 /* DecoderHubView.swift in Sources */,
 				7218F49A826B4803E7A7CBB4 /* FrequencyDetailView.swift in Sources */,
 				F6C3DE17BCE5E7A2E7498394 /* GetDataSheet.swift in Sources */,
+				591CE7537494E680B6078B00 /* GroundTrackMap.swift in Sources */,
+				0317C9F12400E75B0C40793A /* LiveDecoderModel.swift in Sources */,
 				70A8C5C5385B3D901AA7A933 /* MacAppDelegate.swift in Sources */,
 				F6FB10A584252396376E20CF /* MacPlatform.swift in Sources */,
 				676F3C60577208C3AC4DAD0E /* ModelLibrary.swift in Sources */,
+				DA842929B24B426586F45B2D /* PassCharts.swift in Sources */,
+				98148D84A278D74E45BA752A /* PassFormat.swift in Sources */,
+				E6E2C49A568D22D044D278FB /* PassInspectorView.swift in Sources */,
+				0CB68FEB2B7F280E7F1E6D23 /* PassTimelineView.swift in Sources */,
+				5C43DBBAA947A9232A9C9288 /* PolarSkyPlot.swift in Sources */,
 				AB66B586AFC79C38B4E7E2E0 /* RFCoachSheet.swift in Sources */,
 				768D7B39B9964719999CBCE8 /* ReceiverLocationService.swift in Sources */,
-				889A3D764037802240935017 /* SatelliteView.swift in Sources */,
+				3593A1737FDCB4363E36904E /* SatellitesModel.swift in Sources */,
+				0FD67A6204AF5D2850FD40CA /* SatellitesView.swift in Sources */,
 				14834E128153021E5B9F2770 /* ScannerView.swift in Sources */,
 				67E62303ACEDDAD564B36707 /* SearchView.swift in Sources */,
 				FE977700EBB8C69085F65581 /* SettingsView.swift in Sources */,
@@ -543,11 +610,8 @@
 				41C77ABBF61E8AFDF6A260AC /* SignalHiveIntents.swift in Sources */,
 				A7CBFC575CC11DBD47312E51 /* SignalHiveVisualSystem.swift in Sources */,
 				73B191E959E6939F84E69C57 /* TrunkedView.swift in Sources */,
+				A0A178CD1AB6F173BF7DFE8E /* WorkshopSheets.swift in Sources */,
 				C98E23AE37C69C62FC7B2C4D /* WorkshopView.swift in Sources */,
-				22F4C74C33F547B9111F99C4 /* WorkshopSheets.swift in Sources */,
-				E17FCCEC52284D9E7A510440 /* AIAnswerSheet.swift in Sources */,
-				7B6983A31D1EE7BC73821761 /* CodeplugFixSheet.swift in Sources */,
-				C89D98447134639BA9CDAB4B /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -555,26 +619,37 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B8F365FBB233ECB5253DD0C /* AIAnswerSheet.swift in Sources */,
 				ECCE87B9C1BFB32A4E1AB3BA /* AILabView.swift in Sources */,
 				7D10EE04FD1B04E2409B5F73 /* AirDataView.swift in Sources */,
 				64C34FCE1C063EBF6009AD34 /* AirMapView.swift in Sources */,
 				E34FCCA1229A6EC4ED204706 /* AircraftIconRenderer.swift in Sources */,
+				988204E3110493923C3A104E /* AntennaEditorSheet.swift in Sources */,
 				2734480FB21FA65258BDAF8B /* AppConfiguration.swift in Sources */,
 				5EDD2F8E5D23959EEFEA0882 /* AppModel.swift in Sources */,
 				E88231C1275B72A1DD82CE59 /* AviationModel.swift in Sources */,
 				7F1CED761D15B67B09F5A795 /* BrowseView.swift in Sources */,
 				271F03594DC735426A35FB42 /* CarPlaySceneDelegate.swift in Sources */,
+				791A71C8D071AF9807A37FEE /* CodeplugFixSheet.swift in Sources */,
 				F3D2D8D6C947C36CFA350E27 /* CodeplugView.swift in Sources */,
 				BA60D6CE7801E55AC5E482E6 /* ContentView.swift in Sources */,
 				E934D298BA9A3CAAA8FC6892 /* DecoderHubView.swift in Sources */,
 				D25F44B6F0219F175958B25E /* FrequencyDetailView.swift in Sources */,
 				7BB50E45997B4B448891E932 /* GetDataSheet.swift in Sources */,
+				86572FE2DEAD1C230D05B982 /* GroundTrackMap.swift in Sources */,
 				80327CF9EC8C59FF02DDDBA1 /* IOSPlatform.swift in Sources */,
+				3101FD9A69C635244D26D3F3 /* LiveDecoderModel.swift in Sources */,
 				EDE975B67368FB7F6A91BFDD /* MacAppDelegate.swift in Sources */,
 				1247E6FB1820F3CB65B9C48B /* ModelLibrary.swift in Sources */,
+				F137D9EB9E90413C51180E38 /* PassCharts.swift in Sources */,
+				BF885474CD99E8A39A8FBDF9 /* PassFormat.swift in Sources */,
+				9175095C796F356AD0EFF585 /* PassInspectorView.swift in Sources */,
+				11F1DA22F6D3470CC916A4AA /* PassTimelineView.swift in Sources */,
+				C5FDE8CD3A40440BC3F2DFF4 /* PolarSkyPlot.swift in Sources */,
 				5F0941B0551AFFDA62C216E4 /* RFCoachSheet.swift in Sources */,
 				7AAA95935596DC0C14E7C32B /* ReceiverLocationService.swift in Sources */,
-				0DA3EB9A496C39B77E557A38 /* SatelliteView.swift in Sources */,
+				E7D0CF2B761ACFA406905D2F /* SatellitesModel.swift in Sources */,
+				EFF789339CC1879526DFCF56 /* SatellitesView.swift in Sources */,
 				42B6525233723D525A63AEF8 /* ScannerView.swift in Sources */,
 				FC1EE44034A7DA42DF40397F /* SearchView.swift in Sources */,
 				FFB06687B2B13FF0BF703EC2 /* SettingsView.swift in Sources */,
@@ -582,11 +657,8 @@
 				E11480BC31DF356B5C63A99C /* SignalHiveIntents.swift in Sources */,
 				A854201FA545A7E747A4674E /* SignalHiveVisualSystem.swift in Sources */,
 				36812FF465737730CC288846 /* TrunkedView.swift in Sources */,
+				218E1333FBE9F81545EB77E4 /* WorkshopSheets.swift in Sources */,
 				E3B7D54DD3E9A24879FB7585 /* WorkshopView.swift in Sources */,
-				77D6DECEEB8B24B06E676092 /* WorkshopSheets.swift in Sources */,
-				672484E9130B7B0578BA4934 /* AIAnswerSheet.swift in Sources */,
-				72160C1A0FD6DA81A5EE09EE /* CodeplugFixSheet.swift in Sources */,
-				E6B34C08C7AABDF2DC84F4AD /* LiveDecoderModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
