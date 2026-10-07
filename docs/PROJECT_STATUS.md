@@ -235,9 +235,9 @@ per-screen verdicts, 12 cross-cutting UI findings and the build spec. The remain
   Small touch targets: the Trunked talkgroup "Sparkle" (Explain) buttons are 12x15 pt.
 - `SDRDeviceManager.scan()` runs six providers; RTL-SDR has been exercised on real hardware through the native Swift
   driver. Other source types still need hardware/provider QA.
-- SwiftRTLSDR PR #1 and PR #2 are merged upstream; SignalHive's embedded copy is upstream `main` at `c8b470f` (2026-10-06), byte-identical (checked with `diff -r`). PR #4 (a `Meshtastic.swift` one-line `reduce` that Swift 6.3.3 on the `macos-26` CI runner cannot type-check) merged that day, so the copy no longer carries a local patch. It includes
-  ADS-B, UAT/FIS-B, ISM, Meteor LRPT (72k and 80k), RS41, Meshtastic/LoRa, EEPROM calibration and the hydrogen-line
-  spectrometer. An agent is still working upstream: branch `claude/determined-davinci-n2dt0t` (draft PR #3) holds ACARS/VDL2 and, since PR #5 was merged into it on 2026-10-06, the DFM and M10/M20 radiosonde decoders and several-preset Meshtastic reception, none of it in `main` yet or synced here. Check `gh api repos/noktirnal42/SwiftRTLSDR/branches` before building on
+- SwiftRTLSDR PRs #1 to #5 are merged upstream; SignalHive's embedded copy is upstream `main` at `6a47b33` (2026-10-07), synced from `git archive origin/main` of the clone at `/Volumes/Artificial_Intelligence_Machine_Learning/dev/SwiftRTLSDR` (never its working tree, where another agent has uncommitted work) and byte-identical (checked with `diff -r`); the core suite (676 tests) and the driver suite (380 tests) pass against it. It includes
+  ADS-B, UAT/FIS-B, ISM, Meteor LRPT (72k and 80k), RS41, DFM and M10/M20 and iMet radiosondes, ACARS and VDL Mode 2, Meshtastic/LoRa with several presets at once, EEPROM calibration and the hydrogen-line
+  spectrometer, and `MeshtasticMultiReceiver.init` and `DFMFrame.init` now throw instead of trapping. An agent is still working upstream (a POCSAGTests/pager decoder was uncommitted in the clone on 2026-10-07). Check `gh api repos/noktirnal42/SwiftRTLSDR/branches` before building on
   the driver, and sync only merged work. Meshtastic, LoRa, calibration and hydrogen line have no app UI yet.
   `rtlsdr-tool capture` writes an odd byte count (`Int(actualRate * 2 * seconds)` with a rate of 2000000.05 gives
   40000001 bytes), which splits an I/Q pair at the end and breaks tools that read pairs; a driver issue to fix upstream.

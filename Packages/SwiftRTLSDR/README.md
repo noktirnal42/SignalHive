@@ -124,12 +124,14 @@ ADS-B / Mode S on 1090 MHz; UAT on 978 MHz (US general aviation) including FIS-B
 rendered to PNG, METAR/TAF/winds-aloft text; 433/868/915 MHz sensors the way rtl_433 decodes them (weather
 stations, thermometers, remotes: AcuRite, Oregon Scientific, LaCrosse, Fine Offset/Ecowitt, Bresser and others); and
 Meteor-M weather-satellite images on 137 MHz (LRPT, QPSK and offset QPSK), with a live dashboard in the browser; and
-Vaisala RS41 radiosondes on 400-406 MHz (position, altitude, velocity, temperature), found by scanning or on a given
-frequency; and Meshtastic mesh traffic on LoRa (text messages, positions, node info, telemetry; the default channel and
-any channel whose key you have), on the frequency Meshtastic picks for the preset and region. Meteor-M also in its
-80 ksym/s interleaved mode. `rtlsdr-tool adsb`, `uat`,
-`ism`, `meteor`, `sonde` and `mesh` run them live or on recorded I/Q, with output compatible with dump1090, dump978,
-rtl_433, meteor_decode and rs41mod. How they were checked, and against what: [docs/DECODERS.md](docs/DECODERS.md).
+radiosondes on 400-406 MHz (Vaisala RS41, Graw DFM-06/09/17, Meteomodem M10/M20 and InterMet iMet-1/iMet-4: position, altitude, velocity,
+temperature, serial number), found by scanning or on a given frequency; and Meshtastic mesh traffic on LoRa (text
+messages, positions, node info, telemetry; the default channel and any channel whose key you have), on the frequency
+Meshtastic picks for the preset and region, or several presets and slots at once from one capture. Meteor-M also in its
+80 ksym/s interleaved mode. ACARS on VHF (airline messages), and VDL Mode 2 (its digital successor: ACARS over AVLC,
+ground station announcements, aircraft logging on with their positions), every channel of a region from one capture.
+`rtlsdr-tool adsb`, `uat`, `ism`, `meteor`, `sonde`, `mesh`, `acars` and `vdl2` run them live or on recorded I/Q, with
+output compatible with dump1090, dump978, rtl_433, meteor_decode, rs41mod, dfm09mod, m10m20mod, acarsdec and dumpvdl2. How they were checked, and against what: [docs/DECODERS.md](docs/DECODERS.md).
 
 ```swift
 import RTLSDRDecoders
@@ -155,11 +157,15 @@ let picture = lrpt.imager.composite()?.png                            // RGB fro
 
 let sonde = RS41Receiver(sampleRate: 240_000, offsetHz: 40_000)        // an RS41 40 kHz above the tuned frequency
 for event in sonde.process(iq: block) { print(event.report?.json() ?? "") }   // {"type": "RS41", "frame": 3172, ...}
+let dfm = DFMReceiver(sampleRate: 240_000, offsetHz: 40_000)           // Graw DFM-06/09/17: same shape, a report about every 4th frame
+let m10 = M10Receiver(sampleRate: 480_000)                             // M10, M10+ and M20 (tries 9600 and 9616 symbols/s)
+let imet = IMetReceiver(sampleRate: 240_000, offsetHz: 40_000)        // InterMet iMet-1/iMet-4 (1200 baud AFSK on FM), a report every second
 
 let preset = MeshtasticPreset.longFast                                 // US: 906.875 MHz, 1 MS/s, channel at +250 kHz
 let lora = LoRaReceiver(parameters: preset.parameters, sampleRate: 1_000_000, offsetHz: 250_000, centerFrequencyHz: 906.875e6)
 let mesh = MeshtasticDecoder(channels: [.primary(preset)])
 for frame in lora.process(iq: block) { print(mesh.decode(frame.payload)?.line ?? "") }   // !a1b2c3d4 → ^all ... TEXT "hi"
+// Several presets or slots from one capture: MeshtasticMultiReceiver (and MeshtasticPlan, which fits the channels around the DC spike)
 ```
 
 ### Command-line tool
@@ -179,8 +185,12 @@ swift run -c release rtlsdr-tool adsb --lat 37.4 --lon -122.1         # aircraft
 swift run -c release rtlsdr-tool uat --nexrad radar/                  # 978 MHz: aircraft, weather text, radar PNGs
 swift run -c release rtlsdr-tool ism --json                           # 433.92 MHz sensors, rtl_433's JSON
 swift run -c release rtlsdr-tool meteor --web 8080 --out pass/        # Meteor-M images, live at localhost:8080
-swift run -c release rtlsdr-tool sonde --scan --json                  # radiosondes on 400-406 MHz
+swift run -c release rtlsdr-tool sonde --scan --json                  # radiosondes on 400-406 MHz (RS41, DFM, M10/M20, iMet)
+swift run -c release rtlsdr-tool sonde --type m10 --freq 404.4e6      # one type on a known frequency (rs41, dfm, m10)
 swift run -c release rtlsdr-tool mesh --region EU_868                 # Meshtastic LongFast on 869.525 MHz
+swift run -c release rtlsdr-tool mesh --region EU_868 --presets LongFast,MediumFast,ShortFast   # three presets at once
+swift run -c release rtlsdr-tool acars --region us                    # ACARS on the five US channels at once
+swift run -c release rtlsdr-tool vdl2 --region eu                     # VDL Mode 2 on four European channels
 swift run rtlsdr-tool calibrate --atsc 27 --write --label roof        # measure the crystal on a TV pilot, keep it
 swift run -c release rtlsdr-tool adsb --ppm eeprom                    # any tuning command: apply the stored ppm
 swift run -c release rtlsdr-tool hline --seconds 1800 --lat 52 --lon 4.6 --az 180 --el 60   # 21 cm line, CSV out
@@ -211,6 +221,9 @@ so everything but `IOUSBHostTransport` is compiled and tested).
   loopback socket.
 * The decoders are checked against published messages, an independent decoder (pyModeS), dump978's real sample frames
   and its own decoder, and dump1090/dump978 on the same synthetic signals: see [docs/DECODERS.md](docs/DECODERS.md).
+  For the radiosondes (RS41, DFM, M10/M20, iMet) there is no real recording: `Tools/*-oracle.py` build signals from the
+  format alone and the `*-oracle-compare.py` scripts run our decoder and rs1729's (dfm09mod, m10m20mod, rs41mod, imet1rs_dft) on
+  the same I/Q, checking each against what was sent.
 * `Tools/generate-tables.py <librtlsdr source dir> --check` verifies the two generated tables against the reference.
 
 To trace a real session: `RTLSDR_TRACE=/path/to/file` (or `-` for stderr) makes the driver log every control transfer.
@@ -228,14 +241,16 @@ claims lock at a slightly wrong frequency near the bottom of the range), sensiti
 antenna, the bias tee on a dongle that has one, any other dongle model or tuner revision, Intel Macs, macOS versions
 other than 27, hot-plug, and using several dongles at once. Retuning takes about 27 ms, which limits scan speed.
 
-Also not verified on hardware: everything added on 2026-09-30 (retune shortcuts, overload guard / host AGC, scanning,
-EEPROM writing and serial provisioning, the `rtl_tcp` server, the ADS-B, UAT, ISM, Meteor-M, RS41 and Meshtastic decoders, calibration and the hydrogen-line spectrometer). It was built and tested on
-Linux only; the macOS build of those parts has not been compiled yet.
+Run on the dongle on 2026-10-07 (see [HARDWARE.md](HARDWARE.md)): retune timing and the shortcuts, the EEPROM read, the `rtl_tcp`
+server and streaming from the ACARS and VDL Mode 2 receivers without dropped blocks. **Still not verified with a real
+signal:** every decoder (ADS-B, UAT, ISM, Meteor-M, RS41, DFM, M10/M20, iMet, Meshtastic, ACARS, VDL Mode 2), calibration and the
+hydrogen-line spectrometer; the overload guard's back-off on a strong signal was not exercised.
 
 ## Requirements
 
-macOS 13 or later declared (built and run only on macOS 27 / Xcode 27, Swift 6). Apple silicon tested. Talking to a
-dongle needs macOS (`IOUSBHost`). On Linux the package builds and its tests pass (Swift 6.0.3), but it finds no dongles.
+macOS 13 or later declared (built and run only on macOS 27 / Xcode 27, Swift 6). Apple silicon tested: the package builds and
+its 380 tests pass on macOS 27 (Swift 6.4). Talking to a dongle needs macOS (`IOUSBHost`). On Linux the package builds and its tests
+pass (Swift 6.3.3), but it finds no dongles.
 
 ## License
 
